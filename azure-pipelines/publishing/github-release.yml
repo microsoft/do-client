@@ -1,0 +1,104 @@
+# Pipeline to perform automated github release of our components
+
+# Disable branch and pr triggers - run this manually when ready to publish a new release
+trigger:
+- none
+pr:
+- none
+
+pool: dotestlab
+
+variables:
+  release.title: $(release_name)
+  release.version: $(release_version)
+# This variable is used later to generate the changelog
+  release.previous_version: $(previous_release_version)
+
+jobs:
+- job: doclient_release
+  steps:
+  - task: CmdLine@2
+    inputs:
+      script: 'rm -rf /tmp/do_publishing'
+    displayName: 'Clear publishing directory'
+
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      buildType: 'specific'
+      project: '7cdf52bf-a6f7-436c-b12f-3f063ef389c4'
+      pipeline: '33'
+      buildVersionToDownload: 'latest'
+      downloadType: 'specific'
+      downloadPath: '/tmp/do_publishing'
+    displayName: 'Get ms-do-sdk arm artifacts'
+
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      buildType: 'specific'
+      project: '7cdf52bf-a6f7-436c-b12f-3f063ef389c4'
+      pipeline: '26'
+      buildVersionToDownload: 'latest'
+      downloadType: 'specific'
+      downloadPath: '/tmp/do_publishing'
+    displayName: 'Get ms-do-sdk x64 artifacts'
+
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      buildType: 'specific'
+      project: '7cdf52bf-a6f7-436c-b12f-3f063ef389c4'
+      pipeline: '25'
+      buildVersionToDownload: 'latest'
+      downloadType: 'specific'
+      downloadPath: '/tmp/do_publishing'
+    displayName: 'Get ms-do-agent arm artifacts'
+
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      buildType: 'specific'
+      project: '7cdf52bf-a6f7-436c-b12f-3f063ef389c4'
+      pipeline: '23'
+      buildVersionToDownload: 'latest'
+      downloadType: 'specific'
+      downloadPath: '/tmp/do_publishing'
+    displayName: 'Get ms-do-agent x64 artifacts'
+
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      buildType: 'specific'
+      project: '7cdf52bf-a6f7-436c-b12f-3f063ef389c4'
+      pipeline: '31'
+      buildVersionToDownload: 'latest'
+      downloadType: 'specific'
+      downloadPath: '/tmp/do_publishing'
+    displayName: 'Get ms-do-pluginapt arm artifacts'
+
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      buildType: 'specific'
+      project: '7cdf52bf-a6f7-436c-b12f-3f063ef389c4'
+      pipeline: '29'
+      buildVersionToDownload: 'latest'
+      downloadType: 'specific'
+      downloadPath: '/tmp/do_publishing'
+    displayName: 'Get ms-do-pluginapt x64 artifacts'
+
+  - task: ArchiveFiles@2
+    inputs:
+      rootFolderOrFile: '/tmp/do_publishing'
+      includeRootFolder: true
+      archiveType: 'tar'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/artifacts.tar.gz'
+      replaceExistingArchive: true
+
+  - task: GitHubRelease@1
+    inputs:
+      gitHubConnection: 'client2'
+      repositoryName: 'microsoft/do-client'
+      action: 'create'
+      target: '$(Build.SourceVersion)'
+      tagSource: 'userSpecifiedTag'
+      tag: 'ms-do-client-$(release.version)'
+      title: '$(release.title) $(release.version)'
+      changeLogCompareToRelease: 'lastNonDraftReleaseByTag'
+      changeLogCompareToReleaseTag: 'ms-do-client-$(release.previous_version)'
+      changeLogType: 'commitBased'

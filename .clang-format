@@ -1,0 +1,65 @@
+# $ sudo apt-get install clang-format-6.0
+# Integration with tools like VSCode: https://clang.llvm.org/docs/ClangFormat.html
+# Online configuration tool:
+# https://zed0.co.uk/clang-format-configurator/
+
+# This is currently disabled (via DisableFormat) because some of our conventions deviate from msft standard
+# and clang-format-6.0 does not have customizations for these. The latest release (11.0)
+# adds some, like BeforeLambdaBody, but not all and it is not available in a debian release yet.
+# Some deviations:
+#   1) Lambda header is on the same line but the body+braces are on a new line, not indented.
+#   2) Header includes follow the order of do_common.h, <current_cpp's>.h, system/oss, private headers.
+#      This can and should be solved by leaving a space between do_common.h and <current_cpp's>.h.
+#   3) A single space after class data member and before initializer open brace but not in other places.
+# Revisit when there is time and see if we can either customize to our convention or get rid of the deviations.
+# NOTE: Remove SortIncludes when removing DisableFormat. It is required because includes get sorted even with DisableFormat.
+
+---
+BasedOnStyle: Microsoft
+BreakConstructorInitializers: AfterColon
+AccessModifierOffset: '-4'
+AlignAfterOpenBracket: DontAlign
+AlignConsecutiveAssignments: 'false'
+AlignConsecutiveDeclarations: 'false'
+AlignEscapedNewlines: Left
+AllowAllConstructorInitializersOnNextLine: 'false'
+AllowShortBlocksOnASingleLine: 'false'
+AllowShortFunctionsOnASingleLine: InlineOnly
+BraceWrapping:
+  AfterCaseLabel: true
+  AfterClass:      true
+  AfterControlStatement: true
+  AfterEnum:       true
+  AfterFunction:   true
+  AfterNamespace:  true
+  AfterObjCDeclaration: true
+  AfterStruct:     true
+  AfterUnion:      false
+  AfterExternBlock: true
+  BeforeCatch:     true
+  BeforeElse:      true
+  IndentBraces:    false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+BreakBeforeBraces: Custom
+ColumnLimit: '140'
+ConstructorInitializerAllOnOneLineOrOnePerLine: 'true'
+Cpp11BracedListStyle: 'false'
+DisableFormat: 'true'
+FixNamespaceComments: 'true'
+IncludeBlocks: Preserve
+IndentPPDirectives: None
+KeepEmptyLinesAtTheStartOfBlocks: 'false'
+Language: Cpp
+PointerAlignment: Left
+ReflowComments: 'true'
+SortIncludes: 'false'
+SpaceAfterLogicalNot: 'false'
+SpaceBeforeAssignmentOperators: 'true'
+SpaceBeforeCpp11BracedList: 'true'
+Standard: Cpp11
+TabWidth: '4'
+UseTab: Never
+
+...

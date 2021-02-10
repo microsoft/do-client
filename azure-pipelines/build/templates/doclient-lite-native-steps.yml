@@ -1,0 +1,80 @@
+# Template: Steps to build DO Plugins targeting x86-64 architecture.
+# Consume this steps template in one or more jobs by passing in parameter values.
+
+parameters:
+- name: targetOsArch    # example: ubuntu18.04-x64
+  type: string
+- name: config          # debug/release
+  type: string
+- name: skipTests
+  type: boolean
+  default: false
+
+steps:
+# TODO(shishirb) Include --skip-tests build.py option when skipTests is true
+- task: PythonScript@0
+  inputs:
+    scriptSource: 'filePath'
+    scriptPath: 'build/build.py'
+    arguments: '--project agent --config ${{parameters.config}} --package-for DEB --clean'
+  displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
+
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: 'sudo dpkg -i deliveryoptimization-agent*.deb'
+    workingDirectory: '/tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}'
+  displayName: 'Install agent Debian package'
+
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: './client-lite/test/deliveryoptimization-agent-tests --gtest_filter=-NetworkMonitorTests*'
+    workingDirectory: '/tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}/'
+  displayName: 'Run unit tests'
+
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: 'sudo dpkg -r deliveryoptimization-agent'
+    workingDirectory: '/tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}'
+  displayName: 'Remove Debian package'
+
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '/tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}'
+    Contents: |
+      deliveryoptimization-agent*.deb
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+    CleanTargetFolder: true
+  displayName: 'Populate artifacts staging dir'
+
+- task: CopyFiles@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    SourceFolder: '/tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}'
+    Contents: |
+      client-lite/test/deliveryoptimization-agent-tests
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+    CleanTargetFolder: false
+  displayName: 'Populate artifacts staging dir with test binary'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'deliveryoptimization-agent'
+    publishLocation: 'Container'
+
+# TODO(jimson) Azure artifacts are no longer free to publish to, this task will fail as a result, bug to resolve issue here:
+# https://microsoft.visualstudio.com/OS/_workitems/edit/30317524
+#
+#  - task: UniversalPackages@0
+#    inputs:
+#      command: 'publish'
+#      publishDirectory: '$(Build.ArtifactStagingDirectory)'
+#      feedsToUsePublish: 'internal'
+#      vstsFeedPublish: 'a6e08e1f-d299-4d2f-aaa5-db7ddde849e0'
+#      vstsFeedPackagePublish: 'deliveryoptimization-agent'
+#      versionOption: 'custom'
+#      versionPublish: '$(test.package.version)'
+#    displayName: 'Publish artifacts to test feed'

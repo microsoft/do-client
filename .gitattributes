@@ -1,0 +1,14 @@
+# Set the default behavior, in case people don't have core.autocrlf set.
+# Avoid Git line ending issues by forcing everything to use LF
+# except Windows batch files which require CRLF.
+* text=auto eol=lf
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.c text
+*.cpp text
+*.h text
+*.cmake text
+*.sh text
+*.{cmd,[cC][mM][dD]} text eol=crlf
+*.{bat,[bB][aA][tT]} text eol=crlf
