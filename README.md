@@ -49,12 +49,11 @@ After setting up your development machine, navigate back into the project root
 
 We provide an easy-to-use python script for building our client components from the project root, you can inspect build.py for additional build flags  
 On debian-based systems, run this command to build the client and package it as a .deb file
+The build output can be located in your platforms temp directory, for example /tmp/build-deliveryoptimization-agent
 
 ```markdown
 > python3 build/build.py --project agent --package-for deb
 ```
-
-The build output can be located in your platforms tmp directory, for Ubuntu 18.04 systems this will be /tmp/build-deliveryoptimization-agent
 
 Run this command to build the sdk
 
@@ -64,27 +63,18 @@ Run this command to build the sdk
 
 In order to build the plugin, you must build & install the sdk, an easy way to do this is to install the the packages you produced in the previous two steps
 
-Navigate to the build output directory for the agent
+Navigate to the build output directory for the agent and install the agent package
 
 ```markdown
 > cd /tmp/build-deliveryoptimization-agent/linux-debug/
-```
-
-Install the agent package
-
-```markdown
 > sudo apt-get install ./deliveryoptimization-agent*.deb
 ```
 
-Navigate to build output directory for the sdk
+The sdk produces a runtime and development package, in this case you'll want to install both
+Navigate to build output directory for the sdk and install both packages
 
 ```markdown
 > cd /tmp/build-deliveryoptimization-sdk/linux-debug/
-```
-
-The sdk produces a runtime and development package, in this case you'll want to install both
-
-```markdown
 > sudo apt-get install ./libdeliveryoptimization*.deb
 ```
 
@@ -125,7 +115,7 @@ The test executable for the SDK is located the sdk build output as well
 > cd /tmp/build-deliveryoptimization-sdk/linux-debug/sdk-cpp/tests
 ```
 
-The sdk tests expect a running do-agent, you can either manually run the agent executable from its build output or install the agent package as you may have done during building the plugin  
+The sdk tests expect a running do-agent, you can either manually run the agent executable from its build output or install the agent package as you may have done while building the plugin  
 You can run the sdk tests just like the agent tests
 
 ```markdown
