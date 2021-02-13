@@ -48,8 +48,7 @@ After setting up your development machine, navigate back into the project root
 ```
 
 We provide an easy-to-use python script for building our client components from the project root, you can inspect build.py for additional build flags  
-On debian-based systems, run this command to build the client and package it as a .deb file  
-The build output can be located in your platforms temp directory, for example /tmp/build-deliveryoptimization-agent
+On debian-based systems, run this command to build the client and package it as a .deb file
 
 ```markdown
 > python3 build/build.py --project agent --package-for deb
@@ -70,7 +69,7 @@ Navigate to the build output directory for the agent and install the agent packa
 > sudo apt-get install ./deliveryoptimization-agent*.deb
 ```
 
-The sdk produces a runtime and development package, in this case you'll want to install both
+The sdk produces a runtime and development package, in this case you'll want to install both  
 Navigate to build output directory for the sdk and install both packages
 
 ```markdown
