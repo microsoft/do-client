@@ -129,10 +129,10 @@ And filter them similarly
 
 ## Support
 
-This repository is currently in a **Public Preview** state.  
-During this phase, all DO components found in this repo will be supported for 90 days beyond the release date of a new release.  
-At the end of the 90 day window, we will not guarantee support for the previous version.  
-Please plan to migrate to the new DO components within that 90-day window to avoid any disruptions.
+This repository is currently in a **Public Preview** state.  During this phase, all DO components
+found in this repo will be supported for 90 days beyond the release date of a new release.  At
+the end of the 90 day window, we will not guarantee support for the previous version.  Please plan
+to migrate to the new DO components within that 90-day window to avoid any disruptions.
 
 ## Filing a Bug
 
