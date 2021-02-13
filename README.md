@@ -47,16 +47,16 @@ After setting up your development machine, navigate back into the project root
 > cd <project root>
 ```
 
-We provide an easy-to-use python script for building our client components from the project root, you can inspect build.py for additional build flags.  
-On debian-based systems, run this command to build the client and package it as a .deb file.
+We provide an easy-to-use python script for building our client components from the project root, you can inspect build.py for additional build flags  
+On debian-based systems, run this command to build the client and package it as a .deb file
 
 ```markdown
 > python3 build/build.py --project agent --package-for deb
 ```
 
-The build output can be located in your platforms tmp directory, for Ubuntu 18.04 systems this will be /tmp/build-deliveryoptimization-agent.
+The build output can be located in your platforms tmp directory, for Ubuntu 18.04 systems this will be /tmp/build-deliveryoptimization-agent
 
-Run this command to build the sdk.
+Run this command to build the sdk
 
 ```markdown
 > python3 build/build.py --project sdk --package-for deb
