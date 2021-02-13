@@ -108,7 +108,7 @@ You can filter for specific tests as well, reference the GTest documentation for
 > sudo ./deliveryoptimization-agent-tests --gtest_filter=DownloadManagerTests*
 ```
 
-The test executable for the SDK is located the sdk build output as well
+The test executable for the SDK is located in the sdk build output as well
 
 ```markdown
 > cd /tmp/build-deliveryoptimization-sdk/linux-debug/sdk-cpp/tests
