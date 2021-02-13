@@ -48,7 +48,7 @@ After setting up your development machine, navigate back into the project root
 ```
 
 We provide an easy-to-use python script for building our client components from the project root, you can inspect build.py for additional build flags  
-On debian-based systems, run this command to build the client and package it as a .deb file
+On debian-based systems, run this command to build the client and package it as a .deb file  
 The build output can be located in your platforms temp directory, for example /tmp/build-deliveryoptimization-agent
 
 ```markdown
@@ -97,7 +97,7 @@ Unit tests for the agent and sdk are produced as a part of the above build comma
 > cd /tmp/build-deliveryoptimization-agent/linux-debug/client-lite/test
 ```
 
-Our tests utilize the [GTest](https://github.com/google/googletest) unit testing framework, which supports test filtering via command line
+Our tests utilize the [GTest](https://github.com/google/googletest) unit testing framework, which supports test filtering via command line  
 You can run all agent tests by running
 
 ```markdown
@@ -131,8 +131,8 @@ And filter them similarly
 ## Support
 
 This repository is currently in a **Public Preview** state.  During this phase, all DO components
-found in this repo will be supported for 90 days beyond the release date of a new release.  At
-the end of the 90 day window, we will not guarantee support for the previous version.  Please plan
+found in this repo will be supported for 90 days beyond the release date of a new release.  
+At the end of the 90 day window, we will not guarantee support for the previous version.  Please plan
 to migrate to the new DO components within that 90-day window to avoid any disruptions.
 
 ## Filing a Bug
