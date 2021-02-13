@@ -47,16 +47,16 @@ After setting up your development machine, navigate back into the project root
 > cd <project root>
 ```
 
-We provide an easy-to-use python script for building our client components from the project root, you can inspect build.py for additional build flags
-On debian-based systems, run this command to build the client and package it as a .deb file
+We provide an easy-to-use python script for building our client components from the project root, you can inspect build.py for additional build flags.  
+On debian-based systems, run this command to build the client and package it as a .deb file.
 
 ```markdown
 > python3 build/build.py --project agent --package-for deb
 ```
 
-The build output can be located in your platforms tmp directory, for Ubuntu 18.04 systems this will be /tmp/build-deliveryoptimization-agent
+The build output can be located in your platforms tmp directory, for Ubuntu 18.04 systems this will be /tmp/build-deliveryoptimization-agent.
 
-Run this command to build the sdk
+Run this command to build the sdk.
 
 ```markdown
 > python3 build/build.py --project sdk --package-for deb
@@ -100,7 +100,7 @@ At this point, you should have built and packaged all components
 
 ### Testing DO Client components
 
-As guidance, please ensure proper code coverage for project contributions
+As guidance, please ensure proper code coverage for project contributions  
 Unit tests for the agent and sdk are produced as a part of the above build command, you can find them in the build output directory
 
 ```markdown
@@ -125,7 +125,7 @@ The test executable for the SDK is located the sdk build output as well
 > cd /tmp/build-deliveryoptimization-sdk/linux-debug/sdk-cpp/tests
 ```
 
-The sdk tests expect a running do-agent, you can either manually run the agent executable from its build output or install the agent package as you may have done during building the plugin
+The sdk tests expect a running do-agent, you can either manually run the agent executable from its build output or install the agent package as you may have done during building the plugin  
 You can run the sdk tests just like the agent tests
 
 ```markdown
