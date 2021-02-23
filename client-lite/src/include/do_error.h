@@ -3,26 +3,7 @@
 
 //  Definitions of DeliveryOptimization error codes
 //
-//  Error codes are 32 bit values laid out as follows:
-//
-//   3 3 2 2 2 2 2 2 2 2 2 2 1 1 1 1 1 1 1 1 1 1
-//   1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
-//  +---+-+-+-----------------------+-------------------------------+
-//  |Sev|C|R|     Facility          |               Code            |
-//  +---+-+-+-----------------------+-------------------------------+
-//      Sev         - is the severity code
-//          00 - Success
-//          01 - Informational
-//          10 - Warning
-//          11 - Error
-//      C           - is the Customer code flag
-//      R           - is a reserved bit
-//      Facility    - is the facility code
-//      Code        - is the facility's status code
-//
-//  Severity used is 2 (warning). This was chosen to make the codes similar (start with 0x80) to other components like WU.
-//  Facility code used is 208 (0xD0). See winerror.h for FACILITY_DELIVERY_OPTIMIZATION.
-//  Note that the uniqueness of facility codes isn't really enforced in Windows.
+//  DO error codes can be identified by the 0x80D0 prefix.
 //
 //  Error codes used to be separated into zones with a macro identifying each zone.
 //  Currently, we only care about the transient error zone so only this macro is defined.
