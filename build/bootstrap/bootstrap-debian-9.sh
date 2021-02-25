@@ -1,5 +1,8 @@
 #! /bin/bash
 
+# bootstrap scripts will exit immediately if a command exits with a non-zero status
+set -e
+
 echo "Setting up development environment for do-client"
 
 # Various development machine tools 
@@ -12,6 +15,7 @@ cd /tmp
 wget https://cmake.org/files/v3.10/cmake-3.10.2.tar.gz
 tar xzf cmake-3.10.2.tar.gz
 cd /tmp/cmake-3.10.2
+./bootstrap
 make
 make install 
 
