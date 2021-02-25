@@ -1,5 +1,8 @@
 #! /bin/bash
 
+# bootstrap scripts will exit immediately if a command exits with a non-zero status
+set -e
+
 echo "Setting up development environment for do-client"
 
 # Various development machine tools 
