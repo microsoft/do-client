@@ -53,8 +53,8 @@ cd /tmp/
 git clone https://github.com/Microsoft/GSL.git
 cd GSL/
 git checkout tags/v2.0.0
-RUN cmake -DGSL_TEST=OFF .
-RUN make
-RUN make install 
+cmake -DGSL_TEST=OFF .
+make
+make install 
 
 echo "Finished bootstrapping"
