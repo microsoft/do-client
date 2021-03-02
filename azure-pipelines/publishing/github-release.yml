@@ -9,10 +9,8 @@ pr:
 pool: dotestlab
 
 variables:
-  release.title: $(release_name)
   release.version: $(release_version)
-# This variable is used later to generate the changelog
-  release.previous_version: $(previous_release_version)
+  release.previous_version: $(previous_release_version) # Used for changelog
 
 jobs:
 - job: doclient_release
@@ -97,8 +95,8 @@ jobs:
       action: 'create'
       target: '$(Build.SourceVersion)'
       tagSource: 'userSpecifiedTag'
-      tag: 'ms-do-client-$(release.version)'
-      title: '$(release.title) $(release.version)'
+      tag: '$(release.version)'
+      title: '$(release.version)'
       changeLogCompareToRelease: 'lastNonDraftReleaseByTag'
-      changeLogCompareToReleaseTag: 'ms-do-client-$(release.previous_version)'
+      changeLogCompareToReleaseTag: '$(release.previous_version)'
       changeLogType: 'commitBased'
