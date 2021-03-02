@@ -11,7 +11,6 @@ pool: dotestlab
 variables:
   Release.Version: $(release_version)
   Release.PreviousVersion: $(previous_release_version) # Select the previous version, used to generate changelog
-  Release.TargetCommit: $(target_commit) # The commit hash this release binds to
   Release.Title: $(title) # title of the release, following <Release.Version> (YYYY-MM-DD) format i.e. 0.6.0 (2021-03-02)
 
 stages:
@@ -95,7 +94,6 @@ stages:
         repositoryName: 'microsoft/do-client'
         action: 'create'
         assets: '$(Build.ArtifactStagingDirectory)/**/*-release/*'
-        target: '$(Release.TargetCommit)'
         tagSource: 'userSpecifiedTag'
         tag: '$(Release.Version)'
         title: '$(Release.Title)'
