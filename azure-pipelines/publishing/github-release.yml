@@ -87,6 +87,7 @@ jobs:
       gitHubConnection: 'client2'
       repositoryName: 'microsoft/do-client'
       action: 'create'
+      assets: '$(Build.ArtifactStagingDirectory)/*release*'
       target: '$(Release.TargetCommit)'
       tagSource: 'userSpecifiedTag'
       tag: '$(Release.Version)'
