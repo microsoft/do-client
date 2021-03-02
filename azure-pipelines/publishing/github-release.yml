@@ -15,8 +15,7 @@ variables:
   Release.Title: $(title) # title of the release, following <Release.Version> (YYYY-MM-DD) format i.e. 0.6.0 (2021-03-02)
 
 stages:
-- stage: Clean build
-
+- stage: clean_build
   jobs:
   - job: deliveryoptimization_agent
     steps:
