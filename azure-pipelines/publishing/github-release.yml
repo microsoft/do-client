@@ -9,6 +9,7 @@ pr:
 pool: dotestlab
 
 variables:
+  Release.IsPrerelease: ($is_prerelease)
   Release.Version: $(release_version)
   Release.PreviousVersion: $(previous_release_version) # Select the previous version, used to generate changelog
   Release.TargetCommit: $(target_commit) # The commit hash this release binds to
@@ -90,6 +91,7 @@ jobs:
       tagSource: 'userSpecifiedTag'
       tag: '$(Release.Version)'
       title: '$(Release.Version)'
+      isPreRelease: $(Release.IsPrerelease)
       changeLogCompareToRelease: 'lastNonDraftReleaseByTag'
       changeLogCompareToReleaseTag: '$(Release.PreviousVersion)'
       changeLogType: 'commitBased'
