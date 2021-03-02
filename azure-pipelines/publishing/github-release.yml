@@ -22,17 +22,17 @@ jobs:
       targetOsArch: 'ubuntu1804-x64'
       config: release
       skipTests: true 
-  - template: templates/doclient-lite-docker-steps.yml
+  - template: ../build/templates/doclient-lite-docker-steps.yml
     parameters:
       targetOsArch: debian10-arm32
       dockerImageName: 'jimsonmsft/debian10-arm32:latest'
       config: release
-  - template: templates/doclient-lite-docker-steps.yml
+  - template: ../build/templates/doclient-lite-docker-steps.yml
     parameters:
       targetOsArch: debian9-arm32
       dockerImageName: 'jimsonmsft/debian9-arm32:latest'
       config: release
-  - template: templates/doclient-lite-docker-steps.yml
+  - template: ../build/templates/doclient-lite-docker-steps.yml
     parameters:
       targetOsArch: ubuntu1804-arm64
       dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
@@ -40,22 +40,22 @@ jobs:
 
 - job: libdeliveryoptimization
   steps:
-  - template: templates/dosdkcpp-native-steps.yml
+  - template: ../build/templates/dosdkcpp-native-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804-x64'
       config: release
       skipTests: true 
-  - template: templates/dosdkcpp-docker-steps.yml
+  - template: ../build/templates/dosdkcpp-docker-steps.yml
     parameters:
       targetOsArch: debian10-arm32
       dockerImageName: 'jimsonmsft/debian10-arm32:latest'
       config: release
-  - template: templates/dosdkcpp-docker-steps.yml
+  - template: ../build/templates/dosdkcpp-docker-steps.yml
     parameters:
       targetOsArch: debian9-arm32
       dockerImageName: 'jimsonmsft/debian9-arm32:latest'
       config: release
-  - template: templates/dosdkcpp-docker-steps.yml
+  - template: ../build/templates/dosdkcpp-docker-steps.yml
     parameters:
       targetOsArch: ubuntu1804-arm64
       dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
@@ -63,22 +63,22 @@ jobs:
 
 - job: deliveryoptimization_plugin_apt
   steps:
-  - template: templates/dopapt-native-steps.yml
+  - template: ../build/templates/dopapt-native-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804-x64'
       config: release
       skipTests: true 
-  - template: templates/dopapt-docker-steps.yml
+  - template: ../build/templates/dopapt-docker-steps.yml
     parameters:
       targetOsArch: debian10-arm32
       dockerImageName: 'jimsonmsft/debian10-arm32:latest'
       config: release
-  - template: templates/dopapt-docker-steps.yml
+  - template: ../build/templates/dopapt-docker-steps.yml
     parameters:
       targetOsArch: debian9-arm32
       dockerImageName: 'jimsonmsft/debian9-arm32:latest'
       config: release
-  - template: templates/dopapt-docker-steps.yml
+  - template: ../build/templates/dopapt-docker-steps.yml
     parameters:
       targetOsArch: ubuntu1804-arm64
       dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
@@ -86,12 +86,6 @@ jobs:
 
 - job: doclient_release
   steps:
-  - task: DeleteFiles@1
-    inputs:
-      SourceFolder: '$(Build.ArtifactStagingDirectory)'
-      Contents: '**'
-      RemoveSourceFolder: false
-
   - task: GitHubRelease@1
     inputs:
       gitHubConnection: 'client2'
