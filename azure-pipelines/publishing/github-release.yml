@@ -15,6 +15,75 @@ variables:
   Release.Title: $(title) # title of the release, following <Release.Version> (YYYY-MM-DD) format i.e. 0.6.0 (2021-03-02)
 
 jobs:
+- job: deliveryoptimization_agent
+  steps:
+  - template: templates/doclient-lite-native-steps.yml
+    parameters:
+      targetOsArch: 'ubuntu1804-x64'
+      config: release
+      skipTests: true 
+  - template: templates/doclient-lite-docker-steps.yml
+    parameters:
+      targetOsArch: debian10-arm32
+      dockerImageName: 'jimsonmsft/debian10-arm32:latest'
+      config: release
+  - template: templates/doclient-lite-docker-steps.yml
+    parameters:
+      targetOsArch: debian9-arm32
+      dockerImageName: 'jimsonmsft/debian9-arm32:latest'
+      config: release
+  - template: templates/doclient-lite-docker-steps.yml
+    parameters:
+      targetOsArch: ubuntu1804-arm64
+      dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
+      config: release
+
+- job: libdeliveryoptimization
+  steps:
+  - template: templates/dosdkcpp-native-steps.yml
+    parameters:
+      targetOsArch: 'ubuntu1804-x64'
+      config: release
+      skipTests: true 
+  - template: templates/dosdkcpp-docker-steps.yml
+    parameters:
+      targetOsArch: debian10-arm32
+      dockerImageName: 'jimsonmsft/debian10-arm32:latest'
+      config: release
+  - template: templates/dosdkcpp-docker-steps.yml
+    parameters:
+      targetOsArch: debian9-arm32
+      dockerImageName: 'jimsonmsft/debian9-arm32:latest'
+      config: release
+  - template: templates/dosdkcpp-docker-steps.yml
+    parameters:
+      targetOsArch: ubuntu1804-arm64
+      dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
+      config: release
+
+- job: deliveryoptimization_plugin_apt
+  steps:
+  - template: templates/dopapt-native-steps.yml
+    parameters:
+      targetOsArch: 'ubuntu1804-x64'
+      config: release
+      skipTests: true 
+  - template: templates/dopapt-docker-steps.yml
+    parameters:
+      targetOsArch: debian10-arm32
+      dockerImageName: 'jimsonmsft/debian10-arm32:latest'
+      config: release
+  - template: templates/dopapt-docker-steps.yml
+    parameters:
+      targetOsArch: debian9-arm32
+      dockerImageName: 'jimsonmsft/debian9-arm32:latest'
+      config: release
+  - template: templates/dopapt-docker-steps.yml
+    parameters:
+      targetOsArch: ubuntu1804-arm64
+      dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
+      config: release
+
 - job: doclient_release
   steps:
   - task: DeleteFiles@1
@@ -22,66 +91,6 @@ jobs:
       SourceFolder: '$(Build.ArtifactStagingDirectory)'
       Contents: '**'
       RemoveSourceFolder: false
-
-  - task: DownloadBuildArtifacts@0
-    inputs:
-      buildType: 'specific'
-      project: '7cdf52bf-a6f7-436c-b12f-3f063ef389c4'
-      pipeline: '33'
-      buildVersionToDownload: 'latest'
-      downloadType: 'specific'
-      downloadPath: '$(Build.ArtifactStagingDirectory)'
-    displayName: 'Get ms-do-sdk arm artifacts'
-
-  - task: DownloadBuildArtifacts@0
-    inputs:
-      buildType: 'specific'
-      project: '7cdf52bf-a6f7-436c-b12f-3f063ef389c4'
-      pipeline: '26'
-      buildVersionToDownload: 'latest'
-      downloadType: 'specific'
-      downloadPath: '$(Build.ArtifactStagingDirectory)'
-    displayName: 'Get ms-do-sdk x64 artifacts'
-
-  - task: DownloadBuildArtifacts@0
-    inputs:
-      buildType: 'specific'
-      project: '7cdf52bf-a6f7-436c-b12f-3f063ef389c4'
-      pipeline: '25'
-      buildVersionToDownload: 'latest'
-      downloadType: 'specific'
-      downloadPath: '$(Build.ArtifactStagingDirectory)'
-    displayName: 'Get ms-do-agent arm artifacts'
-
-  - task: DownloadBuildArtifacts@0
-    inputs:
-      buildType: 'specific'
-      project: '7cdf52bf-a6f7-436c-b12f-3f063ef389c4'
-      pipeline: '23'
-      buildVersionToDownload: 'latest'
-      downloadType: 'specific'
-      downloadPath: '$(Build.ArtifactStagingDirectory)'
-    displayName: 'Get ms-do-agent x64 artifacts'
-
-  - task: DownloadBuildArtifacts@0
-    inputs:
-      buildType: 'specific'
-      project: '7cdf52bf-a6f7-436c-b12f-3f063ef389c4'
-      pipeline: '31'
-      buildVersionToDownload: 'latest'
-      downloadType: 'specific'
-      downloadPath: '$(Build.ArtifactStagingDirectory)'
-    displayName: 'Get ms-do-pluginapt arm artifacts'
-
-  - task: DownloadBuildArtifacts@0
-    inputs:
-      buildType: 'specific'
-      project: '7cdf52bf-a6f7-436c-b12f-3f063ef389c4'
-      pipeline: '29'
-      buildVersionToDownload: 'latest'
-      downloadType: 'specific'
-      downloadPath: '$(Build.ArtifactStagingDirectory)'
-    displayName: 'Get ms-do-pluginapt x64 artifacts'
 
   - task: GitHubRelease@1
     inputs:
