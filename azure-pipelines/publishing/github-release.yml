@@ -19,7 +19,7 @@ jobs:
   - task: DeleteFiles@1
     inputs:
       SourceFolder: '$(Build.ArtifactStagingDirectory)'
-      Contents: 
+      Contents: '**'
       RemoveSourceFolder: false
 
   - task: DownloadBuildArtifacts@0
