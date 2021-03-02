@@ -28,7 +28,7 @@ jobs:
       pipeline: '33'
       buildVersionToDownload: 'latest'
       downloadType: 'specific'
-      downloadPath: '/tmp/do_publishing'
+      downloadPath: '$(Build.ArtifactStagingDirectory)'
     displayName: 'Get ms-do-sdk arm artifacts'
 
   - task: DownloadBuildArtifacts@0
@@ -38,7 +38,7 @@ jobs:
       pipeline: '26'
       buildVersionToDownload: 'latest'
       downloadType: 'specific'
-      downloadPath: '/tmp/do_publishing'
+      downloadPath: '$(Build.ArtifactStagingDirectory)'
     displayName: 'Get ms-do-sdk x64 artifacts'
 
   - task: DownloadBuildArtifacts@0
@@ -48,7 +48,7 @@ jobs:
       pipeline: '25'
       buildVersionToDownload: 'latest'
       downloadType: 'specific'
-      downloadPath: '/tmp/do_publishing'
+      downloadPath: '$(Build.ArtifactStagingDirectory)'
     displayName: 'Get ms-do-agent arm artifacts'
 
   - task: DownloadBuildArtifacts@0
@@ -58,7 +58,7 @@ jobs:
       pipeline: '23'
       buildVersionToDownload: 'latest'
       downloadType: 'specific'
-      downloadPath: '/tmp/do_publishing'
+      downloadPath: '$(Build.ArtifactStagingDirectory)'
     displayName: 'Get ms-do-agent x64 artifacts'
 
   - task: DownloadBuildArtifacts@0
@@ -68,7 +68,7 @@ jobs:
       pipeline: '31'
       buildVersionToDownload: 'latest'
       downloadType: 'specific'
-      downloadPath: '/tmp/do_publishing'
+      downloadPath: '$(Build.ArtifactStagingDirectory)'
     displayName: 'Get ms-do-pluginapt arm artifacts'
 
   - task: DownloadBuildArtifacts@0
@@ -78,16 +78,8 @@ jobs:
       pipeline: '29'
       buildVersionToDownload: 'latest'
       downloadType: 'specific'
-      downloadPath: '/tmp/do_publishing'
+      downloadPath: '$(Build.ArtifactStagingDirectory)'
     displayName: 'Get ms-do-pluginapt x64 artifacts'
-
-  - task: ArchiveFiles@2
-    inputs:
-      rootFolderOrFile: '/tmp/do_publishing'
-      includeRootFolder: true
-      archiveType: 'tar'
-      archiveFile: '$(Build.ArtifactStagingDirectory)/artifacts.tar.gz'
-      replaceExistingArchive: true
 
   - task: GitHubRelease@1
     inputs:
