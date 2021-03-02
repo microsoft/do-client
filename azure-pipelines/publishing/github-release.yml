@@ -67,7 +67,6 @@ jobs:
     parameters:
       targetOsArch: 'ubuntu1804-x64'
       config: release
-      skipTests: true 
   - template: ../build/templates/dopapt-docker-steps.yml
     parameters:
       targetOsArch: debian10-arm32
