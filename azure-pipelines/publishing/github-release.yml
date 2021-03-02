@@ -92,7 +92,7 @@ jobs:
       tagSource: 'userSpecifiedTag'
       tag: '$(Release.Version)'
       title: '$(Release.Version)'
-      isPreRelease: $(Release.IsPreRelease)
+      isPreRelease: '$(Release.IsPreRelease)'
       changeLogCompareToRelease: 'lastNonDraftReleaseByTag'
       changeLogCompareToReleaseTag: '$(Release.PreviousVersion)'
       changeLogType: 'commitBased'
