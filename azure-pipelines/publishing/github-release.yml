@@ -9,7 +9,6 @@ pr:
 pool: dotestlab
 
 variables:
-  Release.IsPreRelease: ($is_prerelease)
   Release.Version: $(release_version)
   Release.PreviousVersion: $(previous_release_version) # Select the previous version, used to generate changelog
   Release.TargetCommit: $(target_commit) # The commit hash this release binds to
@@ -17,10 +16,11 @@ variables:
 jobs:
 - job: doclient_release
   steps:
-  - task: CmdLine@2
+  - task: DeleteFiles@1
     inputs:
-      script: 'rm -rf /tmp/do_publishing'
-    displayName: 'Clear publishing directory'
+      SourceFolder: '$(Build.ArtifactStagingDirectory)'
+      Contents: 
+      RemoveSourceFolder: false
 
   - task: DownloadBuildArtifacts@0
     inputs:
@@ -92,7 +92,7 @@ jobs:
       tagSource: 'userSpecifiedTag'
       tag: '$(Release.Version)'
       title: '$(Release.Version)'
-      isPreRelease: '$(Release.IsPreRelease)'
+      isPreRelease: true
       changeLogCompareToRelease: 'lastNonDraftReleaseByTag'
       changeLogCompareToReleaseTag: '$(Release.PreviousVersion)'
       changeLogType: 'commitBased'
