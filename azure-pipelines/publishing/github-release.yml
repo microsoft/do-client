@@ -14,88 +14,93 @@ variables:
   Release.TargetCommit: $(target_commit) # The commit hash this release binds to
   Release.Title: $(title) # title of the release, following <Release.Version> (YYYY-MM-DD) format i.e. 0.6.0 (2021-03-02)
 
-jobs:
-- job: deliveryoptimization_agent
-  steps:
-  - template: ../build/templates/doclient-lite-native-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu1804-x64'
-      config: release
-      skipTests: true 
-  - template: ../build/templates/doclient-lite-docker-steps.yml
-    parameters:
-      targetOsArch: debian10-arm32
-      dockerImageName: 'jimsonmsft/debian10-arm32:latest'
-      config: release
-  - template: ../build/templates/doclient-lite-docker-steps.yml
-    parameters:
-      targetOsArch: debian9-arm32
-      dockerImageName: 'jimsonmsft/debian9-arm32:latest'
-      config: release
-  - template: ../build/templates/doclient-lite-docker-steps.yml
-    parameters:
-      targetOsArch: ubuntu1804-arm64
-      dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
-      config: release
+stages:
+- stage: Clean build
 
-- job: libdeliveryoptimization
-  steps:
-  - template: ../build/templates/dosdkcpp-native-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu1804-x64'
-      config: release
-      skipTests: true 
-  - template: ../build/templates/dosdkcpp-docker-steps.yml
-    parameters:
-      targetOsArch: debian10-arm32
-      dockerImageName: 'jimsonmsft/debian10-arm32:latest'
-      config: release
-  - template: ../build/templates/dosdkcpp-docker-steps.yml
-    parameters:
-      targetOsArch: debian9-arm32
-      dockerImageName: 'jimsonmsft/debian9-arm32:latest'
-      config: release
-  - template: ../build/templates/dosdkcpp-docker-steps.yml
-    parameters:
-      targetOsArch: ubuntu1804-arm64
-      dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
-      config: release
+  jobs:
+  - job: deliveryoptimization_agent
+    steps:
+    - template: ../build/templates/doclient-lite-native-steps.yml
+      parameters:
+        targetOsArch: 'ubuntu1804-x64'
+        config: release
+        skipTests: true 
+    - template: ../build/templates/doclient-lite-docker-steps.yml
+      parameters:
+        targetOsArch: debian10-arm32
+        dockerImageName: 'jimsonmsft/debian10-arm32:latest'
+        config: release
+    - template: ../build/templates/doclient-lite-docker-steps.yml
+      parameters:
+        targetOsArch: debian9-arm32
+        dockerImageName: 'jimsonmsft/debian9-arm32:latest'
+        config: release
+    - template: ../build/templates/doclient-lite-docker-steps.yml
+      parameters:
+        targetOsArch: ubuntu1804-arm64
+        dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
+        config: release
 
-- job: deliveryoptimization_plugin_apt
-  steps:
-  - template: ../build/templates/dopapt-native-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu1804-x64'
-      config: release
-  - template: ../build/templates/dopapt-docker-steps.yml
-    parameters:
-      targetOsArch: debian10-arm32
-      dockerImageName: 'jimsonmsft/debian10-arm32:latest'
-      config: release
-  - template: ../build/templates/dopapt-docker-steps.yml
-    parameters:
-      targetOsArch: debian9-arm32
-      dockerImageName: 'jimsonmsft/debian9-arm32:latest'
-      config: release
-  - template: ../build/templates/dopapt-docker-steps.yml
-    parameters:
-      targetOsArch: ubuntu1804-arm64
-      dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
-      config: release
+  - job: libdeliveryoptimization
+    steps:
+    - template: ../build/templates/dosdkcpp-native-steps.yml
+      parameters:
+        targetOsArch: 'ubuntu1804-x64'
+        config: release
+        skipTests: true 
+    - template: ../build/templates/dosdkcpp-docker-steps.yml
+      parameters:
+        targetOsArch: debian10-arm32
+        dockerImageName: 'jimsonmsft/debian10-arm32:latest'
+        config: release
+    - template: ../build/templates/dosdkcpp-docker-steps.yml
+      parameters:
+        targetOsArch: debian9-arm32
+        dockerImageName: 'jimsonmsft/debian9-arm32:latest'
+        config: release
+    - template: ../build/templates/dosdkcpp-docker-steps.yml
+      parameters:
+        targetOsArch: ubuntu1804-arm64
+        dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
+        config: release
 
-- job: doclient_release
-  steps:
-  - task: GitHubRelease@1
-    inputs:
-      gitHubConnection: 'client2'
-      repositoryName: 'microsoft/do-client'
-      action: 'create'
-      assets: '$(Build.ArtifactStagingDirectory)/**/*-release/*'
-      target: '$(Release.TargetCommit)'
-      tagSource: 'userSpecifiedTag'
-      tag: '$(Release.Version)'
-      title: '$(Release.Title)'
-      isPreRelease: true
-      changeLogCompareToRelease: 'lastNonDraftReleaseByTag'
-      changeLogCompareToReleaseTag: '$(Release.PreviousVersion)'
-      changeLogType: 'commitBased'
+  - job: deliveryoptimization_plugin_apt
+    steps:
+    - template: ../build/templates/dopapt-native-steps.yml
+      parameters:
+        targetOsArch: 'ubuntu1804-x64'
+        config: release
+    - template: ../build/templates/dopapt-docker-steps.yml
+      parameters:
+        targetOsArch: debian10-arm32
+        dockerImageName: 'jimsonmsft/debian10-arm32:latest'
+        config: release
+    - template: ../build/templates/dopapt-docker-steps.yml
+      parameters:
+        targetOsArch: debian9-arm32
+        dockerImageName: 'jimsonmsft/debian9-arm32:latest'
+        config: release
+    - template: ../build/templates/dopapt-docker-steps.yml
+      parameters:
+        targetOsArch: ubuntu1804-arm64
+        dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
+        config: release
+
+- stage: release
+  jobs:
+  - job: github_release
+    steps:
+    - task: GitHubRelease@1
+      inputs:
+        gitHubConnection: 'client2'
+        repositoryName: 'microsoft/do-client'
+        action: 'create'
+        assets: '$(Build.ArtifactStagingDirectory)/**/*-release/*'
+        target: '$(Release.TargetCommit)'
+        tagSource: 'userSpecifiedTag'
+        tag: '$(Release.Version)'
+        title: '$(Release.Title)'
+        isPreRelease: true
+        changeLogCompareToRelease: 'lastNonDraftReleaseByTag'
+        changeLogCompareToReleaseTag: '$(Release.PreviousVersion)'
+        changeLogType: 'commitBased'
