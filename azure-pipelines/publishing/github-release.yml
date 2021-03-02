@@ -9,8 +9,9 @@ pr:
 pool: dotestlab
 
 variables:
-  release.version: $(release_version)
-  release.previous_version: $(previous_release_version) # Used for changelog
+  Release.Version: $(release_version)
+  Release.PreviousVersion: $(previous_release_version) # Select the previous version, used to generate changelog
+  Release.TargetCommit: $(target_commit) # The commit hash this release binds to
 
 jobs:
 - job: doclient_release
@@ -93,10 +94,10 @@ jobs:
       gitHubConnection: 'client2'
       repositoryName: 'microsoft/do-client'
       action: 'create'
-      target: '$(Build.SourceVersion)'
+      target: '$(Release.TargetCommit)'
       tagSource: 'userSpecifiedTag'
-      tag: '$(release.version)'
-      title: '$(release.version)'
+      tag: '$(Release.Version)'
+      title: '$(Release.Version)'
       changeLogCompareToRelease: 'lastNonDraftReleaseByTag'
-      changeLogCompareToReleaseTag: '$(release.previous_version)'
+      changeLogCompareToReleaseTag: '$(Release.PreviousVersion)'
       changeLogType: 'commitBased'
