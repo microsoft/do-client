@@ -17,7 +17,7 @@ variables:
 jobs:
 - job: deliveryoptimization_agent
   steps:
-  - template: $(Build.SourcesDirectory)/azure-pipelines/build/templates/doclient-lite-native-steps.yml
+  - template: ../build/templates/doclient-lite-native-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804-x64'
       config: release
