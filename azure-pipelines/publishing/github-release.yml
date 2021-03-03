@@ -94,7 +94,7 @@ stages:
   #       config: release
 
 - stage: release
-  condition: and(succeeded(), eq('$(parameters.BuildOnly)'), false)
+  condition: and(succeeded(), eq('$(parameters.BuildOnly)', false))
   jobs:
   - job: github_release
     steps:
