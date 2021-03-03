@@ -17,7 +17,7 @@ apt-get install -y libboost-all-dev libgtest-dev libproxy-dev libmsgsl-dev libss
 # libssl-dev also required but installed above because plugin uses libssl-dev directly
 apt-get install -y zlib1g-dev
 
-apt install python-pip
+apt install -y python-pip
 pip install cpplint
 # Installs to a non-standard location so add to PATH manually
 export PATH=$PATH:~/.local/bin
