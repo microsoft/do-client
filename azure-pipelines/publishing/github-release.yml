@@ -13,6 +13,15 @@ variables:
   Release.PreviousVersion: $(previous_release_version) # Select the previous version, used to generate changelog
   Release.Title: $(title) # title of the release, following <Release.Version> (YYYY-MM-DD) format i.e. 0.6.0 (2021-03-02)
 
+parameters:
+  - name: build_only
+    displayName: Build Only
+    type: boolean
+    default: false 
+    values: 
+    - true
+    - false
+
 stages:
 - stage: clean_build
   jobs:
@@ -88,12 +97,16 @@ stages:
   jobs:
   - job: github_release
     steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'current'
+        targetPath: '$(Build.ArtifactStagingDirectory)'
     - task: GitHubRelease@1
       inputs:
         gitHubConnection: 'client2'
         repositoryName: 'microsoft/do-client'
         action: 'create'
-        assets: '$(Build.ArtifactStagingDirectory)/**/*-release/*'
+        assets: '$(Build.ArtifactStagingDirectory)/**/*-release/*.deb'
         tagSource: 'userSpecifiedTag'
         tag: '$(Release.Version)'
         title: '$(Release.Title)'
