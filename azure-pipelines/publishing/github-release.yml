@@ -14,13 +14,13 @@ variables:
   Release.Title: $(title) # title of the release, following <Release.Version> (YYYY-MM-DD) format i.e. 0.6.0 (2021-03-02)
 
 parameters:
-  - name: BuildOnly
+  - name: SkipPublishing
     displayName: Build only (skip release stage)
     type: boolean
-    default: False
+    default: false
     values: 
-    - True
-    - False
+    - true
+    - false
 
 stages:
 - stage: clean_build
@@ -94,7 +94,7 @@ stages:
   #       config: release
 
 - stage: release
-  condition: and(succeeded(), eq('$(parameters.BuildOnly)', False))
+  condition: and(succeeded(), eq('${{parameters.SkipPublishing}}', false))
   jobs:
   - job: github_release
     steps:
