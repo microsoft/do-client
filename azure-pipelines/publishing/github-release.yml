@@ -17,10 +17,10 @@ parameters:
   - name: BuildOnly
     displayName: Build only (skip release stage)
     type: boolean
-    default: false
+    default: False
     values: 
-    - true
-    - false
+    - True
+    - False
 
 stages:
 - stage: clean_build
@@ -94,7 +94,7 @@ stages:
   #       config: release
 
 - stage: release
-  condition: and(succeeded(), eq('$(parameters.BuildOnly)', false))
+  condition: and(succeeded(), eq('$(parameters.BuildOnly)', False))
   jobs:
   - job: github_release
     steps:
