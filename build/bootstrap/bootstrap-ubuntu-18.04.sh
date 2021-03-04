@@ -17,11 +17,6 @@ apt-get install -y libboost-all-dev libgtest-dev libproxy-dev libmsgsl-dev libss
 # libssl-dev also required but installed above because plugin uses libssl-dev directly
 apt-get install -y zlib1g-dev
 
-apt install -y python-pip
-pip install cpplint
-# Installs to a non-standard location so add to PATH manually
-export PATH=$PATH:~/.local/bin
-
 # Cpprestsdk 2.10.2 is the latest publicly available version on Ubuntu 18.04
 # Build and install v2.10.16 as it's the earliest version which supports url-redirection
 mkdir /tmp/cpprestsdk
@@ -42,9 +37,14 @@ cmake /usr/src/gtest
 make
 make install
 
-if [[ "$1" == "--no-docker" ]]; then
-  echo "Skipping docker install"
+if [[ "$1" == "--no-tools" ]]; then
+  echo "Skipping tools install"
 else
+  apt install -y python-pip
+  pip install cpplint
+  # Installs to a non-standard location so add to PATH manually
+  export PATH=$PATH:~/.local/bin
+
   # Install docker to enable building cross-arch for arm
   # Instructions located at: https://docs.docker.com/engine/install/ubuntu/
   curl -fsSL https://get.docker.com -o get-docker.sh
