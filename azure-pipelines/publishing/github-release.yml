@@ -102,12 +102,13 @@ stages:
           script: |
             echo Release title: $(Release.Title)
             echo Release tag: $(Release.Version)
-            echo Tag used to generate changelog $(Release.PreviousVersion)
+            echo Tag used to generate changelog: $(Release.PreviousVersion)
+            echo directory to be published: $(Build.ArtifactStagingDirectory)
             echo Content to be published:
-            ls -l $(Build.ArtifactStagingDirectory)
+            echo ls -l $(Build.ArtifactStagingDirectory)
 
   - job: github_release
-    condition: eq('${{parameters.SkipPublishing}}', false)
+    condition: eq(${{parameters.SkipPublishing}}, false)
     steps:
     - task: DownloadPipelineArtifact@2
       inputs:
