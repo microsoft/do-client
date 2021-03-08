@@ -105,7 +105,7 @@ stages:
             echo Tag used to generate changelog: $(Release.PreviousVersion)
             echo directory to be published: $(Build.ArtifactStagingDirectory)
             echo Content to be published:
-            echo ls -l $(Build.ArtifactStagingDirectory)
+            ls -l $(Build.ArtifactStagingDirectory)
 
   - job: github_release
     condition: eq(${{parameters.SkipPublishing}}, false)
