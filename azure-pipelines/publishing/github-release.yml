@@ -95,18 +95,6 @@ stages:
 - stage: release
   condition: succeeded()
   jobs:
-  - job: release_info
-    steps:
-      - task: CmdLine@2
-        inputs:
-          script: |
-            echo Release title: $(Release.Title)
-            echo Release tag: $(Release.Version)
-            echo Tag used to generate changelog: $(Release.PreviousVersion)
-            echo directory to be published: $(Build.ArtifactStagingDirectory)
-            echo Content to be published:
-            ls -l $(Build.ArtifactStagingDirectory)
-
   - job: github_release
     condition: eq(${{parameters.SkipPublishing}}, false)
     steps:
@@ -114,7 +102,17 @@ stages:
       inputs:
         buildType: 'current'
         targetPath: '$(Build.ArtifactStagingDirectory)'
+    - task: CmdLine@2
+      inputs:
+        script: |
+          echo Release title: $(Release.Title)
+          echo Release tag: $(Release.Version)
+          echo Tag used to generate changelog: $(Release.PreviousVersion)
+          echo directory to be published: $(Build.ArtifactStagingDirectory)
+          echo Content to be published:
+          ls -l $(Build.ArtifactStagingDirectory)
     - task: GitHubRelease@1
+      condition: eq(${{parameters.SkipPublishing}}, false)
       inputs:
         gitHubConnection: 'client2'
         repositoryName: 'microsoft/do-client'
