@@ -17,7 +17,6 @@ parameters:
   - name: SkipPublishing
     displayName: Build only (skip release stage)
     type: boolean
-    default: false
     values: 
     - true
     - false
