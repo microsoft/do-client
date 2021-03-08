@@ -15,7 +15,7 @@ variables:
 
 parameters:
   - name: SkipPublishing
-    displayName: Build only (skip release stage)
+    displayName: Skip publishing step
     type: boolean
     values: 
     - true
