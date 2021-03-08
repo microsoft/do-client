@@ -92,20 +92,6 @@ stages:
   #       dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
   #       config: release
 
-- stage:  release_info
-  condition: succeeded()
-  jobs:
-  - job: release_info
-    steps:
-      - task: CmdLine@2
-        inputs:
-          script: |
-            echo Release Title: $(Release.Title)
-            echo Release Tag: $(Release.Version)
-            echo Changelog generated from previous tag: $(Release.PreviousVersion)
-            echo Content to be published:
-            ls -l $(Build.ArtifactStagingDirectory)
-
 - stage: release
   condition: succeeded()
   jobs:
@@ -114,9 +100,9 @@ stages:
       - task: CmdLine@2
         inputs:
           script: |
-            echo Release Title: $(Release.Title)
-            echo Release Tag: $(Release.Version)
-            echo Changelog generated from previous tag: $(Release.PreviousVersion)
+            echo Release title: $(Release.Title)
+            echo Release tag: $(Release.Version)
+            echo Tag used to generate changelog $(Release.PreviousVersion)
             echo Content to be published:
             ls -l $(Build.ArtifactStagingDirectory)
 
