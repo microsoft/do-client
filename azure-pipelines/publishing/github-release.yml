@@ -93,7 +93,7 @@ stages:
   #       config: release
 
 - stage:  release_info
-  condition: and(succeeded())
+  condition: succeeded()
   jobs:
   - job: release_info
     steps:
