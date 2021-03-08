@@ -108,9 +108,10 @@ stages:
           echo Release title: $(Release.Title)
           echo Release tag: $(Release.Version)
           echo Tag used to generate changelog: $(Release.PreviousVersion)
-          echo directory to be published: $(Build.ArtifactStagingDirectory)
+          echo Directory to be published: $(Build.ArtifactStagingDirectory)
           echo Content to be published:
           ls -l $(Build.ArtifactStagingDirectory)
+      displayName: Release Information
     - task: GitHubRelease@1
       condition: eq(${{parameters.SkipPublishing}}, false)
       inputs:
