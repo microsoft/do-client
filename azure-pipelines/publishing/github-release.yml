@@ -31,66 +31,66 @@ stages:
         targetOsArch: 'ubuntu1804-x64'
         config: release
         skipTests: true 
-  #   - template: ../build/templates/doclient-lite-docker-steps.yml
-  #     parameters:
-  #       targetOsArch: debian10-arm32
-  #       dockerImageName: 'jimsonmsft/debian10-arm32:latest'
-  #       config: release
-  #   - template: ../build/templates/doclient-lite-docker-steps.yml
-  #     parameters:
-  #       targetOsArch: debian9-arm32
-  #       dockerImageName: 'jimsonmsft/debian9-arm32:latest'
-  #       config: release
-  #   - template: ../build/templates/doclient-lite-docker-steps.yml
-  #     parameters:
-  #       targetOsArch: ubuntu1804-arm64
-  #       dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
-  #       config: release
+    - template: ../build/templates/doclient-lite-docker-steps.yml
+      parameters:
+        targetOsArch: debian10-arm32
+        dockerImageName: 'jimsonmsft/debian10-arm32:latest'
+        config: release
+    - template: ../build/templates/doclient-lite-docker-steps.yml
+      parameters:
+        targetOsArch: debian9-arm32
+        dockerImageName: 'jimsonmsft/debian9-arm32:latest'
+        config: release
+    - template: ../build/templates/doclient-lite-docker-steps.yml
+      parameters:
+        targetOsArch: ubuntu1804-arm64
+        dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
+        config: release
 
-  # - job: libdeliveryoptimization
-  #   steps:
-  #   - template: ../build/templates/dosdkcpp-native-steps.yml
-  #     parameters:
-  #       targetOsArch: 'ubuntu1804-x64'
-  #       config: release
-  #       skipTests: true 
-  #   - template: ../build/templates/dosdkcpp-docker-steps.yml
-  #     parameters:
-  #       targetOsArch: debian10-arm32
-  #       dockerImageName: 'jimsonmsft/debian10-arm32:latest'
-  #       config: release
-  #   - template: ../build/templates/dosdkcpp-docker-steps.yml
-  #     parameters:
-  #       targetOsArch: debian9-arm32
-  #       dockerImageName: 'jimsonmsft/debian9-arm32:latest'
-  #       config: release
-  #   - template: ../build/templates/dosdkcpp-docker-steps.yml
-  #     parameters:
-  #       targetOsArch: ubuntu1804-arm64
-  #       dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
-  #       config: release
+  - job: libdeliveryoptimization
+    steps:
+    - template: ../build/templates/dosdkcpp-native-steps.yml
+      parameters:
+        targetOsArch: 'ubuntu1804-x64'
+        config: release
+        skipTests: true 
+    - template: ../build/templates/dosdkcpp-docker-steps.yml
+      parameters:
+        targetOsArch: debian10-arm32
+        dockerImageName: 'jimsonmsft/debian10-arm32:latest'
+        config: release
+    - template: ../build/templates/dosdkcpp-docker-steps.yml
+      parameters:
+        targetOsArch: debian9-arm32
+        dockerImageName: 'jimsonmsft/debian9-arm32:latest'
+        config: release
+    - template: ../build/templates/dosdkcpp-docker-steps.yml
+      parameters:
+        targetOsArch: ubuntu1804-arm64
+        dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
+        config: release
 
-  # - job: deliveryoptimization_plugin_apt
-  #   steps:
-  #   - template: ../build/templates/dopapt-native-steps.yml
-  #     parameters:
-  #       targetOsArch: 'ubuntu1804-x64'
-  #       config: release
-  #   - template: ../build/templates/dopapt-docker-steps.yml
-  #     parameters:
-  #       targetOsArch: debian10-arm32
-  #       dockerImageName: 'jimsonmsft/debian10-arm32:latest'
-  #       config: release
-  #   - template: ../build/templates/dopapt-docker-steps.yml
-  #     parameters:
-  #       targetOsArch: debian9-arm32
-  #       dockerImageName: 'jimsonmsft/debian9-arm32:latest'
-  #       config: release
-  #   - template: ../build/templates/dopapt-docker-steps.yml
-  #     parameters:
-  #       targetOsArch: ubuntu1804-arm64
-  #       dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
-  #       config: release
+  - job: deliveryoptimization_plugin_apt
+    steps:
+    - template: ../build/templates/dopapt-native-steps.yml
+      parameters:
+        targetOsArch: 'ubuntu1804-x64'
+        config: release
+    - template: ../build/templates/dopapt-docker-steps.yml
+      parameters:
+        targetOsArch: debian10-arm32
+        dockerImageName: 'jimsonmsft/debian10-arm32:latest'
+        config: release
+    - template: ../build/templates/dopapt-docker-steps.yml
+      parameters:
+        targetOsArch: debian9-arm32
+        dockerImageName: 'jimsonmsft/debian9-arm32:latest'
+        config: release
+    - template: ../build/templates/dopapt-docker-steps.yml
+      parameters:
+        targetOsArch: ubuntu1804-arm64
+        dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
+        config: release
 
 - stage: release
   condition: succeeded()
