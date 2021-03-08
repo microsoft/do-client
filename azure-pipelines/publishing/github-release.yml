@@ -107,7 +107,7 @@ stages:
             ls -l $(Build.ArtifactStagingDirectory)
 
 - stage: release
-  condition: and(succeeded(), eq('${{parameters.SkipPublishing}}', false))
+  condition: succeeded()
   jobs:
   - job: release_info
     steps:
@@ -121,6 +121,7 @@ stages:
             ls -l $(Build.ArtifactStagingDirectory)
 
   - job: github_release
+    condition: eq('${{parameters.SkipPublishing}}', false)
     steps:
     - task: DownloadPipelineArtifact@2
       inputs:
