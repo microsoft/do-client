@@ -92,10 +92,10 @@ stages:
   #       dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
   #       config: release
 
-- stage: dry-run
+- stage: dry_run
   condition: and(succeeded(), eq('${{parameters.SkipPublishing}}', true))
   jobs:
-  - job: dry-run
+  - job: display_dry_run
     steps:
       - task: CmdLine@2
         inputs:
