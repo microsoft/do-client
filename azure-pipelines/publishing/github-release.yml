@@ -109,6 +109,17 @@ stages:
 - stage: release
   condition: and(succeeded(), eq('${{parameters.SkipPublishing}}', false))
   jobs:
+  - job: release_info
+    steps:
+      - task: CmdLine@2
+        inputs:
+          script: |
+            echo Release Title: $(Release.Title)
+            echo Release Tag: $(Release.Version)
+            echo Changelog generated from previous tag: $(Release.PreviousVersion)
+            echo Content to be published:
+            ls -l $(Build.ArtifactStagingDirectory)
+
   - job: github_release
     steps:
     - task: DownloadPipelineArtifact@2
