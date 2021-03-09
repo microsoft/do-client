@@ -98,10 +98,12 @@ stages:
   - job: github_release
     condition: eq(${{parameters.SkipPublishing}}, false)
     steps:
-    - task: DownloadPipelineArtifact@2
+    - task: DownloadBuildArtifacts@0
       inputs:
         buildType: 'current'
-        targetPath: '$(Build.ArtifactStagingDirectory)'
+        downloadType: 'specific'
+        downloadPath: '$(Build.ArtifactStagingDirectory)'
+
     - task: CmdLine@2
       inputs:
         script: |
