@@ -114,7 +114,6 @@ stages:
   condition: succeeded()
   jobs:
   - job: github_release
-    condition: eq(${{parameters.SkipPublishing}}, false)
     steps:
     - task: DownloadBuildArtifacts@0
       inputs:
