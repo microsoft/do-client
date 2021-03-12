@@ -24,7 +24,6 @@ public:
         }
         catch (...)
         {
-            LOG_CAUGHT_EXCEPTION();
         }
         return value;
     }
