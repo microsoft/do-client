@@ -31,26 +31,30 @@ public:
         // Do init work like registering signal control handler
         signal(SIGINT, _SignalHandler);
         signal(SIGTERM, _SignalHandler);
+        signal(SIGHUP, _SignalHandler);
     }
 
-    void WaitForShutdown(const std::function<bool()>& fnIsIdle)
+    void WaitForShutdown(const std::function<void()>& fnRefreshConfigs)
     {
         constexpr auto idleTimeout = 60s;
         while (true)
         {
+            /* For now, idle-shutdown mechanism is not applicable when running as a service.
+            The service will be started on boot and will be restarted automatically on failure.
+            SDK can assume docs is running and thus simplifies code for private preview. */
             if (_shutdownEvent.Wait(idleTimeout))
             {
                 break;
+            }
+            if (_refreshEvent.IsSignaled())
+            {
+                fnRefreshConfigs();
+                _refreshEvent.ResetEvent();
             }
 
             // Use this opportunity to flush logs periodically
             TraceConsumer::getInstance().Flush();
 
-            if (fnIsIdle())
-            {
-                DoLogInfo("Received idle notification. Initiating shutdown.");
-                break;
-            }
         }
     }
 
@@ -62,12 +66,19 @@ private:
             DoLogInfo("Received signal %d. Initiating shutdown.", signalNumber);
             _shutdownEvent.SetEvent();
         }
+        if (signalNumber == SIGHUP)
+        {
+            DoLogInfo("Received signal %d to reload configurations.", signalNumber);
+            _refreshEvent.SetEvent();
+        }
     }
 
+    static ManualResetEvent _refreshEvent;
     static ManualResetEvent _shutdownEvent;
 };
 
 ManualResetEvent ProcessController::_shutdownEvent;
+ManualResetEvent ProcessController::_refreshEvent;
 
 HRESULT Run() try
 {
@@ -93,10 +104,7 @@ HRESULT Run() try
     ProcessController procController;
     procController.WaitForShutdown([&downloadManager]()
     {
-        // For now, idle-shutdown mechanism is not applicable when running as a service.
-        // The service will be started on boot and will be restarted automatically on failure.
-        // SDK can assume docs is running and thus simplifies code for private preview.
-        return false;
+        downloadManager->RefreshConfigs();
     });
 
     DoLogInfo("Exiting...");

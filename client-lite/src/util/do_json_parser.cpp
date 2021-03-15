@@ -7,14 +7,25 @@
 std::chrono::seconds JsonParser::RefreshInterval = std::chrono::seconds(60);
 
 // Stores file path provided. Loads from the file later when a value is queried for.
-JsonParser::JsonParser(const std::string& jsonFilePath) :
+JsonParser::JsonParser(const std::string& jsonFilePath, bool alwaysCreateFile) :
     _jsonFilePath(jsonFilePath)
 {
+    if (!boost::filesystem::exists(_jsonFilePath) && alwaysCreateFile)
+    {
+        DoLogInfo("json file not found at %s, creating file", _jsonFilePath.data());
+        boost::property_tree::ptree json;
+        boost::property_tree::write_json(_jsonFilePath, json);
+    }
 }
 
-void JsonParser::_TryRefresh()
+void JsonParser::Refresh()
 {
-    if (std::chrono::steady_clock::now() < _nextRefreshTime)
+    _TryRefresh(true);
+}
+
+void JsonParser::_TryRefresh(bool force)
+{
+    if (std::chrono::steady_clock::now() < _nextRefreshTime && !force)
     {
         return;
     }

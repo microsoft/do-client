@@ -12,10 +12,16 @@ ConfigManager::ConfigManager() :
 
 // Used by unit tests to override config paths
 ConfigManager::ConfigManager(const std::string& adminConfigPath, const std::string& sdkConfigPath) :
-    _adminConfigs(adminConfigPath),
+    _adminConfigs(adminConfigPath, true),
     _sdkConfigs(sdkConfigPath)
 {
 }
+
+void ConfigManager::RefreshAdminConfigs()
+{
+    _adminConfigs.Refresh();
+}
+
 
 std::chrono::seconds ConfigManager::CacheHostFallbackDelay()
 {
