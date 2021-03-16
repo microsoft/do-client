@@ -16,7 +16,6 @@ namespace msdoutil = microsoft::deliveryoptimization::util::details;
 
 #include "config_manager.h"
 #include "download_manager.h"
-#include "do_noncopyable.h"
 #include "proc_launch_helper.h"
 #include "rest_http_controller.h"
 #include "rest_port_advertiser.h"
@@ -24,7 +23,7 @@ namespace msdoutil = microsoft::deliveryoptimization::util::details;
 
 using namespace std::chrono_literals; // NOLINT(build/namespaces) how else should we use chrono literals?
 
-class ProcessController : DONonCopyable
+class ProcessController
 {
 public:
     ProcessController(std::function<void()>& fnRefreshConfigs)
