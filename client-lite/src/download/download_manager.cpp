@@ -1,6 +1,7 @@
 #include "do_common.h"
 #include "download_manager.h"
 
+#include "config_manager.h"
 #include "do_error.h"
 #include "download.h"
 
@@ -108,12 +109,12 @@ bool DownloadManager::IsIdle() const
     return !_fRunning;
 }
 
-void DownloadManager::RefreshConfigs() const
+void DownloadManager::RefreshAdminConfigs() const
 {
-    _taskThread.SchedBlock([&]()
+    _taskThread.SchedImmediate([&]()
         {
             _config.RefreshAdminConfigs();
-        }, true);
+        }, this);
 }
 
 std::shared_ptr<Download> DownloadManager::_GetDownload(const std::string& downloadId) const

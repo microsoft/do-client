@@ -10,11 +10,14 @@ std::chrono::seconds JsonParser::RefreshInterval = std::chrono::seconds(60);
 JsonParser::JsonParser(const std::string& jsonFilePath, bool alwaysCreateFile) :
     _jsonFilePath(jsonFilePath)
 {
-    if (!boost::filesystem::exists(_jsonFilePath) && alwaysCreateFile)
+    if (alwaysCreateFile)
     {
-        DoLogInfo("json file not found at %s, creating file", _jsonFilePath.data());
-        boost::property_tree::ptree json;
-        boost::property_tree::write_json(_jsonFilePath, json);
+        if (!(boost::filesystem::exists(_jsonFilePath)))
+        {
+            DoLogInfo("json file not found at %s, creating file", _jsonFilePath.data());
+            boost::property_tree::ptree json;
+            boost::property_tree::write_json(_jsonFilePath, json);
+        }
     }
 }
 
@@ -25,9 +28,12 @@ void JsonParser::Refresh()
 
 void JsonParser::_TryRefresh(bool force)
 {
-    if (std::chrono::steady_clock::now() < _nextRefreshTime && !force)
+    if (!force)
     {
-        return;
+        if (std::chrono::steady_clock::now() < _nextRefreshTime)
+        {
+            return;
+        }
     }
 
     if (boost::filesystem::exists(_jsonFilePath))

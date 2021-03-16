@@ -3,7 +3,8 @@
 #include <chrono>
 #include <unordered_map>
 #include "ban_list.h"
-#include "config_manager.h"
+
+class ConfigManager;
 
 class MCCManager
 {

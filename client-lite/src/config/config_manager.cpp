@@ -22,7 +22,6 @@ void ConfigManager::RefreshAdminConfigs()
     _adminConfigs.Refresh();
 }
 
-
 std::chrono::seconds ConfigManager::CacheHostFallbackDelay()
 {
     std::chrono::seconds returnValue = g_cacheHostFallbackDelayDefault;
