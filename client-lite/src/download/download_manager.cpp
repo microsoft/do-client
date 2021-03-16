@@ -1,6 +1,7 @@
 #include "do_common.h"
 #include "download_manager.h"
 
+#include "config_manager.h"
 #include "do_error.h"
 #include "download.h"
 
@@ -102,10 +103,18 @@ DownloadStatus DownloadManager::GetDownloadStatus(const std::string& downloadId)
 bool DownloadManager::IsIdle() const
 {
     // Reset _fRunning if we are idle to disallow new downloads.
-    // This handles the race between shutdown and new download request coming in.
+    // This handles the race between shutdown or policy refresh and new download request coming in.
     std::unique_lock<std::shared_timed_mutex> lock(_downloadsMtx);
     _fRunning = !_downloads.empty();
     return !_fRunning;
+}
+
+void DownloadManager::RefreshAdminConfigs() const
+{
+    _taskThread.SchedImmediate([this]()
+        {
+            _config.RefreshAdminConfigs();
+        }, this);
 }
 
 std::shared_ptr<Download> DownloadManager::_GetDownload(const std::string& downloadId) const

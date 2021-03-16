@@ -11,7 +11,9 @@ class JsonParser
 public:
     static std::chrono::seconds RefreshInterval;
 
-    JsonParser(const std::string& jsonFilePath);
+    JsonParser(const std::string& jsonFilePath, bool alwaysCreateFile = false);
+
+    void Refresh();
 
     template<typename T>
     boost::optional<T> Get(const std::string& key)
@@ -29,7 +31,7 @@ public:
     }
 
 private:
-    void _TryRefresh();
+    void _TryRefresh(bool force = false);
 
     const std::string _jsonFilePath;
     boost::property_tree::ptree _tree;

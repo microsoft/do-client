@@ -26,11 +26,14 @@ using namespace std::chrono_literals; // NOLINT(build/namespaces) how else shoul
 class ProcessController
 {
 public:
-    ProcessController()
+    ProcessController(std::function<void()>&& fnRefreshConfigs)
     {
+        _sighupHandler = std::move(fnRefreshConfigs);
+
         // Do init work like registering signal control handler
         signal(SIGINT, _SignalHandler);
         signal(SIGTERM, _SignalHandler);
+        signal(SIGHUP, _SignalHandler);
     }
 
     void WaitForShutdown(const std::function<bool()>& fnIsIdle)
@@ -38,6 +41,7 @@ public:
         constexpr auto idleTimeout = 60s;
         while (true)
         {
+
             if (_shutdownEvent.Wait(idleTimeout))
             {
                 break;
@@ -51,22 +55,32 @@ public:
                 DoLogInfo("Received idle notification. Initiating shutdown.");
                 break;
             }
+
         }
     }
 
 private:
+
     static void _SignalHandler(int signalNumber)
     {
         if ((signalNumber == SIGINT) || (signalNumber == SIGTERM))
         {
-            DoLogInfo("Received signal %d. Initiating shutdown.", signalNumber);
+            DoLogInfo("Received signal (%d). Initiating shutdown.", signalNumber);
             _shutdownEvent.SetEvent();
         }
+        else if (signalNumber == SIGHUP)
+        {
+            DoLogInfo("Received signal (%d). Reloading configurations.", signalNumber);
+            _sighupHandler();
+        }
     }
+
+    static std::function<void()> _sighupHandler;
 
     static ManualResetEvent _shutdownEvent;
 };
 
+std::function<void()> ProcessController::_sighupHandler;
 ManualResetEvent ProcessController::_shutdownEvent;
 
 HRESULT Run() try
@@ -90,7 +104,10 @@ HRESULT Run() try
 
     DoLogInfo("Started, %s", msdoutil::ComponentVersion().c_str());
 
-    ProcessController procController;
+    ProcessController procController([&downloadManager]()
+    {
+        downloadManager->RefreshAdminConfigs();
+    });
     procController.WaitForShutdown([&downloadManager]()
     {
         // For now, idle-shutdown mechanism is not applicable when running as a service.

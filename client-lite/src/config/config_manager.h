@@ -8,6 +8,8 @@ public:
     ConfigManager();
     ConfigManager(const std::string& adminConfigPath, const std::string& sdkConfigPath);
 
+    void RefreshAdminConfigs();
+
     std::chrono::seconds CacheHostFallbackDelay();
     std::string CacheHostServer();
     std::string IoTConnectionString();

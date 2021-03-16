@@ -27,6 +27,7 @@ public:
     DownloadStatus GetDownloadStatus(const std::string& downloadId) const;
 
     bool IsIdle() const;
+    void RefreshAdminConfigs() const;
 
 private:
     mutable TaskThread _taskThread;
