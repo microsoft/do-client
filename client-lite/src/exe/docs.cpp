@@ -16,6 +16,7 @@ namespace msdoutil = microsoft::deliveryoptimization::util::details;
 
 #include "config_manager.h"
 #include "download_manager.h"
+#include "do_noncopyable.h"
 #include "proc_launch_helper.h"
 #include "rest_http_controller.h"
 #include "rest_port_advertiser.h"
@@ -23,70 +24,86 @@ namespace msdoutil = microsoft::deliveryoptimization::util::details;
 
 using namespace std::chrono_literals; // NOLINT(build/namespaces) how else should we use chrono literals?
 
-class ProcessController
+class ProcessController : DONonCopyable
 {
 public:
     ProcessController()
     {
-        // Do init work like registering signal control handler
-        signal(SIGINT, _SignalHandler);
-        signal(SIGTERM, _SignalHandler);
-        signal(SIGHUP, _SignalHandler);
     }
 
-    void RegisterSignalHandler(const std::function<void()>& fnHandler, int signal)
+    void SetSignalHandler(const std::function<void()>& fnHandler, int signalNumber)
     {
-        if (signal == SIGHUP)
+        if (signalNumber == SIGINT)
+        {
+            _sigintHandler = std::move(fnHandler);
+        }
+        else if (signalNumber == SIGTERM)
+        {
+            _sigtermHandler = std::move(fnHandler);
+        }
+        else if (signalNumber == SIGHUP)
         {
             _sighupHandler = std::move(fnHandler);
         }
     }
 
-    void WaitForShutdown(const std::function<bool()>& fnIsIdle)
+    void ShutDown()
     {
+        DoLogInfo("Initiating shutdown");
+        _shutdownEvent.SetEvent();
+    }
+
+    void Run()
+    {
+        _RegisterHandlers();
+        
         constexpr auto idleTimeout = 60s;
         while (true)
         {
-            /* For now, idle-shutdown mechanism is not applicable when running as a service.
-            The service will be started on boot and will be restarted automatically on failure.
-            SDK can assume docs is running and thus simplifies code for private preview. */
             if (_shutdownEvent.Wait(idleTimeout))
             {
                 break;
             }
-
+            
             // Use this opportunity to flush logs periodically
             TraceConsumer::getInstance().Flush();
-
-            if (fnIsIdle())
-            {
-                DoLogInfo("Received idle notification. Initiating shutdown.");
-                break;
-            }
-
         }
     }
 
 private:
+    void _RegisterHandlers()
+    {
+        signal(SIGINT, _SignalHandler);
+        signal(SIGTERM, _SignalHandler);
+        signal(SIGHUP, _SignalHandler);
+    }
+
     static void _SignalHandler(int signalNumber)
     {
-        if ((signalNumber == SIGINT) || (signalNumber == SIGTERM))
+        DoLogInfo("Received signal (%d)", signalNumber);
+        if (signalNumber == SIGINT)
         {
-            DoLogInfo("Received signal %d. Initiating shutdown.", signalNumber);
-            _shutdownEvent.SetEvent();
+            _sigintHandler();
+        }
+        else if (signalNumber == SIGTERM)
+        {
+            _sigtermHandler();
         }
         else if (signalNumber == SIGHUP)
         {
-            DoLogInfo("Received signal %d to reload configurations.", signalNumber);
             _sighupHandler();
         }
     }
 
+    static std::function<void()> _sigintHandler;
+    static std::function<void()> _sigtermHandler;
     static std::function<void()> _sighupHandler;
 
     static ManualResetEvent _shutdownEvent;
 };
 
+std::function<void()> ProcessController::_sigintHandler;
+std::function<void()> ProcessController::_sigtermHandler;
 std::function<void()> ProcessController::_sighupHandler;
 ManualResetEvent ProcessController::_shutdownEvent;
 
@@ -112,17 +129,21 @@ HRESULT Run() try
     DoLogInfo("Started, %s", msdoutil::ComponentVersion().c_str());
 
     ProcessController procController;
-    procController.RegisterSignalHandler([&downloadManager]()
+
+    std::function<void()> fnShutdown = [&procController]()
+    {
+        procController.ShutDown();
+    };
+    procController.SetSignalHandler(fnShutdown, SIGINT);
+    procController.SetSignalHandler(fnShutdown, SIGTERM);
+
+    std::function<void()> fnRefreshConfigs = [&downloadManager]()
     {
         downloadManager->RefreshAdminConfigs();
-    }, SIGHUP);
-    procController.WaitForShutdown([&downloadManager]()
-    {
-        // For now, idle-shutdown mechanism is not applicable when running as a service.
-        // The service will be started on boot and will be restarted automatically on failure.
-        // SDK can assume docs is running and thus simplifies code for private preview.
-        return false;
-    });
+    };
+    procController.SetSignalHandler(fnRefreshConfigs, SIGHUP);
+
+    procController.Run();
 
     DoLogInfo("Exiting...");
     return S_OK;
