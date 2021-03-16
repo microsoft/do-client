@@ -27,83 +27,60 @@ using namespace std::chrono_literals; // NOLINT(build/namespaces) how else shoul
 class ProcessController : DONonCopyable
 {
 public:
-    ProcessController()
+    ProcessController(std::function<void()>& fnRefreshConfigs)
     {
-    }
+        _sighupHandler = std::move(fnRefreshConfigs);
 
-    void SetSignalHandler(const std::function<void()>& fnHandler, int signalNumber)
-    {
-        if (signalNumber == SIGINT)
-        {
-            _sigintHandler = std::move(fnHandler);
-        }
-        else if (signalNumber == SIGTERM)
-        {
-            _sigtermHandler = std::move(fnHandler);
-        }
-        else if (signalNumber == SIGHUP)
-        {
-            _sighupHandler = std::move(fnHandler);
-        }
-    }
-
-    void ShutDown()
-    {
-        DoLogInfo("Initiating shutdown");
-        _shutdownEvent.SetEvent();
-    }
-
-    void Run()
-    {
-        _RegisterHandlers();
-        
-        constexpr auto idleTimeout = 60s;
-        while (true)
-        {
-            if (_shutdownEvent.Wait(idleTimeout))
-            {
-                break;
-            }
-            
-            // Use this opportunity to flush logs periodically
-            TraceConsumer::getInstance().Flush();
-        }
-    }
-
-private:
-    void _RegisterHandlers()
-    {
+        // Do init work like registering signal control handler
         signal(SIGINT, _SignalHandler);
         signal(SIGTERM, _SignalHandler);
         signal(SIGHUP, _SignalHandler);
     }
 
+    void WaitForShutdown(const std::function<bool()>& fnIsIdle)
+    {
+        constexpr auto idleTimeout = 60s;
+        while (true)
+        {
+
+            if (_shutdownEvent.Wait(idleTimeout))
+            {
+                break;
+            }
+
+            // Use this opportunity to flush logs periodically
+            TraceConsumer::getInstance().Flush();
+
+            if (fnIsIdle())
+            {
+                DoLogInfo("Received idle notification. Initiating shutdown.");
+                break;
+            }
+
+        }
+    }
+
+private:
+
     static void _SignalHandler(int signalNumber)
     {
-        DoLogInfo("Received signal (%d)", signalNumber);
-        if (signalNumber == SIGINT)
+        if ((signalNumber == SIGINT) || (signalNumber == SIGTERM))
         {
-            _sigintHandler();
+            DoLogInfo("Received signal (%d). Initiating shutdown.", signalNumber);
+            _shutdownEvent.SetEvent();
         }
-        else if (signalNumber == SIGTERM)
+        if (signalNumber == SIGHUP)
         {
-            _sigtermHandler();
-        }
-        else if (signalNumber == SIGHUP)
-        {
+            DoLogInfo("Received signal (%d). Reloading configurations.", signalNumber);
             _sighupHandler();
         }
     }
 
-    static std::function<void()> _sigintHandler;
-    static std::function<void()> _sigtermHandler;
     static std::function<void()> _sighupHandler;
 
     static ManualResetEvent _shutdownEvent;
 };
 
-std::function<void()> ProcessController::_sigintHandler;
-std::function<void()> ProcessController::_sigtermHandler;
 std::function<void()> ProcessController::_sighupHandler;
 ManualResetEvent ProcessController::_shutdownEvent;
 
@@ -128,22 +105,18 @@ HRESULT Run() try
 
     DoLogInfo("Started, %s", msdoutil::ComponentVersion().c_str());
 
-    ProcessController procController;
-
-    std::function<void()> fnShutdown = [&procController]()
-    {
-        procController.ShutDown();
-    };
-    procController.SetSignalHandler(fnShutdown, SIGINT);
-    procController.SetSignalHandler(fnShutdown, SIGTERM);
-
     std::function<void()> fnRefreshConfigs = [&downloadManager]()
     {
         downloadManager->RefreshAdminConfigs();
     };
-    procController.SetSignalHandler(fnRefreshConfigs, SIGHUP);
-
-    procController.Run();
+    ProcessController procController(fnRefreshConfigs);
+    procController.WaitForShutdown([&downloadManager]()
+    {
+        // For now, idle-shutdown mechanism is not applicable when running as a service.
+        // The service will be started on boot and will be restarted automatically on failure.
+        // SDK can assume docs is running and thus simplifies code for private preview.
+        return false;
+    });
 
     DoLogInfo("Exiting...");
     return S_OK;

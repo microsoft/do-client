@@ -111,7 +111,7 @@ bool DownloadManager::IsIdle() const
 
 void DownloadManager::RefreshAdminConfigs() const
 {
-    _taskThread.SchedImmediate([&]()
+    _taskThread.SchedImmediate([this]()
         {
             _config.RefreshAdminConfigs();
         }, this);
