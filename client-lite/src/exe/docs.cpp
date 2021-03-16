@@ -26,7 +26,7 @@ using namespace std::chrono_literals; // NOLINT(build/namespaces) how else shoul
 class ProcessController
 {
 public:
-    ProcessController(std::function<void()>& fnRefreshConfigs)
+    ProcessController(std::function<void()>&& fnRefreshConfigs)
     {
         _sighupHandler = std::move(fnRefreshConfigs);
 
@@ -68,7 +68,7 @@ private:
             DoLogInfo("Received signal (%d). Initiating shutdown.", signalNumber);
             _shutdownEvent.SetEvent();
         }
-        if (signalNumber == SIGHUP)
+        else if (signalNumber == SIGHUP)
         {
             DoLogInfo("Received signal (%d). Reloading configurations.", signalNumber);
             _sighupHandler();
@@ -104,11 +104,10 @@ HRESULT Run() try
 
     DoLogInfo("Started, %s", msdoutil::ComponentVersion().c_str());
 
-    std::function<void()> fnRefreshConfigs = [&downloadManager]()
+    ProcessController procController([&downloadManager]()
     {
         downloadManager->RefreshAdminConfigs();
-    };
-    ProcessController procController(fnRefreshConfigs);
+    });
     procController.WaitForShutdown([&downloadManager]()
     {
         // For now, idle-shutdown mechanism is not applicable when running as a service.
