@@ -8,7 +8,7 @@
 ConfigManager::ConfigManager() :
     ConfigManager(docli::GetAdminConfigFilePath(), docli::GetSDKConfigFilePath())
 {
-    DoLogInfo("this is a dummy change to trigger pr trigger dfasdf");
+    DoLogInfo("this is a dummy change to trigger pr trigger dfasasdfdf");
 }
 
 // Used by unit tests to override config paths
