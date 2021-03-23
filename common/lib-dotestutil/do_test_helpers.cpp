@@ -13,6 +13,10 @@ void ExecuteSystemCommand(const char* command)
     int ret = system(command);
     if (!WIFEXITED(ret))
     {
+
+
+
+
         throw DOTestException("Command [%s] did not exit normally, ret: %d", command, ret);
     }
 
