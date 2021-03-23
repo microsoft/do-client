@@ -13,6 +13,10 @@ extern "C"
 // Returns: 0 on success, error code otherwise
 int deliveryoptimization_set_iot_connection_string(const char* value);
 
+
+
+
+
 // Future: Version and any future methods could be moved out from the extern C area
 // (and use C++ features) if ADU client does not have a need to call these from its lower layer.
 

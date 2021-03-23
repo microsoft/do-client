@@ -33,6 +33,9 @@ HashResult FileHashes(const std::string& filePath)
     SHA256_Init(&stateSHA256);
     SHA512_Init(&stateSHA512);
 
+
+
+
     std::vector<char> buffer(4096);
     while (true)
     {
