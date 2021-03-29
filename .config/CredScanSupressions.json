@@ -3,7 +3,7 @@
     "suppressions": [
         {
             "placeholder": "abcdefghijklmnopqrstuvwxyzABCDE123456789012=",
-            "_justification": "This is a test string used to test the Hash type and not a credential."
+            "_justification": "This is a test hash and not a credential."
         }
     ]
 }
