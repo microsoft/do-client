@@ -36,6 +36,7 @@ public:
 TEST_F(MCCDownloadTests, DownloadWithMockIoTConnectionString)
 {
     // Mock connecting string with GatewayHostName pointing to a valid MCC instance
+    // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Not credentials (false positive)")]
     std::string iotConnString("HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=");
     iotConnString += g_mccHostName;
     std::cout << "Using mock IoT connections string: " << iotConnString << '\n';
@@ -49,6 +50,7 @@ TEST_F(MCCDownloadTests, DownloadWithMockIoTConnectionString)
 TEST_F(MCCDownloadTests, DownloadWithMockIoTConnectionStringInvalidHost)
 {
     // Mock connecting string with GatewayHostName pointing to an invalid MCC instance
+    // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Not credentials (false positive)")]
     const char* expectedValue = "HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=ahdkhkasdhaksd";
     int ret = deliveryoptimization_set_iot_connection_string(expectedValue);
     ASSERT_EQ(ret, 0);
