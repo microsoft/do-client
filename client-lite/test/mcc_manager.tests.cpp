@@ -101,6 +101,7 @@ TEST_F(MCCManagerTests, ParseIoTConnectionString)
     _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST);
 
     // Gateway specified in the middle
+    // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Not credentials (false positive)")]
     SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;GatewayHostName=" TEST_MOCK_MCC_HOST ";DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=");
     _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST);
 
