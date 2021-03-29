@@ -15,7 +15,7 @@ const std::map<std::string, std::string> g_testData =
 {
     { "key1", "value1" },
     { "DOCacheHost", "10.0.0.100:80,myhost2.com:8080" },
-    { "IoTConnectionString", "HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=10.0.0.200" }
+    { "IoTConnectionString", "HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;GatewayHostName=10.0.0.200" }
 };
 
 static void WriteOutTestData()

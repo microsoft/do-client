@@ -35,7 +35,7 @@ public:
 
 TEST_F(ConfigTests, IoTConnectionString)
 {
-    const char* expectedValue = "HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=10.0.0.200";
+    const char* expectedValue = "HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;GatewayHostName=10.0.0.200";
     int ret = deliveryoptimization_set_iot_connection_string(expectedValue);
     ASSERT_EQ(ret, 0);
 
