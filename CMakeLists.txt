@@ -13,7 +13,13 @@ option (DO_INCLUDE_SDK "Build subproject sdk-cpp" OFF)
 
 option (DO_BUILD_TESTS "Set DO_BUILD_TESTS to OFF to skip building tests." ON)
 
-set(CMAKE_CXX_STANDARD 14)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    set(CMAKE_CXX_STANDARD 14)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    set(CMAKE_CXX_STANDARD 17)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    set(CMAKE_CXX_STANDARD 17)
+endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -23,6 +29,11 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 # PIC (Position Independent Code) ensures .a files can be linked to executables that have PIE enabled
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+# TODO: msvc and gcc support different compiler/linker flags, need to go through all flags and verify what's needed for each platform
+# Certain flags cause build issues because the flag itself isn't supported on msvc
+# Offending CMAKE_CXX_FLAGS: -Wformat
+# Offending CMAKE_EXE_LINKER_FLAGS: relro
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 # PIE (Position Independent Executable) ensures exe/.so can run when ASLR is enabled in the target OS
 set(COMPILER_HARDENING_FLAGS
     "-fPIE -pie -D_FORTIFY_SOURCE=2 -fstack-protector-strong -Wformat -Werror=format-security")
@@ -30,6 +41,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ${COMPILER_HARDENING_FLAGS} -fmerg
 
 # relro+now thwarts some attack vectors by reordering some ELF data structures and also by making the GOT read-only
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie -z relro -z now")
+endif() # Linux
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/common/cmake)
 include (do-build-helpers)
@@ -48,10 +60,12 @@ else ()
     message (STATUS "Build timestamp NOT found. Generated it via cmake: ${DO_BUILD_TIMESTAMP}.")
 endif ()
 
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 # Use ms- prefix to avoid clashes with another company's product named do-agent.
 # Use it also for other sub-projects to have consistency.
 set(DOSVC_BIN_NAME "deliveryoptimization-agent")
 set(DO_PLUGIN_APT_BIN_NAME "deliveryoptimization-plugin-apt")
+endif()
 
 # Only one subproject can be built with each invocation of cmake. This avoids confusion in specifying options
 # exposed by an individual subproject.

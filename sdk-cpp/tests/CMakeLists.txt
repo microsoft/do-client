@@ -3,6 +3,8 @@
 find_package(Boost COMPONENTS filesystem program_options REQUIRED)
 find_package(GTest REQUIRED)
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+
 set (dosdkcpp_private_includes
     "../src/internal/rest"
     "../src/internal/util"
@@ -10,7 +12,9 @@ set (dosdkcpp_private_includes
 )
 
 file (GLOB test_source
-    *.cpp)
+    *.cpp
+    rest/*.cpp
+)
 add_executable(deliveryoptimization-sdk-tests ${test_source})
 target_include_directories(deliveryoptimization-sdk-tests PRIVATE
     "."
@@ -24,3 +28,4 @@ target_link_libraries(deliveryoptimization-sdk-tests
     ${Boost_LIBRARIES}
     GTest::GTest
 )
+endif() # Linux
