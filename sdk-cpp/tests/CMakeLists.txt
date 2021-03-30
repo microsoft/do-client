@@ -6,9 +6,9 @@ find_package(GTest REQUIRED)
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 
 set (dosdkcpp_private_includes
-    "../src/internal/rest"
-    "../src/internal/util"
     "../src/internal"
+    "../src/internal/rest"
+    "../src/internal/rest/util"
 )
 
 file (GLOB test_source

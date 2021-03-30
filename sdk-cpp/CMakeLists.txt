@@ -55,7 +55,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     file(GLOB sdk_source
     "src/*.cpp"
     "src/internal/rest/*.cpp"
-    "src/internal/util/*.cpp"
+    "src/internal/rest/util/*.cpp"
     )
 
     add_library(${DO_SDK_LIB_NAME} SHARED "${sdk_source}")
@@ -65,9 +65,9 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
             $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:include/${DO_SDK_LIB_NAME}>
         PRIVATE
-            "src/internal/rest"
-            "src/internal/util"
             "src/internal"
+            "src/internal/rest"
+            "src/internal/rest/util"
             ${docs_common_includes}
             ${include_directories_for_arm}
     )

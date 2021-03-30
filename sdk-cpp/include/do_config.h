@@ -1,5 +1,6 @@
 #pragma once
 
+#ifndef _WIN32
 #ifdef __cplusplus
 extern "C"
 {
@@ -25,3 +26,5 @@ void deliveryoptimization_free_version_buf(char** ppBuffer);
 #ifdef __cplusplus
 }
 #endif
+
+#endif // !_WIN32
