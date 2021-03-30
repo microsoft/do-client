@@ -12,7 +12,6 @@ import tempfile
 import fnmatch
 from pathlib import Path
 from tempfile import gettempdir
-from enum import Enum
 
 #region Globals
 
@@ -139,6 +138,7 @@ class BuildRunnerBase(object):
         self.project_root_path = get_project_root_path()
         self.cmake_target = None
         self.project = None
+
         if (script_args.cmaketarget is None):
             self.cmake_target = "all"
         else:
@@ -158,7 +158,7 @@ class BuildRunnerBase(object):
             self.config = 'debug'
 
         if not (self.config == 'debug' or self.config == 'release'):
-            raise ValueError('Building configuration for {self.platform} is not supported.'.format(self.config, self.platform))
+            raise ValueError('Building configuration {self.config} for {self.platform} is not supported.'.format(self.config, self.platform))
 
         if self.script_args.generator:
             self.generator = self.script_args.generator
