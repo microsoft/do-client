@@ -15,6 +15,7 @@ set(DO_PLATFORM_ID_WINDOWS 3)
 if (CMAKE_SYSTEM_NAME MATCHES Linux)
     set(DO_PLATFORM_ID ${DO_PLATFORM_ID_LINUX})
 elseif (CMAKE_SYSTEM_NAME MATCHES Windows)
+    message(WARNING "Currently unsupported platform")
     set(DO_PLATFORM_ID ${DO_PLATFORM_ID_WINDOWS})
 elseif (CMAKE_SYSTEM_NAME MATCHES Darwin) # Mac
     message(WARNING "Currently unsupported platform")
@@ -49,13 +50,15 @@ set(DO_SDK_LIB_NAME "deliveryoptimization")
 
 add_do_version_lib("${DO_SDK_LIB_NAME}-lib" ${PROJECT_VERSION})
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+if(${DO_PLATFORM_ID} = ${DO_PLATFORM_ID_LINUX})
     include(GNUInstallDirs)
 
     file(GLOB sdk_source
     "src/*.cpp"
     "src/internal/rest/*.cpp"
     "src/internal/rest/util/*.cpp"
+    "src/internal/common/*.cpp"
+    "src/internal/common/util/*.cpp"
     )
 
     add_library(${DO_SDK_LIB_NAME} SHARED "${sdk_source}")
@@ -68,6 +71,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
             "src/internal"
             "src/internal/rest"
             "src/internal/rest/util"
+            "src/internal/common"
+            "src/internal/common/util"
             ${docs_common_includes}
             ${include_directories_for_arm}
     )

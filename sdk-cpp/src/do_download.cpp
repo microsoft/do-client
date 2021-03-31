@@ -73,7 +73,7 @@ void download::start_and_wait_until_completion(const std::atomic_bool& isCancell
         if (isCancelled)
         {
             abort();
-            details::ThrowException(std::errc::operation_canceled);
+            msdod::ThrowException(std::errc::operation_canceled);
         }
         std::this_thread::sleep_for(pollTime);
         if (pollTime < maxPollTime)
@@ -90,18 +90,18 @@ void download::start_and_wait_until_completion(const std::atomic_bool& isCancell
     else if (status.state() == download_state::paused && !status.is_transient_error())
     {
         assert(status.error_code() != 0);
-        details::ThrowException(status.error_code());
+        msdod::ThrowException(status.error_code());
     }
     else
     {
         abort();
         if (timedOut)
         {
-            details::ThrowException(std::errc::timed_out);
+            msdod::ThrowException(std::errc::timed_out);
         }
         else
         {
-            details::ThrowException(std::errc::connection_refused);
+            msdod::ThrowException(std::errc::connection_refused);
         }
     }
 }

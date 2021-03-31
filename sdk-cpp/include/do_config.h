@@ -1,6 +1,6 @@
 #pragma once
 
-#ifndef _WIN32
+#if (DO_PLATFORM_ID == DO_PLATFORM_ID_LINUX)
 #ifdef __cplusplus
 extern "C"
 {

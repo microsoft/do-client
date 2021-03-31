@@ -3,12 +3,14 @@
 find_package(Boost COMPONENTS filesystem program_options REQUIRED)
 find_package(GTest REQUIRED)
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+if(${DO_PLATFORM_ID} MATCHES ${DO_PLATFORM_ID_LINUX})
 
 set (dosdkcpp_private_includes
     "../src/internal"
     "../src/internal/rest"
     "../src/internal/rest/util"
+    "../src/internal/common"
+    "../src/internal/common/util"
 )
 
 file (GLOB test_source
