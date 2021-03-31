@@ -9,8 +9,6 @@ set (dosdkcpp_private_includes
     "../src/internal"
     "../src/internal/rest"
     "../src/internal/rest/util"
-    "../src/internal/common"
-    "../src/internal/common/util"
 )
 
 file (GLOB test_source

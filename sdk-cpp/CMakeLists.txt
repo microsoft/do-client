@@ -1,11 +1,5 @@
 project (deliveryoptimization_sdk VERSION 0.4.0)
 
-if (CMAKE_SYSTEM_NAME MATCHES Linux)
-    message("DO configured to use shared Boost libraries")
-
-    add_definitions(-DBOOST_ALL_DYN_LINK=1)
-endif()
-
 # Differentiate cross platform builds
 # Note: The C preprocessor can compare integer values but not strings
 set(DO_PLATFORM_ID_UNKNOWN 0)
@@ -25,7 +19,10 @@ else()
     set(DO_PLATFORM_ID ${DO_PLATFORM_ID_UNKNOWN})
 endif()
 
-if (CMAKE_SYSTEM_NAME MATCHES Linux)
+if (${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
+    message("DO configured to use shared Boost libraries")
+    add_definitions(-DBOOST_ALL_DYN_LINK=1)
+
     fixup_compile_options_for_arm()
 endif()
 
@@ -50,15 +47,14 @@ set(DO_SDK_LIB_NAME "deliveryoptimization")
 
 add_do_version_lib("${DO_SDK_LIB_NAME}-lib" ${PROJECT_VERSION})
 
-if(${DO_PLATFORM_ID} MATCHES ${DO_PLATFORM_ID_LINUX})
+if(${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
     include(GNUInstallDirs)
 
     file(GLOB sdk_source
     "src/*.cpp"
+    "src/internal/*.cpp"
     "src/internal/rest/*.cpp"
     "src/internal/rest/util/*.cpp"
-    "src/internal/common/*.cpp"
-    "src/internal/common/util/*.cpp"
     )
 
     add_library(${DO_SDK_LIB_NAME} SHARED "${sdk_source}")
@@ -71,8 +67,6 @@ if(${DO_PLATFORM_ID} MATCHES ${DO_PLATFORM_ID_LINUX})
             "src/internal"
             "src/internal/rest"
             "src/internal/rest/util"
-            "src/internal/common"
-            "src/internal/common/util"
             ${docs_common_includes}
             ${include_directories_for_arm}
     )
