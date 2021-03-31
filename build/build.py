@@ -103,7 +103,7 @@ class MacArgPaser():
     def __init__(self):
         super().__init__()
         raise ValueError("Mac builds not supported yet")
-        
+
 
 # endregion ArgParser
 
