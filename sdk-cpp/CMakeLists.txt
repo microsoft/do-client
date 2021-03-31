@@ -50,7 +50,7 @@ set(DO_SDK_LIB_NAME "deliveryoptimization")
 
 add_do_version_lib("${DO_SDK_LIB_NAME}-lib" ${PROJECT_VERSION})
 
-if(${DO_PLATFORM_ID} = ${DO_PLATFORM_ID_LINUX})
+if(${DO_PLATFORM_ID} MATCHES ${DO_PLATFORM_ID_LINUX})
     include(GNUInstallDirs)
 
     file(GLOB sdk_source
