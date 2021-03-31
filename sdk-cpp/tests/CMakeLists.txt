@@ -3,7 +3,7 @@
 find_package(Boost COMPONENTS filesystem program_options REQUIRED)
 find_package(GTest REQUIRED)
 
-if(${DO_PLATFORM_ID} MATCHES ${DO_PLATFORM_ID_LINUX})
+if(${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
 
 set (dosdkcpp_private_includes
     "../src/internal"
