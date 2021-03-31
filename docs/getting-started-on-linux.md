@@ -18,6 +18,7 @@ Run the appropriate bootstrapper depending on development machine platform:
 
 ```markdown
 > cd build/bootstrap
+> ./bootstrap-ubuntu-18.04.sh
 ```
 
 ### Building DO client components 
