@@ -1,3 +1,6 @@
+**NOTICE:**  
+**If you are modifying this project and distributing your own custom build, please modify the DO_BUILDER_IDENTIFIER cmake variable located in https://github.com/microsoft/do-client/blob/main/CMakeLists.txt**
+
 ## Getting Started
 
 Follow the development machine setup on each desktop you'd like to use.
@@ -15,13 +18,9 @@ Run the appropriate bootstrapper depending on development machine platform:
 
 ```markdown
 > cd build/bootstrap
-> ./bootstrap-ubuntu-18.04.sh
 ```
 
 ### Building DO client components 
-**NOTICE:**  
-**If you are modifying this project and distributing your own custom build, please modify the DO_BUILDER_IDENTIFIER cmake variable located in https://github.com/microsoft/do-client/blob/main/CMakeLists.txt**
-
 After setting up your development machine, navigate back into the project root
 
 ```markdown
@@ -70,10 +69,40 @@ At this point, you should have built and packaged all components
 
 ### Testing DO Client components
 
-There are currently no unit tests for the plugin, however you can perform a quick sanity check to ensure all components are working correctly  
-You can do this by installing any package from apt
+As guidance, please ensure proper code coverage for project contributions  
+Unit tests for the agent and sdk are produced as a part of the above build command, you can find them in the build output directory
 
-In this case, let's install npm
 ```markdown
-> sudo apt-get install npm
+> cd /tmp/build-deliveryoptimization-agent/linux-debug/client-lite/test
+```
+
+Our tests utilize the [GTest](https://github.com/google/googletest) unit testing framework, which supports test filtering via command line  
+You can run all agent tests by running
+
+```markdown
+> ./deliveryoptimization-agent-tests
+```
+
+You can filter for specific tests as well, reference the GTest documentation for filtering rules and syntax
+```markdown
+> sudo ./deliveryoptimization-agent-tests --gtest_filter=DownloadManagerTests*
+```
+
+The test executable for the SDK is located in the sdk build output as well
+
+```markdown
+> cd /tmp/build-deliveryoptimization-sdk/linux-debug/sdk-cpp/tests
+```
+
+The sdk tests expect a running do-agent, you can either manually run the agent executable from its build output or install the agent package as you may have done while building the plugin  
+You can run the sdk tests just like the agent tests
+
+```markdown
+> sudo ./deliveryoptimization-sdk-tests
+```
+
+And filter them similarly
+
+```markdown
+> sudo ./deliveryoptimization-sdk-tests --gtest_filter=DownloadTests*
 ```

@@ -20,6 +20,9 @@ code for Delivery Optimization Agent on Linux.
 Add-on that enables APT downloads to go through Delivery Optimization Agent.
 It is requires the SDK and Agent components.
 
+## Build and Test
+* [Getting Started on Linux](https://github.com/microsoft/do-client/tree/main/docs/getting-started-on-linux)
+
 ## Support
 
 This repository is currently in a **Public Preview** state.  During this phase, all DO components
