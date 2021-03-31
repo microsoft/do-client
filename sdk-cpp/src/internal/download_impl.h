@@ -5,12 +5,13 @@
 #include "download_interface.h"
 #include "do_download_status.h"
 
+
 namespace microsoft::deliveryoptimization::details
 {
-class CDownloadRest : public IDownload
+class CDownloadImpl : public IDownload
 {
 public:
-    CDownloadRest(const std::string& uri, const std::string& downloadFilePath);
+    CDownloadImpl(const std::string& uri, const std::string& downloadFilePath);
 
     void Start() override;
     void Pause() override;

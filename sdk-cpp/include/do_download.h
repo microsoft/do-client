@@ -28,6 +28,9 @@ public:
 
     download_status get_status() const;
 
+    void start_and_wait_until_completion(std::chrono::seconds timeoutSecs = std::chrono::hours(24));
+    void start_and_wait_until_completion(const std::atomic_bool& isCancelled, std::chrono::seconds timeoutSecs = std::chrono::hours(24));
+
     static void download_url_to_path(const std::string& uri, const std::string& downloadFilePath, std::chrono::seconds timeoutSecs = std::chrono::hours(24));
     static void download_url_to_path(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeoutSecs = std::chrono::hours(24));
 

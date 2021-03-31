@@ -1,5 +1,5 @@
 
-#include "download_rest.h"
+#include "download_impl.h"
 
 #include <thread>
 
@@ -17,7 +17,7 @@ const int g_maxNumRetryAttempts = 3;
 
 namespace microsoft::deliveryoptimization::details
 {
-CDownloadRest::CDownloadRest(const std::string& uri, const std::string& downloadFilePath)
+CDownloadImpl::CDownloadImpl(const std::string& uri, const std::string& downloadFilePath)
 {
     web::uri_builder builder(g_downloadUriPart);
     builder.append_path(U("create"));
@@ -53,32 +53,32 @@ CDownloadRest::CDownloadRest(const std::string& uri, const std::string& download
     ThrowException(msdo::errc::no_service);
 }
 
-void CDownloadRest::Start()
+void CDownloadImpl::Start()
 {
     _DownloadOperationCall("start");
 }
 
-void CDownloadRest::Pause()
+void CDownloadImpl::Pause()
 {
     _DownloadOperationCall("pause");
 }
 
-void CDownloadRest::Resume()
+void CDownloadImpl::Resume()
 {
     _DownloadOperationCall("start");
 }
 
-void CDownloadRest::Finalize()
+void CDownloadImpl::Finalize()
 {
     _DownloadOperationCall("finalize");
 }
 
-void CDownloadRest::Abort()
+void CDownloadImpl::Abort()
 {
     _DownloadOperationCall("abort");
 }
 
-msdo::download_status CDownloadRest::GetStatus()
+msdo::download_status CDownloadImpl::GetStatus()
 {
     web::uri_builder builder(g_downloadUriPart);
     builder.append_path(U("getstatus"));
@@ -117,7 +117,7 @@ msdo::download_status CDownloadRest::GetStatus()
     return out;
 }
 
-void CDownloadRest::_DownloadOperationCall(const std::string& type)
+void CDownloadImpl::_DownloadOperationCall(const std::string& type)
 {
     web::uri_builder builder(g_downloadUriPart);
     builder.append_path(cpprest_util_conv::to_string_t(type));

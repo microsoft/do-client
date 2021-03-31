@@ -1,7 +1,5 @@
 project (deliveryoptimization_sdk VERSION 0.4.0)
 
-add_definitions(-DBOOST_ALL_DYN_LINK=1)
-
 # Differentiate cross platform builds
 # Note: The C preprocessor can compare integer values but not strings
 set(DO_PLATFORM_ID_UNKNOWN 0)
@@ -10,23 +8,28 @@ set(DO_PLATFORM_ID_MAC 2)
 set(DO_PLATFORM_ID_WINDOWS 3)
 if (CMAKE_SYSTEM_NAME MATCHES Linux)
     set(DO_PLATFORM_ID ${DO_PLATFORM_ID_LINUX})
-elseif (CMAKE_SYSTEM_NAME MATCHES Darwin) # Mac
-    message(WARNING "Currently unsupported platform")
-    set(DO_PLATFORM_ID ${DO_PLATFORM_ID_MAC})
 elseif (CMAKE_SYSTEM_NAME MATCHES Windows)
     message(WARNING "Currently unsupported platform")
     set(DO_PLATFORM_ID ${DO_PLATFORM_ID_WINDOWS})
+elseif (CMAKE_SYSTEM_NAME MATCHES Darwin) # Mac
+    message(WARNING "Currently unsupported platform")
+    set(DO_PLATFORM_ID ${DO_PLATFORM_ID_MAC})
 else()
     message(WARNING "Unknown platform")
     set(DO_PLATFORM_ID ${DO_PLATFORM_ID_UNKNOWN})
 endif()
 
-fixup_compile_options_for_arm()
+if (${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
+    message("DO configured to use shared Boost libraries")
+    add_definitions(-DBOOST_ALL_DYN_LINK=1)
+
+    fixup_compile_options_for_arm()
+endif()
 
 # Include external libraries here
 find_package(Boost COMPONENTS filesystem system REQUIRED)
 
-# Cpprest Issues:
+# Cpprest Issues (Linux Only):
 # 1. v2.10.10 min version (see required PR link below). cpprestsdk does not seem to support specifying this through cmake.
 # https://github.com/microsoft/cpprestsdk/pull/1019/files
 #
@@ -40,18 +43,19 @@ if (DO_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
-file(GLOB sdk_source
-    "src/*.cpp"
-    "src/internal/rest/*.cpp"
-    "src/internal/util/*.cpp"
-)
-
 set(DO_SDK_LIB_NAME "deliveryoptimization")
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+add_do_version_lib("${DO_SDK_LIB_NAME}-lib" ${PROJECT_VERSION})
+
+if(${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
     include(GNUInstallDirs)
 
-    add_do_version_lib("${DO_SDK_LIB_NAME}-lib" ${PROJECT_VERSION})
+    file(GLOB sdk_source
+    "src/*.cpp"
+    "src/internal/*.cpp"
+    "src/internal/rest/*.cpp"
+    "src/internal/rest/util/*.cpp"
+    )
 
     add_library(${DO_SDK_LIB_NAME} SHARED "${sdk_source}")
     add_library(Microsoft::${DO_SDK_LIB_NAME} ALIAS ${DO_SDK_LIB_NAME})
@@ -60,9 +64,9 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
             $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:include/${DO_SDK_LIB_NAME}>
         PRIVATE
-            "src/internal/rest"
-            "src/internal/util"
             "src/internal"
+            "src/internal/rest"
+            "src/internal/rest/util"
             ${docs_common_includes}
             ${include_directories_for_arm}
     )

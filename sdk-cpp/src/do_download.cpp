@@ -7,7 +7,7 @@
 #include "do_exceptions.h"
 #include "do_exceptions_internal.h"
 #include "download_interface.h"
-#include "download_rest.h"
+#include "download_impl.h"
 
 namespace msdod = microsoft::deliveryoptimization::details;
 using namespace std::chrono_literals; // NOLINT(build/namespaces)
@@ -17,7 +17,7 @@ namespace microsoft::deliveryoptimization
 
 download::download(const std::string& uri, const std::string& downloadFilePath)
 {
-    _download = std::make_shared<msdod::CDownloadRest>(uri, downloadFilePath);
+    _download = std::make_shared<msdod::CDownloadImpl>(uri, downloadFilePath);
 }
 
 download::~download() = default;
@@ -52,28 +52,27 @@ download_status download::get_status() const
     return _download->GetStatus();
 }
 
-void download::download_url_to_path(const std::string& uri, const std::string& downloadFilePath, std::chrono::seconds timeOut)
+void download::start_and_wait_until_completion(std::chrono::seconds timeOut)
 {
     std::atomic_bool isCancelled { false };
-    download_url_to_path(uri, downloadFilePath, isCancelled, timeOut);
+    start_and_wait_until_completion(isCancelled, timeOut);
 }
 
-void download::download_url_to_path(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeOut)
+void download::start_and_wait_until_completion(const std::atomic_bool& isCancelled, std::chrono::seconds timeOut)
 {
     constexpr std::chrono::seconds maxPollTime = 5s;
     std::chrono::milliseconds pollTime = 500ms;
     const auto endTime = std::chrono::system_clock::now() + timeOut;
 
-    download oneShotDownload(uri, downloadFilePath);
-    oneShotDownload.start();
-    download_status status = oneShotDownload.get_status();
+    start();
+    download_status status = get_status();
 
     bool timedOut = std::chrono::system_clock::now() >= endTime;
     while ((status.state() == download_state::created || status.state() == download_state::transferring || status.is_transient_error()) && !timedOut)
     {
         if (isCancelled)
         {
-            oneShotDownload.abort();
+            abort();
             msdod::ThrowException(std::errc::operation_canceled);
         }
         std::this_thread::sleep_for(pollTime);
@@ -81,12 +80,12 @@ void download::download_url_to_path(const std::string& uri, const std::string& d
         {
             pollTime += 500ms;
         }
-        status = oneShotDownload.get_status();
+        status = get_status();
         timedOut = std::chrono::system_clock::now() >= endTime;
     }
     if (status.state() == download_state::transferred)
     {
-        oneShotDownload.finalize();
+        finalize();
     }
     else if (status.state() == download_state::paused && !status.is_transient_error())
     {
@@ -95,7 +94,7 @@ void download::download_url_to_path(const std::string& uri, const std::string& d
     }
     else
     {
-        oneShotDownload.abort();
+        abort();
         if (timedOut)
         {
             msdod::ThrowException(std::errc::timed_out);
@@ -105,6 +104,18 @@ void download::download_url_to_path(const std::string& uri, const std::string& d
             msdod::ThrowException(std::errc::connection_refused);
         }
     }
+}
+
+void download::download_url_to_path(const std::string& uri, const std::string& downloadFilePath, std::chrono::seconds timeOut)
+{
+    download oneShotDownload(uri, downloadFilePath);
+    oneShotDownload.start_and_wait_until_completion(timeOut);
+}
+
+void download::download_url_to_path(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeOut)
+{
+    download oneShotDownload(uri, downloadFilePath);
+    oneShotDownload.start_and_wait_until_completion(isCancelled, timeOut);
 }
 
 } // namespace microsoft::deliveryoptimization
