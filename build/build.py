@@ -40,9 +40,6 @@ class ArgParserBase(object):
     ArgParser classes will inherit from this class
     and will parse args specific to that build.
 
-    Args:
-        script_args (namespace):
-            The arguments passed to the script parsed by argparse.
     """
 
     def __init__(self):
@@ -91,27 +88,22 @@ class LinuxArgParser(ArgParserBase):
             help='Supply package type. e.g. deb, or rpm'
         )
 
-        '''DOCS only'''
+        '''Agent only'''
         self.parser.add_argument(
             '--no-proxy-support', dest='no_proxy_support', action='store_true',
-            help='Enable building docs without support for proxy handling'
+            help='Enable building deliveryoptimization-agent without support for proxy handling'
         )
 
 class WindowsArgParser(ArgParserBase):
     def __init__(self):
         super().__init__()
-        parser.add_argument(
-            '--vcpkgdir', dest='vcpkgdir', type=str,
-            help='vcpkg installation directory for c++ packages on windows'
-        )
-        parser.add_argument(
-            '--arch', dest='arch', type=str,
-            help='The target architecture. e.g x86, x64, or arm.'
-        )
+        raise ValueError("Windows builds not supported yet")
 
 class MacArgPaser():
     def __init__(self):
         super().__init__()
+        raise ValueError("Mac builds not supported yet")
+        
 
 # endregion ArgParser
 
