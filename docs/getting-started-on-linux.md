@@ -20,7 +20,7 @@ Run the appropriate bootstrapper depending on development machine platform:
 
 ### Building DO client components 
 **NOTICE:**  
-**If you are modifying this project and distributing your own custom build, please modify the DO_BUILDER_IDENTIFIER cmake variable located in https://github.com/microsoft/do-client/blob/main/CMakeLists.txt**
+**If you are modifying this project and distributing your own custom build, please modify the DO_BUILDER_IDENTIFIER cmake variable located in [CMakeLists.txt](https://github.com/microsoft/do-client/blob/main/CMakeLists.txt)**
 
 After setting up your development machine, navigate back into the project root
 
