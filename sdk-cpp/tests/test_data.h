@@ -3,8 +3,6 @@
 #include <chrono>
 #include <string>
 
-extern const std::chrono::seconds g_docsIdleTimeoutSeconds;
-
 extern const uint64_t g_smallFileSizeBytes;
 extern const uint64_t g_largeFileSizeBytes;
 extern const uint64_t g_prodFileSizeBytes;
