@@ -27,4 +27,4 @@ void deliveryoptimization_free_version_buf(char** ppBuffer);
 }
 #endif
 
-#endif // (DO_PLATFORM_ID == DO_PLATFORM_ID_LINUX)
+#endif // Linux

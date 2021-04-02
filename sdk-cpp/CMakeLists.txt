@@ -44,46 +44,89 @@ if (DO_BUILD_TESTS)
 endif()
 
 set(DO_SDK_LIB_NAME "deliveryoptimization")
-
 add_do_version_lib("${DO_SDK_LIB_NAME}-lib" ${PROJECT_VERSION})
 
-if(${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
-    include(GNUInstallDirs)
+### Region CMake Build ###
 
-    file(GLOB sdk_source
+set(sdk_source_common
     "src/*.cpp"
     "src/internal/*.cpp"
-    "src/internal/rest/*.cpp"
-    "src/internal/rest/util/*.cpp"
-    )
+)
 
-    add_library(${DO_SDK_LIB_NAME} SHARED "${sdk_source}")
-    add_library(Microsoft::${DO_SDK_LIB_NAME} ALIAS ${DO_SDK_LIB_NAME})
-    target_include_directories(${DO_SDK_LIB_NAME}
-        PUBLIC
-            $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include>
-            $<INSTALL_INTERFACE:include/${DO_SDK_LIB_NAME}>
-        PRIVATE
-            "src/internal"
-            "src/internal/rest"
-            "src/internal/rest/util"
-            ${docs_common_includes}
-            ${include_directories_for_arm}
-    )
-    target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE
+set(sdk_compile_definitions_common
         DO_PLATFORM_ID=${DO_PLATFORM_ID}
         DO_PLATFORM_ID_UNKNOWN=${DO_PLATFORM_ID_UNKNOWN}
         DO_PLATFORM_ID_LINUX=${DO_PLATFORM_ID_LINUX}
         DO_PLATFORM_ID_MAC=${DO_PLATFORM_ID_MAC}
         DO_PLATFORM_ID_WINDOWS=${DO_PLATFORM_ID_WINDOWS}
+)
+
+set(sdk_public_includes
+    $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/${DO_SDK_LIB_NAME}>
+)
+
+set(sdk_private_includes_common
+    "src/internal"
+)
+
+if(${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
+    include(GNUInstallDirs)
+
+    file(GLOB sdk_source
+    ${sdk_source_common}
+    "src/internal/rest/*.cpp"
+    "src/internal/rest/util/*.cpp"
+    )
+
+    add_library(${DO_SDK_LIB_NAME} SHARED "${sdk_source}")
+    
+    set(sdk_compile_definitions
         DOSVC_BIN_NAME="${DOSVC_BIN_NAME}"
         DO_PLUGIN_APT_BIN_NAME="${DO_PLUGIN_APT_BIN_NAME}"
     )
-    target_link_libraries(${DO_SDK_LIB_NAME}
-        PRIVATE doversion cpprestsdk::cpprest
-        PUBLIC ${Boost_LIBRARIES}
+
+    set(sdk_private_includes
+        "src/internal/rest"
+        "src/internal/rest/util"
+        ${include_directories_for_arm}
     )
 
+    set(sdk_private_linked_libs
+        doversion
+        cpprestsdk::cpprest
+    )
+
+    set(sdk_public_linked_libs
+        ${Boost_LIBRARIES}
+    )
+endif()
+
+add_library(Microsoft::${DO_SDK_LIB_NAME} ALIAS ${DO_SDK_LIB_NAME})
+target_include_directories(${DO_SDK_LIB_NAME}
+    PUBLIC
+        ${sdk_public_includes}
+    PRIVATE
+        ${sdk_private_includes}
+        ${sdk_private_includes_common}
+)
+target_compile_definitions(${DO_SDK_LIB_NAME} 
+    PRIVATE
+        ${sdk_compile_definitions}
+        ${sdk_compile_definitions_common}
+)
+target_link_libraries(${DO_SDK_LIB_NAME}
+    PRIVATE 
+        ${sdk_private_linked_libs}
+    PUBLIC 
+        ${sdk_public_linked_libs}
+)
+
+### Endregion CMake Build ###
+
+### Region CMake Install ###
+
+if(${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
     # Install the lib while also exporting all the usage requirements to a named target.
     install(
         TARGETS
@@ -206,7 +249,7 @@ if(${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
             DEPENDS
                 runtime
         )
-
-    endif() # Build for Packaging
-
+    endif() # Packaging
 endif() # Linux
+
+### End Region Install ###
