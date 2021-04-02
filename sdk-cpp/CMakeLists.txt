@@ -48,37 +48,47 @@ add_do_version_lib("${DO_SDK_LIB_NAME}-lib" ${PROJECT_VERSION})
 
 ### Region CMake Build ###
 
+set(sdk_source_common
+    "src/*.cpp"
+    "src/internal/*.cpp"
+)
+
+set(sdk_compile_definitions_common
+        DO_PLATFORM_ID=${DO_PLATFORM_ID}
+        DO_PLATFORM_ID_UNKNOWN=${DO_PLATFORM_ID_UNKNOWN}
+        DO_PLATFORM_ID_LINUX=${DO_PLATFORM_ID_LINUX}
+        DO_PLATFORM_ID_MAC=${DO_PLATFORM_ID_MAC}
+        DO_PLATFORM_ID_WINDOWS=${DO_PLATFORM_ID_WINDOWS}
+)
+
+set(sdk_public_includes
+    $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/${DO_SDK_LIB_NAME}>
+)
+
+set(sdk_private_includes_common
+    "src/internal"
+)
+
 if(${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
     include(GNUInstallDirs)
 
     file(GLOB sdk_source
-    "src/*.cpp"
-    "src/internal/*.cpp"
+    ${sdk_source_common}
     "src/internal/rest/*.cpp"
     "src/internal/rest/util/*.cpp"
     )
 
     add_library(${DO_SDK_LIB_NAME} SHARED "${sdk_source}")
     
-    set(sdk_compile_definitions         
-        DO_PLATFORM_ID=${DO_PLATFORM_ID}
-        DO_PLATFORM_ID_UNKNOWN=${DO_PLATFORM_ID_UNKNOWN}
-        DO_PLATFORM_ID_LINUX=${DO_PLATFORM_ID_LINUX}
-        DO_PLATFORM_ID_MAC=${DO_PLATFORM_ID_MAC}
-        DO_PLATFORM_ID_WINDOWS=${DO_PLATFORM_ID_WINDOWS}
+    set(sdk_compile_definitions
         DOSVC_BIN_NAME="${DOSVC_BIN_NAME}"
         DO_PLUGIN_APT_BIN_NAME="${DO_PLUGIN_APT_BIN_NAME}"
     )
 
-    set(sdk_public_includes
-        $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include/${DO_SDK_LIB_NAME}>
-    )
     set(sdk_private_includes
         "src/internal/rest"
         "src/internal/rest/util"
-        "src/internal"
-        ${docs_common_includes}
         ${include_directories_for_arm}
     )
 
@@ -98,10 +108,12 @@ target_include_directories(${DO_SDK_LIB_NAME}
         ${sdk_public_includes}
     PRIVATE
         ${sdk_private_includes}
+        ${sdk_private_includes_common}
 )
 target_compile_definitions(${DO_SDK_LIB_NAME} 
     PRIVATE
         ${sdk_compile_definitions}
+        ${sdk_compile_definitions_common}
 )
 target_link_libraries(${DO_SDK_LIB_NAME}
     PRIVATE 
