@@ -394,6 +394,10 @@ class LinuxBuildRunner(BuildRunnerBase):
         return 'linux'
 
     @property
+    def generator(self):
+        return 'Ninja'
+
+    @property
     def generate_options(self):
         generate_options = super().generate_options
 
