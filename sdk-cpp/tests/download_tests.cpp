@@ -215,6 +215,7 @@ TEST_F(DownloadTests, Download1PausedDownload2SameFileDownload1Resume)
 
     simpleDownload.resume();
     WaitForDownloadCompletion(simpleDownload);
+    simpleDownload.finalize();
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName)), g_largeFileSizeBytes);
 }
 

@@ -74,9 +74,9 @@ if(${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
     include(GNUInstallDirs)
 
     file(GLOB sdk_source
-    ${sdk_source_common}
-    "src/internal/rest/*.cpp"
-    "src/internal/rest/util/*.cpp"
+        ${sdk_source_common}
+        "src/internal/rest/*.cpp"
+        "src/internal/rest/util/*.cpp"
     )
 
     add_library(${DO_SDK_LIB_NAME} SHARED "${sdk_source}")
