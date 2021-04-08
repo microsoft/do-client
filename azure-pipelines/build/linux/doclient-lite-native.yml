@@ -13,8 +13,8 @@ trigger:
       - main
   paths:
     include:
-      - azure-pipelines/build/doclient-lite-native.yml
-      - azure-pipelines/build/templates/doclient-lite-native-steps.yml
+      - azure-pipelines/build/linux/doclient-lite-native.yml
+      - azure-pipelines/build/linux/templates/doclient-lite-native-steps.yml
       - client-lite/*
       - common/*
       - build/build.py
@@ -28,8 +28,8 @@ pr:
       - main
   paths:
     include:
-      - azure-pipelines/build/doclient-lite-native.yml
-      - azure-pipelines/build/templates/doclient-lite-native-steps.yml
+      - azure-pipelines/build/linux/doclient-lite-native.yml
+      - azure-pipelines/build/linux/templates/doclient-lite-native-steps.yml
       - client-lite/*
       - common/*
       - build/build.py
