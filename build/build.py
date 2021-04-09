@@ -101,14 +101,7 @@ class LinuxArgParser(ArgParserBase):
 class WindowsArgParser(ArgParserBase):
     def __init__(self):
         super().__init__()
-        self.parser.add_argument(
-            '--vcpkgdir', dest='vcpkgdir', type=str,
-            help='vcpkg installation directory for c++ packages on windows'
-        )
-        self.parser.add_argument(
-            '--arch', dest='arch', type=str,
-            help='The target architecture. e.g x86, x64, or arm.'
-        )
+        raise ValueError("Windows builds not supported yet")
 
 class MacArgPaser():
     def __init__(self):
