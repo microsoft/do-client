@@ -76,6 +76,10 @@ class ArgParserBase(object):
             '--static-analysis', dest='static_analysis', action='store_true',
             help='Run static analysis tools (cpplint)'
         )
+        self.parser.add_argument(
+            '--build-directory', dest='build_directory', type=str,
+            help='Override default build output directory'
+        )
 
     def parse(self):
         return self.parser.parse_args()
@@ -130,6 +134,7 @@ class BuildRunnerBase(object):
         self.project_root_path = get_project_root_path()
         self.cmake_target = None
         self.project = None
+        self.build_directory = None
 
         if (script_args.cmaketarget is None):
             self.cmake_target = "all"
@@ -160,6 +165,9 @@ class BuildRunnerBase(object):
         self.source_path = self.project_root_path
 
         self.build_time = datetime.datetime.utcnow().strftime("%Y%m%d.%H%M%S")
+
+        if self.script_args.build_directory:
+            self.build_directory = self.script_args.build_directory
 
     @property
     def compiler(self):
@@ -216,7 +224,7 @@ class BuildRunnerBase(object):
     @property
     def build_path(self):
         """Path for the build."""
-        return get_default_build_path(self.project, self.flavor)
+        return get_build_path(self.project, self.build_directory, self.flavor)
 
     def run(self):
         if self.cmake_target != None:
@@ -631,7 +639,7 @@ def get_vcpkg_toolchain_file_path(root_path):
     """
     return os.path.abspath(os.path.join(root_path, 'scripts', 'buildsystems', 'vcpkg.cmake'))
 
-def get_default_build_path(project, flavor=None):
+def get_build_path(project, build_directory=None, flavor=None):
     """Gets the default path to the build folder.
 
     Uses the 'flavor' property to construct the path if available.
@@ -643,7 +651,9 @@ def get_default_build_path(project, flavor=None):
     Returns:
         The default bin path.
     """
-    build_path = os.path.join(tempfile.gettempdir(), "build-deliveryoptimization-" + project, flavor)
+    if build_directory == None:
+        build_directory = tempfile.gettempdir()
+    build_path = os.path.join(build_directory, "build-deliveryoptimization-" + project, flavor)
     return build_path
 
 def get_env_var(name):
