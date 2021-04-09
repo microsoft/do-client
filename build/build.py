@@ -176,7 +176,6 @@ class BuildRunnerBase(object):
         if self.script_args.build_directory:
             self.build_directory = self.script_args.build_directory
 
-
     @property
     def compiler(self):
         """The compiler to use.
@@ -232,7 +231,7 @@ class BuildRunnerBase(object):
     @property
     def build_path(self):
         """Path for the build."""
-        return get_build_path(self.build_directory, self.project, self.flavor)
+        return get_build_path(self.project, self.build_directory, self.flavor)
 
     def run(self):
         if self.cmake_target != None:
@@ -647,7 +646,7 @@ def get_vcpkg_toolchain_file_path(root_path):
     """
     return os.path.abspath(os.path.join(root_path, 'scripts', 'buildsystems', 'vcpkg.cmake'))
 
-def get_build_path(build_directory, project, flavor=None):
+def get_build_path(project, build_directory=None, flavor=None):
     """Gets the default path to the build folder.
 
     Uses the 'flavor' property to construct the path if available.
