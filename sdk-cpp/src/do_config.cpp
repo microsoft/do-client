@@ -18,12 +18,34 @@ namespace msdoutil = microsoft::deliveryoptimization::util::details;
 const char* const g_dosvcBinName = DOSVC_BIN_NAME;
 const char* const g_doPluginAptBinName = DO_PLUGIN_APT_BIN_NAME;
 
+// Deprecated, but keeping here to not break API surface
 static int WriteIoTConnectionStringToConfigFile(const char* value) noexcept
 {
     try
     {
         boost::property_tree::ptree configTree;
         configTree.put("ADUC_IoTConnectionString", value);
+
+        // No other configs are used at this time so overwrite the whole file here
+        const std::string& filePath = microsoft::deliveryoptimization::details::GetConfigFilePath();
+        boost::property_tree::write_json(filePath, configTree);
+
+        return 0;
+    }
+    catch (const std::exception&)
+    {
+    }
+    // property_tree doesn't seem to offer an exception type that provides an error code.
+    // We do not (yet) log anything from the SDK either, so stick with returning -1 for all failure cases.
+    return -1;
+}
+
+static int WriteDOCacheHost(const char* value) noexcept
+{
+    try
+    {
+        boost::property_tree::ptree configTree;
+        configTree.put("DOCacheHost", value);
 
         // No other configs are used at this time so overwrite the whole file here
         const std::string& filePath = microsoft::deliveryoptimization::details::GetConfigFilePath();
@@ -135,6 +157,11 @@ static char* GetAllVersions()
         pBuffer[bufSize - 1] = '\0';
     }
     return pBuffer;
+}
+
+extern "C" int deliveryoptimization_set_cache_host(const char* value)
+{
+    return WriteDOCacheHost(value);
 }
 
 extern "C" int deliveryoptimization_set_iot_connection_string(const char* value)

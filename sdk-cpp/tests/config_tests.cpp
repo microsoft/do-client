@@ -47,6 +47,20 @@ TEST_F(ConfigTests, IoTConnectionString)
     ASSERT_EQ(value, std::string{expectedValue});
 }
 
+TEST_F(ConfigTests, DOCacheHost)
+{
+    // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Not credentials (false positive)")]
+    const char* expectedValue = "10.0.0.200";
+    int ret = deliveryoptimization_set_cache_host(expectedValue);
+    ASSERT_EQ(ret, 0);
+
+    boost::property_tree::ptree configTree;
+    boost::property_tree::read_json(msdod::GetConfigFilePath(), configTree);
+
+    const std::string value = configTree.get<std::string>("DOCacheHost");
+    ASSERT_EQ(value, std::string{ expectedValue });
+}
+
 TEST(ConfigVersionTests, GetVersion)
 {
     char* version = deliveryoptimization_get_components_version();
