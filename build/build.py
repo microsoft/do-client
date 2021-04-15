@@ -143,7 +143,7 @@ class BuildRunnerBase(object):
         else:
             self.config = 'debug'
 
-        if (self.config not in ['debug', 'release', 'relwithdebinfo', 'minsizerel']):
+        if self.config not in ['debug', 'release', 'relwithdebinfo', 'minsizerel']:
             raise ValueError('Building configuration for {self.platform} is not supported.'.format(self.config, self.platform))
         if self.script_args.generator:
             self.generator = self.script_args.generator
