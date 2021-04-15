@@ -26,4 +26,4 @@ jobs:
     parameters:
       targetOsArch: ${{parameters.targetOS}}-${{parameters.targetArch}}
       dockerImageName: ${{parameters.dockerImageName}}
-      config: release
+      config: minsizerelease

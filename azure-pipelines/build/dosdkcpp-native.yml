@@ -55,5 +55,5 @@ jobs:
   - template: templates/dosdkcpp-native-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804-x64'
-      config: release
+      config: minsizerel
       skipTests: true

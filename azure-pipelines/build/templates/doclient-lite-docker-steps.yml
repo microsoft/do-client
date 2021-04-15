@@ -6,7 +6,7 @@ parameters:
   type: string
 - name: dockerImageName # example: jimsonmsft/debian10-arm32:latest
   type: string
-- name: config          # debug/release
+- name: config          # debug/release/minsizerel/relwithdebuginfo
   type: string
 
 steps:
