@@ -31,7 +31,7 @@ ninja
 ninja install
 
 # The latest native-version of gtest on debian10 currently has a bug where CMakeLists doesn't declare an install target, causing 'make install' to fail
-# Clone from source and use v2.10.10 instead, since gtest is a source package anyways 
+# Clone from source and use release-1.10.0 instead, since gtest is a source package anyways 
 mkdir /tmp/gtest
 cd /tmp/gtest
 git clone https://github.com/google/googletest.git .
