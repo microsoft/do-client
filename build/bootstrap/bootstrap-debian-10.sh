@@ -42,5 +42,4 @@ cmake /tmp/gtest
 make 
 make install 
 
-
 echo "Finished bootstrapping"
