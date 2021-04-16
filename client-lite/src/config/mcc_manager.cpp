@@ -8,7 +8,6 @@ static std::string GetHostNameFromIoTConnectionString(const char* connectionStri
 {
     DoLogDebug("Parsing connection string: %s", connectionString);
 
-    // Format: HostName=<iothub_host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>;GatewayHostName=<edge device hostname>
     static const char* toFind = "GatewayHostName=";
     const char* start = strcasestr(connectionString, toFind);
     if (start == NULL)

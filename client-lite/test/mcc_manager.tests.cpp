@@ -96,12 +96,10 @@ protected:
 TEST_F(MCCManagerTests, ParseIoTConnectionString)
 {
     // Gateway specified as the last element
-    // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Not credentials (false positive)")]
     SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=" TEST_MOCK_MCC_HOST);
     _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST);
 
     // Gateway specified in the middle
-    // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Not credentials (false positive)")]
     SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;GatewayHostName=" TEST_MOCK_MCC_HOST ";DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=");
     _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST);
 
@@ -112,7 +110,6 @@ TEST_F(MCCManagerTests, ParseIoTConnectionString)
 
 TEST_F(MCCManagerTests, AdminConfigOverride)
 {
-    // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Not credentials (false positive)")]
     SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=" TEST_MOCK_MCC_HOST);
     SetDOCacheHostConfig(TEST_MOCK_MCC_HOST2);
     _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST2);
@@ -192,7 +189,6 @@ TEST_F(MCCManagerTests, DISABLED_Download404NoFallback)
 // Set invalid MCC host and no-fallback config. Expect download to timeout.
 TEST_F(MCCManagerTests, NoFallbackDownload)
 {
-    // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Not credentials (false positive)")]
     SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=ahdkhkasdhaksd");
     SetFallbackDelayConfig(g_cacheHostFallbackDelayNoFallback);
 
@@ -222,7 +218,6 @@ TEST_F(MCCManagerTests, NoFallbackDownload)
 // and the issue on WSL can be reproduced with the BoostResolver* tests below. Test works fine on Ubuntu 18.04 VM.
 TEST_F(MCCManagerTests, FallbackWithDelayDownload)
 {
-    // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Not credentials (false positive)")]
     SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=ahdkhkasdhaksd");
 
     const auto fallbackDelay = 45s;
