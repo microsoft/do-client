@@ -30,7 +30,7 @@ COPY bootstrap-ubuntu-18.04.sh /tmp/bootstrap-ubuntu-18.04.sh
 
 WORKDIR /tmp/
 RUN chmod +x bootstrap-ubuntu-18.04.sh
-RUN ./bootstrap-ubuntu-18.04.sh
+RUN ./bootstrap-ubuntu-18.04.sh --no-tools
 
 ENTRYPOINT [ "/bin/bash", "-c"]
 

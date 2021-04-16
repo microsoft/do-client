@@ -30,11 +30,17 @@ cmake -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_POSITION_INDEPENDENT_CODE=O
 ninja
 ninja install
 
-# libgtest-dev is a source package and requires manual installation
-mkdir /tmp/build_gtest/
-cd /tmp/build_gtest
-cmake /usr/src/gtest
-make
+# The latest native-version of gtest on debian10 currently has a bug where CMakeLists doesn't declare an install target, causing 'make install' to fail
+# Clone from source and use v2.10.10 instead, since gtest is a source package anyways 
+mkdir /tmp/gtest
+cd /tmp/gtest
+git clone https://github.com/google/googletest.git .
+git checkout release-1.10.0
+mkdir cmake 
+cd cmake
+cmake /tmp/gtest
+make 
 make install 
+
 
 echo "Finished bootstrapping"
