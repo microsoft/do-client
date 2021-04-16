@@ -52,5 +52,5 @@ jobs:
   - template: templates/doclient-lite-native-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804-x64'
-      config: release
+      config: minsizerel
       skipTests: true

@@ -4,7 +4,7 @@
 parameters:
 - name: targetOsArch    # example: ubuntu18.04-x64
   type: string
-- name: config          # debug/release
+- name: config          # debug/release/minsizerel/relwithdebuginfo
   type: string
 - name: skipTests
   type: boolean

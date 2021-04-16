@@ -54,4 +54,4 @@ jobs:
   - template: templates/dopapt-native-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804-x64'
-      config: release
+      config: minsizerel
