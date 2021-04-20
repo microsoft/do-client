@@ -7,7 +7,9 @@ project (${DOSVC_BIN_NAME} VERSION 0.4.0)
 option (DO_PROXY_SUPPORT "Set DO_PROXY_SUPPORT to OFF to turn off proxy support for downloads and thus remove dependency on libproxy." ON)
 
 add_definitions(-DBOOST_ALL_DYN_LINK=1)
-add_definitions(-DBOOST_LOG_DYN_LINK=1)
+# In more recent Boost versions, the posix dynamic linker (ld) has trouble linking to the right version of boost log
+# See: https://github.com/boostorg/log/issues/46
+add_definitions(-DBOOST_LOG_DYN_LINK=1) 
 
 # Get full debug info and also define DEBUG macro in debug builds
 string(TOLOWER ${CMAKE_BUILD_TYPE} DO_BUILD_TYPE)
@@ -115,8 +117,7 @@ target_link_libraries(${DOSVC_BIN_NAME}
     doversion
     docs_common
     cpprestsdk::cpprest
-    ${Boost_LIBRARIES}
-    ${Boost_LOG_LIBRARY})
+    ${Boost_LIBRARIES})
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     include(GNUInstallDirs)
