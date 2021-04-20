@@ -17,7 +17,7 @@ apt-get install -y libboost-all-dev libgtest-dev libproxy-dev libmsgsl-dev libss
 # libssl-dev also required but installed above because plugin uses libssl-dev directly
 apt-get install -y zlib1g-dev
 
-# Cpprestsdk 2.10.2 is the latest publicly available version on Ubuntu 18.04
+# Cpprestsdk 2.10.15 is the latest publicly available version on Ubuntu 20.04
 # Build and install v2.10.16 as it's the earliest version which supports url-redirection
 mkdir /tmp/cpprestsdk
 cd /tmp/cpprestsdk
