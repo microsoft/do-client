@@ -110,11 +110,14 @@ add_do_version_lib(${PROJECT_NAME} ${PROJECT_VERSION})
 # Add the executable
 add_executable(${DOSVC_BIN_NAME} ${files_docs_exe})
 target_include_directories(${DOSVC_BIN_NAME} PRIVATE ${docs_common_includes})
+# For Ubuntu 20.04 support, need to explicitly link to Boost_LOG_LIBRARIES, breaking changes were made in later boost versions
+# See https://github.com/boostorg/log/issues/18 and https://github.com/boostorg/log/issues/46
 target_link_libraries(${DOSVC_BIN_NAME}
     doversion
     docs_common
     cpprestsdk::cpprest
-    ${Boost_LIBRARIES})
+    ${Boost_LIBRARIES}
+    ${Boost_LOG_LIBRARIES})
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     include(GNUInstallDirs)
