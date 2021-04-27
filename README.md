@@ -104,8 +104,8 @@ This will handle installing to the appropriate paths, and also the necessary set
 > sudo apt get install ./deliveryoptimization-plugin-apt*.deb
 ```
 
-2. If you build and install using cmake, or through some other custom means, be sure to setup the DO user/groups correctly  
-You can reference this script as a reference located in https://github.com/microsoft/do-client/tree/main/client-lite/build
+2. If you build and install using cmake, or through some other custom means, be sure to setup the DO user/groups correctly in your installation  
+You can reference this [script](https://github.com/microsoft/do-client/tree/main/client-lite/build) as a reference
 
 ### Testing DO Client components
 
