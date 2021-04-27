@@ -88,6 +88,24 @@ With the sdk installed, you can now build the plugin by navigating back to the p
 
 At this point, you should have built and packaged all components
 
+### Installing DO Client components
+
+There are a couple ways for you to install the DO client components
+
+1. If you have built the component into a debian package, you can simply find the debian package and install like detailed above  
+This will handle installing to the appropriate paths, and also the necessary setup of DO user/group permissions needed for DO-agent
+
+```markdown
+> cd /tmp/build-deliveryoptimization-sdk/linux-debug/
+> sudo apt-get install ./libdeliveryoptimization*.deb
+> cd /tmp/build-deliveryoptimization-agent/linux-debug/
+> sudo apt-get install ./deliveryoptimization-agent*.deb
+> cd /tmp/build-deliveryoptimization-plugin-apt/linux-debug/
+> sudo apt get install ./deliveryoptimization-plugin-apt*.deb
+```
+
+2. If you build and install using cmake, or through some other custom means, be sure to setup the DO user/groups correctly  
+You can reference this script as a reference located in https://github.com/microsoft/do-client/tree/main/client-lite/build
 
 ### Testing DO Client components
 
