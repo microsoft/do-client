@@ -100,6 +100,23 @@ TEST_F(DownloadTests, CancelBlockingDownloadTest)
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
 }
 
+TEST_F(DownloadTests, BlockingDownloadTimeout)
+{
+    auto startTime = std::chrono::steady_clock::now();
+    try
+    {
+        msdo::download::download_url_to_path(g_largeFileUrl, g_tmpFileName, std::chrono::seconds(2));
+        ASSERT_TRUE(!"Expected download to time out");
+    }
+    catch (const msdo::exception& e)
+    {
+        ASSERT_EQ(e.error_code(), static_cast<int32_t>(std::errc::timed_out));
+        auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - startTime);
+        ASSERT_GE(elapsedTime, std::chrono::seconds(2));
+        ASSERT_LE(elapsedTime, std::chrono::seconds(5));
+    }
+}
+
 // Note: This test takes a long time to execute due to 30 retry intervals from DOCS
 TEST_F(DownloadTests, SimpleDownloadTest_With404Url)
 {
