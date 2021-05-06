@@ -103,6 +103,8 @@ private:
     // Need this because we will not move out of Transferring state while waiting before a retry.
     bool _fHttpRequestActive { false };
 
+    bool _fDestFileCreated { false };
+
 private:
     void _PerformStateChange(DownloadState newState);
     void _Start();

@@ -68,6 +68,8 @@ class MCCManagerTests : public ::testing::Test
 public:
     void SetUp() override
     {
+        ClearTestTempDir();
+
         if (cppfs::exists(g_adminConfigFilePath))
         {
             cppfs::remove(g_adminConfigFilePath);

@@ -115,6 +115,7 @@ TEST_F(DownloadTests, BlockingDownloadTimeout)
         ASSERT_GE(elapsedTime, std::chrono::seconds(2));
         ASSERT_LE(elapsedTime, std::chrono::seconds(5));
     }
+    ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
 }
 
 // Note: This test takes a long time to execute due to 30 retry intervals from DOCS
@@ -163,32 +164,37 @@ TEST_F(DownloadTests, SimpleDownloadTest_With404UrlAndMalformedPath)
     }
 }
 
-// TODO(shishirb): Commented out until DOCS throws for trying to download to same destination
-//void DownloadTests::Download1PausedDownload2SameDestTest()
-//{
-    //ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-    //msdo::download simpleDownload(g_largeFileUrl, g_tmpFileName);
-    //msdo::download_status status = simpleDownload.get_status();
-    //ASSERT_EQ(status.state(), msdo::download_state::created);
-    //ASSERT_EQ(status.bytes_transferred(), 0u);
+TEST_F(DownloadTests, Download1PausedDownload2SameDestTest)
+{
+    ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
+    msdo::download simpleDownload(g_largeFileUrl, g_tmpFileName);
+    msdo::download_status status = simpleDownload.get_status();
+    ASSERT_EQ(status.state(), msdo::download_state::created);
+    ASSERT_EQ(status.bytes_transferred(), 0u);
 
-    //simpleDownload.start();
-    //simpleDownload.pause();
-    //status = simpleDownload.get_status();
-    //ASSERT_EQ(status.state(), msdo::download_state::paused);
+    simpleDownload.start();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    simpleDownload.pause();
+    status = simpleDownload.get_status();
+    ASSERT_EQ(status.state(), msdo::download_state::paused);
+    ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName));
 
-    //try
-    //{
-    //    msdo::download simpleDownload2(g_smallFileUrl, g_tmpFileName);
-    //    ASSERT_TRUE(false);
-    //}
-    //catch
-    //{
-    //    //TODO: Use proper error code for trying to download duplicate file dest.
-    //    ASSERT_EQ(e.error_code(), -2147024322);
-    //    ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-    //}
-//}
+    msdo::download simpleDownload2(g_smallFileUrl, g_tmpFileName);
+    try
+    {
+        simpleDownload2.start();
+       ASSERT_TRUE(false);
+    }
+    catch (const msdo::exception& e)
+    {
+       ASSERT_EQ(e.error_code(), DO_ERROR_FROM_XPLAT_SYSERR(EEXIST));
+    }
+    simpleDownload2.abort();
+    ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName)); // not deleted, the earlier download is still active
+
+    simpleDownload.abort();
+    ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
+}
 
 TEST_F(DownloadTests, Download1PausedDownload2SameFileDownload1Resume)
 {
