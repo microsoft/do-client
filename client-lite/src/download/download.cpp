@@ -253,18 +253,7 @@ void Download::_Start()
     THROW_HR_IF(DO_E_DOWNLOAD_NO_URI, _url.empty());
     THROW_HR_IF(DO_E_FILE_DOWNLOADSINK_UNSPECIFIED, _destFilePath.empty());
 
-    // TODO(shishirb) expect file to not exist
-    _fileStream = std::make_unique<std::fstream>();
-    _fileStream->exceptions(std::fstream::badbit | std::fstream::failbit);
-    try
-    {
-        _fileStream->open(_destFilePath, (std::fstream::out | std::fstream::binary | std::fstream::trunc));
-    }
-    catch (const std::system_error& e)
-    {
-        THROW_HR_MSG(E_INVALIDARG, "Error: %d, %s, file: %s", e.code().value(), e.what(), _destFilePath.data());
-    }
-
+    _fileStream = DOFile::Create(_destFilePath);
     _httpAgent = std::make_unique<HttpAgent>(*this);
     _proxyList.Refresh(_url);
 
@@ -275,18 +264,10 @@ void Download::_Start()
 void Download::_Resume()
 {
     DO_ASSERT(_httpAgent);
-    DO_ASSERT(_fileStream);
     // BytesTotal can be zero if the start request never completed due to an error/pause
     DO_ASSERT((_status.BytesTotal != 0) || (_status.BytesTransferred == 0));
 
-    try
-    {
-        _fileStream->open(_destFilePath, (std::fstream::out | std::fstream::binary | std::fstream::app));
-    }
-    catch (const std::system_error& e)
-    {
-        THROW_HR_MSG(E_INVALIDARG, "Error: %d, %s, file: %s", e.code().value(), e.what(), _destFilePath.data());
-    }
+    _fileStream = DOFile::Open(_destFilePath);
 
     if ((_status.BytesTotal != 0) && (_status.BytesTransferred == _status.BytesTotal))
     {
@@ -310,14 +291,14 @@ void Download::_Pause()
     _httpAgent->Close();    // waits until all callbacks are complete
     _timer.Stop();
     _fHttpRequestActive = false;
-    _fileStream->close();   // safe to close now that no callbacks are expected
+    _fileStream.Close();   // safe to close now that no callbacks are expected
 }
 
 void Download::_Finalize()
 {
     _httpAgent->Close();    // waits until all callbacks are complete
     _fHttpRequestActive = false;
-    _fileStream.reset();    // safe since no callbacks are expected
+    _fileStream.Close();    // safe since no callbacks are expected
     _CancelTasks();
 }
 
@@ -328,7 +309,7 @@ void Download::_Abort() try
         _httpAgent->Close();
     }
     _timer.Stop();
-    _fileStream.reset();
+    _fileStream.Close();
     _CancelTasks();
     if (!_destFilePath.empty())
     {
@@ -501,12 +482,7 @@ HRESULT Download::OnHeadersAvailable(UINT64 httpContext, UINT64) try
 
 HRESULT Download::OnData(_In_reads_bytes_(cbData) BYTE* pData, UINT cbData, UINT64, UINT64) try
 {
-    const auto before = _fileStream->tellp();
-    _fileStream->write(reinterpret_cast<const char*>(pData), cbData);
-    const auto after = _fileStream->tellp();
-    _fileStream->flush();
-    DO_ASSERT(before < after);
-    RETURN_HR_IF(HRESULT_FROM_WIN32(ERROR_BAD_LENGTH), (after - before) != cbData);
+    _fileStream.Append(pData, cbData);
     _taskThread.Sched([this, cbData]()
     {
         _status.BytesTransferred += cbData;

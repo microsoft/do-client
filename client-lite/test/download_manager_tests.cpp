@@ -271,3 +271,23 @@ TEST_F(DownloadManagerTests, InvalidState)
         manager.SetDownloadProperty(id, DownloadProperty::LocalPath, destFile);
     });
 }
+
+TEST_F(DownloadManagerTests, DownloadPathAccessDenied)
+{
+    const auto id = manager.CreateDownload(g_smallFileUrl, "/var/run/doagent-test.bin");
+    VerifyDOResultException(HRESULT_FROM_XPLAT_SYSERR(EACCES), [&]()
+    {
+        manager.StartDownload(id);
+    });
+    manager.AbortDownload(id);
+}
+
+TEST_F(DownloadManagerTests, DownloadPathNotFound)
+{
+    const auto id = manager.CreateDownload(g_smallFileUrl, "/var2/run/doagent-test.bin");
+    VerifyDOResultException(HRESULT_FROM_XPLAT_SYSERR(ENOENT), [&]()
+    {
+        manager.StartDownload(id);
+    });
+    manager.AbortDownload(id);
+}

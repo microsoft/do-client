@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <memory>
+#include "do_file.h"
 #include "do_guid.h"
 #include "download_progress_tracker.h"
 #include "download_status.h"
@@ -89,7 +90,7 @@ private:
 
     StopWatch _timer;
 
-    std::unique_ptr<std::fstream> _fileStream;
+    DOFile _fileStream;
     std::unique_ptr<IHttpAgent> _httpAgent;
     std::string _responseHeaders;
     UINT _httpStatusCode { 0 };
