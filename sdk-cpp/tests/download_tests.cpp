@@ -17,7 +17,8 @@
 namespace msdo = microsoft::deliveryoptimization;
 using namespace std::chrono_literals; // NOLINT(build/namespaces)
 
-#define HTTP_E_STATUS_NOT_FOUND                 ((int32_t)0x80190194L)
+#define DO_ERROR_FROM_XPLAT_SYSERR(err) (int32_t)(0xC0000000 | (0xD0 << 16) | ((int32_t)(err) & 0x0000FFFF))
+#define HTTP_E_STATUS_NOT_FOUND         ((int32_t)0x80190194L)
 
 void WaitForDownloadCompletion(msdo::download& simpleDownload)
 {
@@ -124,7 +125,7 @@ TEST_F(DownloadTests, SimpleDownloadTest_WithMalformedPath)
     }
     catch (const msdo::exception& e)
     {
-        ASSERT_EQ(e.error_code(), static_cast<int32_t>(msdo::errc::invalid_arg));
+        ASSERT_EQ(e.error_code(), DO_ERROR_FROM_XPLAT_SYSERR(ENOENT));
         ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
     }
 }
@@ -140,7 +141,7 @@ TEST_F(DownloadTests, SimpleDownloadTest_With404UrlAndMalformedPath)
     }
     catch (const msdo::exception& e)
     {
-        ASSERT_EQ(e.error_code(), static_cast<int32_t>(msdo::errc::invalid_arg));
+        ASSERT_EQ(e.error_code(), DO_ERROR_FROM_XPLAT_SYSERR(ENOENT));
         ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
     }
 }
@@ -485,17 +486,4 @@ TEST_F(DownloadTests, MultipleRestPortFileExists_Download)
 
     TestHelpers::CleanupWorkingDir();
 #endif
-}
-
-TEST_F(DownloadTests, DownloadToNotExistentPath)
-{
-    try
-    {
-        msdo::download::download_url_to_path(g_smallFileUrl, "/tmp1234/dosdk/testfile.bin");
-        ASSERT_TRUE(!"Expected operation to throw exception");
-    }
-    catch (const msdo::exception& e)
-    {
-        ASSERT_EQ(e.error_code(), static_cast<int32_t>(0xC0D00000 | ENOENT));
-    }
 }
