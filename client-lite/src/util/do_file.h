@@ -29,6 +29,7 @@ public:
 
     static DOFile Create(const std::string& path);
     static DOFile Open(const std::string& path);
+    static void Delete(const std::string& path);
 
     void Append(_In_reads_bytes_(cbData) BYTE* pData, UINT cbData) const;
     void Close();

@@ -1,7 +1,6 @@
 #include "do_common.h"
 #include "download.h"
 
-#include <boost/filesystem.hpp>
 #include <cpprest/uri.h>
 #include "do_error.h"
 #include "event_data.h"
@@ -254,6 +253,7 @@ void Download::_Start()
     THROW_HR_IF(DO_E_FILE_DOWNLOADSINK_UNSPECIFIED, _destFilePath.empty());
 
     _fileStream = DOFile::Create(_destFilePath);
+    _fDestFileCreated = true;
     _httpAgent = std::make_unique<HttpAgent>(*this);
     _proxyList.Refresh(_url);
 
@@ -311,9 +311,11 @@ void Download::_Abort() try
     _timer.Stop();
     _fileStream.Close();
     _CancelTasks();
-    if (!_destFilePath.empty())
+    // Delete file only if this download is the creator/owner. The abort could be from an
+    // error downloading to an already existing file.
+    if (_fDestFileCreated && !_destFilePath.empty())
     {
-        boost::filesystem::remove(_destFilePath);
+        DOFile::Delete(_destFilePath);
     }
 } CATCH_LOG()
 

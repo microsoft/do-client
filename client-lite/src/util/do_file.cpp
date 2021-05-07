@@ -13,25 +13,34 @@ DOFile::DOFile(int fd) :
 
 DOFile DOFile::Create(const std::string& path)
 {
-    // TODO(shishirb) expect file to not exist
-    int fd = open(path.data(), O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
-    if (fd == -1)
-    {
-        THROW_HR_MSG(HRESULT_FROM_XPLAT_SYSERR(errno), "Cannot create file at %s", path.data());
-    }
-
+    int fd = open(path.data(), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+    const HRESULT hr = (fd != -1) ? S_OK : HRESULT_FROM_XPLAT_SYSERR(errno);
+    DoLogInfoHr(hr, "Create file %s", path.data());
+    THROW_IF_FAILED(hr);
     return DOFile{fd};
 }
 
 DOFile DOFile::Open(const std::string& path)
 {
     int fd = open(path.data(), O_APPEND | O_WRONLY);
-    if (fd == -1)
-    {
-        THROW_HR_MSG(HRESULT_FROM_XPLAT_SYSERR(errno), "Cannot open file at %s", path.data());
-    }
-
+    const HRESULT hr = (fd != -1) ? S_OK : HRESULT_FROM_XPLAT_SYSERR(errno);
+    DoLogInfoHr(hr, "Open file %s", path.data());
+    THROW_IF_FAILED(hr);
     return DOFile{fd};
+}
+
+void DOFile::Delete(const std::string& path)
+{
+    HRESULT hr = S_OK;
+    if (remove(path.data()) == -1)
+    {
+        const auto err = errno;
+        if (err != ENOENT)
+        {
+            hr = HRESULT_FROM_XPLAT_SYSERR(err);
+        }
+    }
+    DoLogInfoHr(hr, "Delete file %s", path.data());
 }
 
 void DOFile::Append(_In_reads_bytes_(cbData) BYTE* pData, UINT cbData) const

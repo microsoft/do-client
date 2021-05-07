@@ -14,7 +14,7 @@ namespace cppfs = std::experimental::filesystem;
 
 extern const cppfs::path g_testTempDir;
 
-inline void ClearTempDir()
+inline void ClearTestTempDir()
 {
     if (cppfs::exists(g_testTempDir))
     {
