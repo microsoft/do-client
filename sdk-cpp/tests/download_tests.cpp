@@ -194,6 +194,12 @@ TEST_F(DownloadTests, Download1PausedDownload2SameDestTest)
 
     simpleDownload.abort();
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
+
+    // download2 should now succeed
+    simpleDownload2 = msdo::download{g_smallFileUrl, g_tmpFileName};
+    simpleDownload2.start();
+    WaitForDownloadCompletion(simpleDownload2);
+    ASSERT_EQ(boost::filesystem::file_size(g_tmpFileName), g_smallFileSizeBytes);
 }
 
 TEST_F(DownloadTests, Download1PausedDownload2SameFileDownload1Resume)
