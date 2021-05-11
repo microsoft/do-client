@@ -52,14 +52,8 @@ void PortDiscoveryTests::TearDown()
     }
 }
 
-TEST_F(PortDiscoveryTests, DiscoverPortTest)
-{
-    std::string port = msdod::CPortFinder::DiscoverDOPort();
-    ASSERT_EQ(port, samplePortNumber);
-}
-
 TEST_F(PortDiscoveryTests, DiscoverUrlTest)
 {
-    std::string url = msdod::CPortFinder::GetDOBaseUrl(false);
-    ASSERT_EQ(url, msdod::CPortFinder::ConstructLocalUrl(samplePortNumber));
+    std::string url = msdod::CPortFinder::GetDOPort(false);
+    ASSERT_EQ(url, samplePortNumber);
 }

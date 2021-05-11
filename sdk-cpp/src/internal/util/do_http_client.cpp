@@ -23,8 +23,9 @@ CHttpClient& CHttpClient::GetInstance()
 void CHttpClient::_InitializeDOConnection(bool launchClientFirst)
 {
     std::unique_lock<std::mutex> lock(_mutex);
-    _httpClient = std::make_unique<web::http::client::http_client>(
-        utility::conversions::to_string_t(CPortFinder::GetDOBaseUrl(launchClientFirst)));
+    const auto port = CPortFinder::GetDOPort(launchClientFirst);
+    const auto url = "http://127.0.0.1:" + port + "/";
+    _httpClient = std::make_unique<web::http::client::http_client>(url);
 }
 
 void CHttpClient::HTTPErrorCheck(const web::http::http_response& resp)
