@@ -1,6 +1,7 @@
 
 #include "do_http_client.h"
 
+#include <boost/property_tree/json_parser.hpp>
 #include <cpprest/details/basic_types.h>
 #include <cpprest/filestream.h>
 #include <cpprest/http_client.h>
@@ -28,7 +29,7 @@ void CHttpClient::_InitializeDOConnection(bool launchClientFirst)
     _httpClient = std::make_unique<web::http::client::http_client>(url);
 }
 
-void CHttpClient::HTTPErrorCheck(const web::http::http_response& resp)
+void g_ThrowIfHttpError(const web::http::http_response& resp)
 {
     if (resp.status_code() != 200)
     {
@@ -40,26 +41,30 @@ void CHttpClient::HTTPErrorCheck(const web::http::http_response& resp)
     }
 }
 
-web::http::http_response CHttpClient::SendRequest(const web::http::method& method, const utility::string_t& builderAsString, bool retry)
+boost::property_tree::ptree CHttpClient::SendRequest(const web::http::method& method, const utility::string_t& url, bool retry)
 {
+    web::http::http_response response;
     try
     {
-        return _httpClient->request(method, builderAsString).get();
+        response = _httpClient->request(method, url).get();
     }
     catch (const web::http::http_exception& e)
     {
         if (retry)
         {
             _InitializeDOConnection(true);
-            return SendRequest(method, builderAsString, false);
+            return SendRequest(method, url, false);
         }
 
         ThrowException(e.error_code());
     }
 
-    // Control flow should never get here.
-    // Adding empty return to make the compiler happy.
-    return {};
+    g_ThrowIfHttpError(response);
+
+    std::stringstream ss(response.extract_utf8string().get());
+    boost::property_tree::ptree returnValue;
+    boost::property_tree::read_json(ss, returnValue);
+    return returnValue;
 }
 
 CHttpClient::CHttpClient()

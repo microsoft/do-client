@@ -2,6 +2,7 @@
 
 #include <mutex>
 
+#include <boost/property_tree/ptree.hpp>
 #include <cpprest/details/basic_types.h>
 #include <cpprest/http_msg.h>
 
@@ -21,8 +22,7 @@ class CHttpClient : CDONoncopyable
 public:
     static CHttpClient& GetInstance();
 
-    static void HTTPErrorCheck(const web::http::http_response& resp);
-    web::http::http_response SendRequest(const web::http::method& method, const utility::string_t& builderAsString, bool retry = true);
+    boost::property_tree::ptree SendRequest(const web::http::method& method, const utility::string_t& url, bool retry = true);
 
 private:
     CHttpClient();
