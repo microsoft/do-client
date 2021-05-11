@@ -62,29 +62,6 @@ web::http::http_response CHttpClient::SendRequest(const web::http::method& metho
     return {};
 }
 
-web::http::http_response CHttpClient::SendRequest(const web::http::method& method, const utility::string_t& builderAsString,
-    const web::json::value& body, bool retry)
-{
-    try
-    {
-        return _httpClient->request(method, builderAsString, body).get();
-    }
-    catch (const web::http::http_exception& e)
-    {
-        if (retry)
-        {
-            _InitializeDOConnection(true);
-            return SendRequest(method, builderAsString, body, false);
-        }
-
-        ThrowException(e.error_code());
-    }
-
-    // Control flow should never get here.
-    // Adding empty return to make the compiler happy.
-    return {};
-}
-
 CHttpClient::CHttpClient()
 {
     _InitializeDOConnection();
