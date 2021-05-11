@@ -12,16 +12,6 @@ namespace web::http::client
 class http_client;
 }
 
-namespace web::http
-{
-class http_response;
-}
-
-namespace web::json
-{
-class value;
-}
-
 extern const utility::string_t g_downloadUriPart;
 
 namespace microsoft::deliveryoptimization::details
@@ -33,8 +23,6 @@ public:
 
     static void HTTPErrorCheck(const web::http::http_response& resp);
     web::http::http_response SendRequest(const web::http::method& method, const utility::string_t& builderAsString, bool retry = true);
-    web::http::http_response SendRequest(const web::http::method& method, const utility::string_t& builderAsString,
-        const web::json::value& body, bool retry = true);
 
 private:
     CHttpClient();
