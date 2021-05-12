@@ -50,6 +50,16 @@ void TestHelpers::RestartService(const std::string& name)
     dtu::ExecuteSystemCommand(restartCmd.data());
 }
 
+void TestHelpers::StartService(const std::string& name)
+{
+    dtu::ExecuteSystemCommand(dtu::FormatString("systemctl start %s", name.c_str()).data());
+}
+
+void TestHelpers::StopService(const std::string& name)
+{
+    dtu::ExecuteSystemCommand(dtu::FormatString("systemctl stop %s", name.c_str()).data());
+}
+
 int TestHelpers::_KillProcess(int pid, int signal)
 {
     try

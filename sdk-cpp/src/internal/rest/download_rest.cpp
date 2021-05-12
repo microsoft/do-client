@@ -1,35 +1,34 @@
-
 #include "download_rest.h"
 
+#include <map>
 #include <thread>
-
-#include <cpprest/details/basic_types.h>
 
 #include "do_exceptions_internal.h"
 #include "do_exceptions.h"
 #include "do_http_client.h"
+#include "do_url_encode.h"
 
 namespace msdo = microsoft::deliveryoptimization;
-namespace cpprest_util_conv = utility::conversions;
 using namespace std::chrono_literals; // NOLINT(build/namespaces)
 
 const int g_maxNumRetryAttempts = 3;
 
+const char* const g_downloadUriPart = "download";
+
 namespace microsoft::deliveryoptimization::details
 {
+
 CDownloadRest::CDownloadRest(const std::string& uri, const std::string& downloadFilePath)
 {
-    web::uri_builder builder(g_downloadUriPart);
-    builder.append_path(U("create"));
-
-    builder.append_query(U("Uri"), cpprest_util_conv::to_string_t(uri));
-    builder.append_query(U("DownloadFilePath"), cpprest_util_conv::to_string_t(downloadFilePath));
+    std::stringstream url;
+    url << g_downloadUriPart << "/create" << "?Uri=" << Url::EncodeDataString(uri)<< "&DownloadFilePath="
+        << Url::EncodeDataString(downloadFilePath);
 
     for (int retryAttempts = 0; retryAttempts < g_maxNumRetryAttempts; retryAttempts++)
     {
         try
         {
-            const auto respBody = CHttpClient::GetInstance().SendRequest(web::http::methods::POST, builder.to_string());
+            const auto respBody = CHttpClient::GetInstance().SendRequest(CHttpClient::POST, url.str());
             _id = respBody.get<std::string>("Id");
             return;
         }
@@ -78,24 +77,23 @@ void CDownloadRest::Abort()
 
 msdo::download_status CDownloadRest::GetStatus()
 {
-    web::uri_builder builder(g_downloadUriPart);
-    builder.append_path(U("getstatus"));
-    builder.append_query(U("Id"), cpprest_util_conv::to_string_t(_id));
+    std::stringstream url;
+    url << g_downloadUriPart << "/getstatus" << "?Id=" << _id;
 
-    const auto respBody = CHttpClient::GetInstance().SendRequest(web::http::methods::GET, builder.to_string());
+    const auto respBody = CHttpClient::GetInstance().SendRequest(CHttpClient::GET, url.str());
 
     uint64_t bytesTotal = respBody.get<uint64_t>("BytesTotal");
     uint64_t bytesTransferred = respBody.get<uint64_t>("BytesTransferred");
     int32_t errorCode = respBody.get<int32_t>("ErrorCode");
     int32_t extendedErrorCode = respBody.get<int32_t>("ExtendedErrorCode");
 
-    static const std::map<utility::string_t, download_state> stateMap =
-        {{ U("Created"), download_state::created },
-        { U("Transferring"), download_state::transferring },
-        { U("Transferred"), download_state::transferred },
-        { U("Finalized"), download_state::finalized },
-        { U("Aborted"), download_state::aborted },
-        { U("Paused"), download_state::paused }};
+    static const std::map<std::string, download_state> stateMap =
+        {{ "Created", download_state::created },
+        { "Transferring", download_state::transferring },
+        { "Transferred", download_state::transferred },
+        { "Finalized", download_state::finalized },
+        { "Aborted", download_state::aborted },
+        { "Paused", download_state::paused }};
 
     download_state status = download_state::created;
     auto it = stateMap.find(respBody.get<std::string>("Status"));
@@ -114,11 +112,9 @@ msdo::download_status CDownloadRest::GetStatus()
 
 void CDownloadRest::_DownloadOperationCall(const std::string& type)
 {
-    web::uri_builder builder(g_downloadUriPart);
-    builder.append_path(cpprest_util_conv::to_string_t(type));
-    builder.append_query(U("Id"), cpprest_util_conv::to_string_t(_id));
-
-    (void)CHttpClient::GetInstance().SendRequest(web::http::methods::POST, builder.to_string());
+    std::stringstream url;
+    url << g_downloadUriPart << '/' << type << "?Id=" << _id;
+    (void)CHttpClient::GetInstance().SendRequest(CHttpClient::POST, url.str());
 }
 
 } // namespace microsoft::deliveryoptimization::details

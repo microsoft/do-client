@@ -1,5 +1,6 @@
 #include "test_common.h"
 
+#include "do_test_helpers.h"
 #include "string_ops.h"
 #include "test_helpers.h"
 
@@ -37,7 +38,7 @@ static void StringPartitionTester(const std::string& left, const std::string& ri
     size_t numExpectedParts = 0;
     if (expectedStr1) { ++numExpectedParts; }
     if (expectedStr2) { ++numExpectedParts; }
-    auto fnLogStr = test_scope_exit([&]()
+    auto fnLogStr = dotest::util::scope_exit([&]()
     {
         std::cout << "Test string: \"" << testString << "\"\n";
         if (parts.size() > 0) std::cout << "Partition1: \"" << parts[0] << "\"\n";
