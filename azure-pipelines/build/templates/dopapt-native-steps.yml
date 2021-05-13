@@ -31,6 +31,14 @@ steps:
     arguments: '--project plugin-apt --config ${{parameters.config}} --package-for DEB --clean'
   displayName: 'Build deliveryoptimization-plugin-apt ${{parameters.targetOsArch}}-${{parameters.config}}'
 
+- task: Bash@3
+  condition: eq('${{parameters.config}}', 'minsizerel')
+  inputs:
+    targetType: 'filePath'
+    filePath: 'build/check_binary_size.sh'
+    arguments: '/tmp/build-deliveryoptimization-plugin-apt/linux-${{parameters.config}}/plugins/linux-apt/deliveryoptimization-plugin-apt 172168'
+  displayName: 'Limit binary size increase'
+
 - task: CmdLine@2
   inputs:
     script: 'sudo dpkg -i deliveryoptimization-plugin-apt*.deb'
