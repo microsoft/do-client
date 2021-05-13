@@ -19,6 +19,14 @@ steps:
     arguments: '--project agent --config ${{parameters.config}} --package-for DEB --clean'
   displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
 
+- task: Bash@3
+  condition: eq('${{parameters.config}}', 'minsizerel')
+  inputs:
+    targetType: 'filePath'
+    filePath: 'build/check_binary_size.sh'
+    arguments: '/tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}/client-lite/deliveryoptimization-agent 2314024'
+  displayName: 'Limit binary size increase'
+
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
