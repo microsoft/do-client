@@ -94,7 +94,7 @@ bool HttpResponseParser::_ParseBuf()
         break;
     }
 
-    return ((oldState != _state) && !Done());
+    return (oldState != _state);
 }
 
 // Returns true if there are more fields to process, false otherwise
