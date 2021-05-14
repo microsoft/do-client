@@ -21,7 +21,7 @@ namespace microsoft::deliveryoptimization::details
 CDownloadRest::CDownloadRest(const std::string& uri, const std::string& downloadFilePath)
 {
     std::stringstream url;
-    url << g_downloadUriPart << "/create" << "?Uri=" << Url::EncodeDataString(uri)<< "&DownloadFilePath="
+    url << g_downloadUriPart << "/create" << "?Uri=" << Url::EncodeDataString(uri) << "&DownloadFilePath="
         << Url::EncodeDataString(downloadFilePath);
 
     for (int retryAttempts = 0; retryAttempts < g_maxNumRetryAttempts; retryAttempts++)

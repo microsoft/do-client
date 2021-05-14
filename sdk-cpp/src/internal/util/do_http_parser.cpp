@@ -31,7 +31,7 @@ void HttpResponseParser::OnData(const char* pData, size_t cb)
     }
 }
 
-// Returns true if more processing can be done, false if processing is done or cannot continue until more data is received
+// Returns true if more processing can be done, false if processing is done or cannot continue until more data is received.
 bool HttpResponseParser::_ParseBuf()
 {
     const auto oldState = _state;

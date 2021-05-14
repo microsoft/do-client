@@ -7,6 +7,8 @@
 namespace microsoft::deliveryoptimization::details
 {
 
+// Very limited parsing abilities, just enough to support the Agent's responses.
+// Credit: Code takes a little inspiration from Boost.Beast. Too bad it is not available on Ubuntu 18.04.
 class HttpResponseParser
 {
 public:
