@@ -165,6 +165,7 @@ TEST_F(DownloadTests, SimpleDownloadTest_With404UrlAndMalformedPath)
     }
     catch (const std::exception& se)
     {
+        std::cout << "Unexpected exception: " << se.what() << std::endl;
         ASSERT_TRUE(false);
     }
 }

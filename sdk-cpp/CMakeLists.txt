@@ -26,18 +26,6 @@ fixup_compile_options_for_arm()
 # Include external libraries here
 find_package(Boost COMPONENTS filesystem system REQUIRED)
 
-find_path(
-    boostbeast_INCLUDE_DIR
-    NAMES beast.hpp
-    PATH_SUFFIXES include/boost
-)
-
-if (boostbeast_INCLUDE_DIR)
-  message (STATUS "Boost.Beast found at: ${boostbeast_INCLUDE_DIR}")
-else()
-  message (FATAL_ERROR "Boost.Beast NOT FOUND")
-endif()
-
 if (DO_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
@@ -66,7 +54,6 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
             "src/internal/util"
             "src/internal"
             ${include_directories_for_arm}
-            ${boostbeast_INCLUDE_DIR}
     )
     target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE
         DO_PLATFORM_ID=${DO_PLATFORM_ID}
