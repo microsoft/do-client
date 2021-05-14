@@ -26,7 +26,7 @@ void HttpRequest::Serialize(boost::asio::ip::tcp::socket& socket) const
     request << "\r\n";
 
     const auto req = request.str();
-    std::cout << "Sending request:\n" << req << std::endl; // uncomment for debugging
+    // std::cout << "Sending request:\n" << req << std::endl; // uncomment for debugging
     net::write(socket, net::buffer(req.data(), req.size()));
 }
 

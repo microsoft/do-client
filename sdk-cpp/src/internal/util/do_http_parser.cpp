@@ -1,6 +1,6 @@
 #include "do_http_parser.h"
 
-#include <iostream>
+// #include <iostream>
 #include <regex>
 #include <gsl/gsl_util>
 #include "do_exceptions.h"
@@ -43,7 +43,7 @@ bool HttpResponseParser::_ParseBuf()
         if (itCR != _responseBuf.end())
         {
             std::string statusLine{_responseBuf.begin(), itCR};
-            std::cout << "Status line: " << statusLine << std::endl;
+            // std::cout << "Status line: " << statusLine << std::endl;
 
             std::regex rxStatusLine{"[hHtTpP/1\\.]+ (\\d+) [a-zA-Z0-9 ]+"};
             std::cmatch matches;
@@ -53,7 +53,7 @@ bool HttpResponseParser::_ParseBuf()
             }
 
             _statusCode = static_cast<unsigned int>(std::strtoul(matches[1].str().data(), nullptr, 10));
-            std::cout << "Result: " << _statusCode << std::endl;
+            // std::cout << "Result: " << _statusCode << std::endl;
 
             _state = ParserState::Fields;
             _itParseFrom = itCR + 2;
@@ -82,7 +82,7 @@ bool HttpResponseParser::_ParseBuf()
             if (availableBodySize == _contentLength)
             {
                 _body.write(&(*_itParseFrom), _contentLength);
-                std::cout << "Body: " << _body.str() << std::endl;
+                // std::cout << "Body: " << _body.str() << std::endl;
                 _state = ParserState::Complete;
                 _itParseFrom = _responseBuf.end();
             }
@@ -115,7 +115,7 @@ bool HttpResponseParser::_ParseNextField()
     }
 
     std::string field{_itParseFrom, itCR};
-    std::cout << "Field: " << field << std::endl;
+    // std::cout << "Field: " << field << std::endl;
     if (field.find("Content-Length") != std::string::npos)
     {
         std::regex rxContentLength{".*:[ ]*(\\d+).*"};
@@ -126,7 +126,7 @@ bool HttpResponseParser::_ParseNextField()
         }
 
         _contentLength = static_cast<size_t>(std::strtoul(matches[1].str().data(), nullptr, 10));
-        std::cout << "Body size: " << _contentLength << std::endl;
+        // std::cout << "Body size: " << _contentLength << std::endl;
     }
     // else, field not interesting
     _itParseFrom = itCR + 2;

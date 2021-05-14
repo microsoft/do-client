@@ -30,22 +30,6 @@ cmake -G Ninja -DCMAKE_BUILD_TYPE=minsizerel -DCMAKE_POSITION_INDEPENDENT_CODE=O
 ninja
 ninja install
 
-# Boost.Beast is available starting only in Boost 1.66 where as Ubuntu 18.04 only has 1.65.
-git clone https://github.com/boostorg/beast.git /tmp/boost_beast
-pushd /tmp/boost_beast
-git checkout tags/boost-1.66.0
-popd
-
-# Boost.Beast depends on corresponding version of Boost.Asio.
-git clone https://github.com/boostorg/asio.git /tmp/boost_asio
-pushd /tmp/boost_asio
-git checkout tags/boost-1.66.0
-popd
-
-# Both are header-only libs
-cp -r /tmp/boost_beast/include/boost/* "/usr/include/boost/"
-cp -r /tmp/boost_asio/include/boost/* "/usr/include/boost/"
-
 # libgtest-dev is a source package and requires manual installation
 mkdir /tmp/build_gtest/
 cd /tmp/build_gtest
@@ -69,7 +53,7 @@ else
   apt-get -y install qemu binfmt-support qemu-user-static
 
   # Register qemu with docker to more easily run cross-arch containers
-  docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+  docker run --rm --privileged multiarch/qemu-user-static --reset -p yes 
 fi
 
 echo "Finished bootstrapping"
