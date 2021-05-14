@@ -27,12 +27,10 @@ CDownloadRest::CDownloadRest(const std::string& uri, const std::string& download
 
     for (int retryAttempts = 0; retryAttempts < g_maxNumRetryAttempts; retryAttempts++)
     {
-        web::http::http_response resp = CHttpClient::GetInstance().SendRequest(web::http::methods::POST, builder.to_string());
         try
         {
-            CHttpClient::HTTPErrorCheck(resp);
-            web::json::object respBody = resp.extract_json().get().as_object();
-            _id = cpprest_util_conv::to_utf8string(respBody.at(U("Id")).as_string());
+            const auto respBody = CHttpClient::GetInstance().SendRequest(web::http::methods::POST, builder.to_string());
+            _id = respBody.get<std::string>("Id");
             return;
         }
         catch (const msdo::exception& e)
@@ -84,15 +82,12 @@ msdo::download_status CDownloadRest::GetStatus()
     builder.append_path(U("getstatus"));
     builder.append_query(U("Id"), cpprest_util_conv::to_string_t(_id));
 
-    web::http::http_response resp = CHttpClient::GetInstance().SendRequest(web::http::methods::GET, builder.to_string());
-    CHttpClient::HTTPErrorCheck(resp);
+    const auto respBody = CHttpClient::GetInstance().SendRequest(web::http::methods::GET, builder.to_string());
 
-    const web::json::object respBody = resp.extract_json().get().as_object();
-
-    uint64_t bytesTotal = respBody.at(U("BytesTotal")).as_number().to_uint64();
-    uint64_t bytesTransferred = respBody.at(U("BytesTransferred")).as_number().to_uint64();
-    int32_t errorCode = respBody.at(U("ErrorCode")).as_number().to_int32();
-    int32_t extendedErrorCode = respBody.at(U("ExtendedErrorCode")).as_number().to_int32();
+    uint64_t bytesTotal = respBody.get<uint64_t>("BytesTotal");
+    uint64_t bytesTransferred = respBody.get<uint64_t>("BytesTransferred");
+    int32_t errorCode = respBody.get<int32_t>("ErrorCode");
+    int32_t extendedErrorCode = respBody.get<int32_t>("ExtendedErrorCode");
 
     static const std::map<utility::string_t, download_state> stateMap =
         {{ U("Created"), download_state::created },
@@ -103,7 +98,7 @@ msdo::download_status CDownloadRest::GetStatus()
         { U("Paused"), download_state::paused }};
 
     download_state status = download_state::created;
-    auto it = stateMap.find(respBody.at(U("Status")).as_string());
+    auto it = stateMap.find(respBody.get<std::string>("Status"));
     if (it != stateMap.end())
     {
         status = it->second;
@@ -123,9 +118,7 @@ void CDownloadRest::_DownloadOperationCall(const std::string& type)
     builder.append_path(cpprest_util_conv::to_string_t(type));
     builder.append_query(U("Id"), cpprest_util_conv::to_string_t(_id));
 
-    web::http::http_response resp = CHttpClient::GetInstance().SendRequest(web::http::methods::POST, builder.to_string());
-
-    CHttpClient::HTTPErrorCheck(resp);
+    (void)CHttpClient::GetInstance().SendRequest(web::http::methods::POST, builder.to_string());
 }
 
 } // namespace microsoft::deliveryoptimization::details
