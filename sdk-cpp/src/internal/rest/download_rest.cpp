@@ -28,7 +28,7 @@ CDownloadRest::CDownloadRest(const std::string& uri, const std::string& download
     {
         try
         {
-            const auto respBody = CHttpClient::GetInstance().SendRequest(CHttpClient::POST, url.str());
+            const auto respBody = CHttpClient::GetInstance().SendRequest(HttpRequest::POST, url.str());
             _id = respBody.get<std::string>("Id");
             return;
         }
@@ -80,7 +80,7 @@ msdo::download_status CDownloadRest::GetStatus()
     std::stringstream url;
     url << g_downloadUriPart << "/getstatus" << "?Id=" << _id;
 
-    const auto respBody = CHttpClient::GetInstance().SendRequest(CHttpClient::GET, url.str());
+    const auto respBody = CHttpClient::GetInstance().SendRequest(HttpRequest::GET, url.str());
 
     uint64_t bytesTotal = respBody.get<uint64_t>("BytesTotal");
     uint64_t bytesTransferred = respBody.get<uint64_t>("BytesTransferred");
@@ -114,7 +114,7 @@ void CDownloadRest::_DownloadOperationCall(const std::string& type)
 {
     std::stringstream url;
     url << g_downloadUriPart << '/' << type << "?Id=" << _id;
-    (void)CHttpClient::GetInstance().SendRequest(CHttpClient::POST, url.str());
+    (void)CHttpClient::GetInstance().SendRequest(HttpRequest::POST, url.str());
 }
 
 } // namespace microsoft::deliveryoptimization::details

@@ -2,6 +2,7 @@
 
 #include <mutex>
 #include <boost/property_tree/ptree.hpp>
+#include "do_http_message.h"
 #include "do_noncopyable.h"
 
 namespace microsoft::deliveryoptimization::details
@@ -11,15 +12,9 @@ class CHttpClientImpl;
 class CHttpClient : CDONoncopyable
 {
 public:
-    enum Method
-    {
-        GET,
-        POST
-    };
-
     ~CHttpClient();
     static CHttpClient& GetInstance();
-    boost::property_tree::ptree SendRequest(Method method, const std::string& url, bool retry = true);
+    boost::property_tree::ptree SendRequest(HttpRequest::Method method, const std::string& url, bool retry = true);
 
 private:
     CHttpClient();
