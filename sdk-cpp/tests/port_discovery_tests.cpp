@@ -23,7 +23,6 @@ public:
     void TearDown() override;
 
     void DiscoverPortTest();
-    void DiscoverUrlTest();
 
 private:
     std::string _testFilePath;
@@ -52,7 +51,7 @@ void PortDiscoveryTests::TearDown()
     }
 }
 
-TEST_F(PortDiscoveryTests, DiscoverUrlTest)
+TEST_F(PortDiscoveryTests, DiscoverPortTest)
 {
     std::string url = msdod::CPortFinder::GetDOPort(false);
     ASSERT_EQ(url, samplePortNumber);
