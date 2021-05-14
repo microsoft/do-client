@@ -28,7 +28,6 @@ private:
 class HttpResponse
 {
 public:
-    HttpResponse();
     void Deserialize(boost::asio::ip::tcp::socket& socket);
 
     unsigned int StatusCode() const { return _statusCode; }
@@ -38,19 +37,6 @@ private:
     unsigned int _statusCode { 0 };
     size_t _contentLength { 0 };
     std::stringstream _body;
-
-    // Parsing info
-    enum class ParserState
-    {
-        StatusLine,
-        Fields,
-        Body,
-        Complete
-    };
-
-    ParserState _state { ParserState::StatusLine };
-    std::vector<char> _responseBuf;
-    size_t _skip { 0 };
 };
 
 } // microsoft::deliveryoptimization::details
