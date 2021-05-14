@@ -26,16 +26,6 @@ fixup_compile_options_for_arm()
 # Include external libraries here
 find_package(Boost COMPONENTS filesystem system REQUIRED)
 
-# Cpprest Issues:
-# 1. v2.10.10 min version (see required PR link below). cpprestsdk does not seem to support specifying this through cmake.
-# https://github.com/microsoft/cpprestsdk/pull/1019/files
-#
-# 2. Installing libcpprest-dev via apt installs cpprest's cmake config files to a non-default cmake search path before v2.10.9
-# See: https://github.com/microsoft/cpprestsdk/issues/686
-# This issue has been patched but has not made its way to the stable branch for Ubuntu
-# Since we are statically linking to v2.10.16 we no longer need to worry about the above as cpprest is patched to provide the proper package configuration metadata
-find_package(cpprestsdk CONFIG REQUIRED)
-
 if (DO_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
@@ -63,7 +53,6 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
             "src/internal/rest"
             "src/internal/util"
             "src/internal"
-            ${docs_common_includes}
             ${include_directories_for_arm}
     )
     target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE
@@ -76,7 +65,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
         DO_PLUGIN_APT_BIN_NAME="${DO_PLUGIN_APT_BIN_NAME}"
     )
     target_link_libraries(${DO_SDK_LIB_NAME}
-        PRIVATE doversion cpprestsdk::cpprest
+        PRIVATE doversion
         PUBLIC ${Boost_LIBRARIES}
     )
 

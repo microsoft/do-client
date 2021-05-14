@@ -107,7 +107,7 @@ void download::download_url_to_path(const std::string& uri, const std::string& d
     oneShotDownload.start();
 
     download_status status;
-    bool timedOut;
+    bool timedOut = false;
     do
     {
         if (isCancelled)

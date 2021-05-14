@@ -17,7 +17,7 @@ const int32_t g_maxNumPortFileReadAttempts = 3;
 
 namespace microsoft::deliveryoptimization::details
 {
-std::string g_DiscoverDOPort()
+static std::string g_DiscoverDOPort()
 {
     const std::string runtimeDirectory = GetRuntimeDirectory();
     if (!boost::filesystem::exists(runtimeDirectory))
