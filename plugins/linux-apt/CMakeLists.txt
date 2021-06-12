@@ -30,6 +30,8 @@ target_link_libraries(${DO_PLUGIN_APT_BIN_NAME} PRIVATE
 )
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    strip_symbols(${DO_PLUGIN_APT_BIN_NAME})
+
     include(GNUInstallDirs)
     set(dopapt_install_dir ${CMAKE_INSTALL_FULL_BINDIR})
     install(TARGETS ${DO_PLUGIN_APT_BIN_NAME} DESTINATION ${dopapt_install_dir})
