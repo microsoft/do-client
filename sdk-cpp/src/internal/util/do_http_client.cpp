@@ -2,6 +2,10 @@
 
 #include <thread>
 #include <boost/asio/connect.hpp>
+// Debian10 uses 1.67 while Ubuntu18.04 has 1.65.1.
+// Starting in 1.66, boost::asio::io_service changed to io_context and retained io_service as a typedef.
+// Include this header explicitly to get it regardless of which boost version is installed.
+#include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <gsl/gsl_util>
 
