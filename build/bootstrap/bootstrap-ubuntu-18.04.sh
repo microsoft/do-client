@@ -11,9 +11,9 @@ apt-get install -y build-essential g++ gdb gdbserver git wget
 apt-get install -y python3 cmake ninja-build rpm
 
 # Open-source library dependencies
-# Boost for DO
+# Boost libs for DO
 apt-get install -y libboost-system-dev libboost-log-dev libboost-filesystem-dev libboost-program-options-dev
-# Boost for cpprestsdk
+# Additional Boost libs for cpprestsdk
 apt-get install -y libboost-random-dev libboost-regex-dev
 apt-get install -y libgtest-dev libproxy-dev libmsgsl-dev libssl-dev uuid-dev
 
