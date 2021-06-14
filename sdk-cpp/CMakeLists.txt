@@ -68,6 +68,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
         PRIVATE doversion
         PUBLIC ${Boost_LIBRARIES}
     )
+    strip_symbols(${DO_SDK_LIB_NAME})
 
     # Install the lib while also exporting all the usage requirements to a named target.
     install(

@@ -81,6 +81,15 @@ steps:
     CleanTargetFolder: true
   displayName: 'Populate artifacts staging dir'
 
+- task: CopyFiles@2
+  condition: eq('${{parameters.config}}', 'minsizerel')
+  inputs:
+    SourceFolder: '/tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}'
+    Contents: |
+      sdk-cpp/libdeliveryoptimization*.dbg
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+  displayName: 'Populate debug symbols to staging dir'
+
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'

@@ -58,6 +58,15 @@ steps:
   displayName: 'Populate artifacts staging dir'
 
 - task: CopyFiles@2
+  condition: eq('${{parameters.config}}', 'minsizerel')
+  inputs:
+    SourceFolder: '/tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}'
+    Contents: |
+      client-lite/deliveryoptimization-agent.dbg
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+  displayName: 'Populate debug symbols to staging dir'
+
+- task: CopyFiles@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
     SourceFolder: '/tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}'

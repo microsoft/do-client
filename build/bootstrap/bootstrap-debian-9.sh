@@ -5,7 +5,7 @@ set -e
 
 echo "Setting up development environment for do-client"
 
-# Various development machine tools 
+# Various development machine tools
 apt-get update -y --fix-missing
 apt-get install -y make build-essential g++ gdb gdbserver gcc git wget
 
@@ -17,12 +17,16 @@ tar xzf cmake-3.10.2.tar.gz
 cd /tmp/cmake-3.10.2
 ./bootstrap
 make
-make install 
+make install
 
 apt-get install -y python3 ninja-build
 
 # Open-source library dependencies
-apt-get install -y libboost-all-dev libcpprest-dev libgtest-dev libproxy-dev libssl-dev uuid-dev
+# Boost libs for DO
+apt-get install -y libboost-system-dev libboost-log-dev libboost-filesystem-dev libboost-program-options-dev
+# Additional Boost libs for cpprestsdk
+apt-get install -y libboost-random-dev libboost-regex-dev
+apt-get install -y libcpprest-dev libgtest-dev libproxy-dev libssl-dev uuid-dev
 
 # Install cpprest dependencies
 # libssl-dev also required but installed above because plugin uses libssl-dev directly
@@ -46,7 +50,7 @@ mkdir /tmp/build_gtest/
 cd /tmp/build_gtest
 cmake /usr/src/gtest
 make
-make install 
+make install
 
 # Install gsl from source (not present in debian stretch packages)
 cd /tmp/
@@ -55,6 +59,6 @@ cd GSL/
 git checkout tags/v2.0.0
 cmake -DGSL_TEST=OFF .
 make
-make install 
+make install
 
 echo "Finished bootstrapping"

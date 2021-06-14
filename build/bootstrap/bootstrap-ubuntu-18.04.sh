@@ -11,7 +11,11 @@ apt-get install -y build-essential g++ gdb gdbserver git wget
 apt-get install -y python3 cmake ninja-build rpm
 
 # Open-source library dependencies
-apt-get install -y libboost-all-dev libgtest-dev libproxy-dev libmsgsl-dev libssl-dev uuid-dev
+# Boost libs for DO
+apt-get install -y libboost-system-dev libboost-log-dev libboost-filesystem-dev libboost-program-options-dev
+# Additional Boost libs for cpprestsdk
+apt-get install -y libboost-random-dev libboost-regex-dev
+apt-get install -y libgtest-dev libproxy-dev libmsgsl-dev libssl-dev uuid-dev
 
 # Install cpprest dependencies
 # libssl-dev also required but installed above because plugin uses libssl-dev directly
@@ -53,7 +57,7 @@ else
   apt-get -y install qemu binfmt-support qemu-user-static
 
   # Register qemu with docker to more easily run cross-arch containers
-  docker run --rm --privileged multiarch/qemu-user-static --reset -p yes 
+  docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 fi
 
 echo "Finished bootstrapping"
