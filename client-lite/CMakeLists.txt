@@ -120,6 +120,8 @@ target_link_libraries(${DOSVC_BIN_NAME}
     ${Boost_LOG_LIBRARIES})
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    strip_symbols(${DOSVC_BIN_NAME})
+
     include(GNUInstallDirs)
 
     # Install binary

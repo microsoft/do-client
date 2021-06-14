@@ -104,3 +104,34 @@ macro (add_do_version_lib target_name maj_min_patch_ver)
     # CMake requires us to specify the binary dir when the source dir is not a child of the current dir
     add_subdirectory(${do_project_root_SOURCE_DIR}/common ${CMAKE_CURRENT_BINARY_DIR}/common)
 endmacro ()
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    # Ensure that objcopy is present
+    find_program(OBJCOPY objcopy)
+    if (OBJCOPY STREQUAL "OBJCOPY-NOTFOUND")
+        message(FATAL_ERROR "objcopy not found")
+    endif()
+endif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+
+# From https://github.com/dotnet/coreclr/pull/3872/files
+# For minsizerel build, split unneeded symbols from target binary file and into a separate .dbg file.
+# Reduces the installed size on disk of our binaries while still making symbols available for debugging.
+function(strip_symbols targetName)
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+        string(TOLOWER ${CMAKE_BUILD_TYPE} MY_BUILD_TYPE)
+
+        if(MY_BUILD_TYPE STREQUAL minsizerel)
+            set(strip_source_file $<TARGET_FILE:${targetName}>)
+            set(strip_destination_file ${strip_source_file}.dbg)
+            add_custom_command(
+                TARGET ${targetName}
+                POST_BUILD
+                VERBATIM
+                COMMAND ${OBJCOPY} --only-keep-debug ${strip_source_file} ${strip_destination_file}
+                COMMAND ${OBJCOPY} --strip-unneeded ${strip_source_file}
+                COMMAND ${OBJCOPY} --add-gnu-debuglink=${strip_destination_file} ${strip_source_file}
+                COMMENT Stripping symbols from ${strip_source_file} into file ${strip_destination_file})
+        endif(MY_BUILD_TYPE STREQUAL minsizerel)
+
+    endif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+endfunction()

@@ -8,6 +8,8 @@ public:
     static bool IsActiveProcess(std::string name);
     static int ShutdownProcess(std::string name);
     static void RestartService(const std::string& name);
+    static void StartService(const std::string& name);
+    static void StopService(const std::string& name);
     static void CreateRestPortFiles(int numFiles);
     static void DeleteRestPortFiles();
     static void CleanTestDir();

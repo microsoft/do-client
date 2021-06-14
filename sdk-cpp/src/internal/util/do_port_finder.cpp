@@ -1,4 +1,3 @@
-
 #include "do_port_finder.h"
 
 #include <chrono>
@@ -18,7 +17,7 @@ const int32_t g_maxNumPortFileReadAttempts = 3;
 
 namespace microsoft::deliveryoptimization::details
 {
-std::string CPortFinder::DiscoverDOPort()
+static std::string g_DiscoverDOPort()
 {
     const std::string runtimeDirectory = GetRuntimeDirectory();
     if (!boost::filesystem::exists(runtimeDirectory))
@@ -48,7 +47,7 @@ std::string CPortFinder::DiscoverDOPort()
     return port;
 }
 
-std::string CPortFinder::GetDOBaseUrl(bool launchClientFirst)
+std::string CPortFinder::GetDOPort(bool launchClientFirst)
 {
     std::string port;
 
@@ -62,7 +61,7 @@ std::string CPortFinder::GetDOBaseUrl(bool launchClientFirst)
         for (int i = 1; (i <= 4) && port.empty(); ++i)
         {
             std::this_thread::sleep_for(250ms);
-            port = DiscoverDOPort();
+            port = g_DiscoverDOPort();
         }
         launchClientFirst = port.empty(); // force launch on further attempts
     }
@@ -70,12 +69,7 @@ std::string CPortFinder::GetDOBaseUrl(bool launchClientFirst)
     {
         ThrowException(errc::no_service);
     }
-    return ConstructLocalUrl(port);
-}
-
-std::string CPortFinder::ConstructLocalUrl(const std::string& port)
-{
-    return "http://127.0.0.1:" + port + "/";
+    return port;
 }
 
 } // namespace microsoft::deliveryoptimization::details

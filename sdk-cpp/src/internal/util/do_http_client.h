@@ -1,46 +1,27 @@
 #pragma once
 
 #include <mutex>
-
-#include <cpprest/details/basic_types.h>
-#include <cpprest/http_msg.h>
-
+#include <boost/property_tree/ptree.hpp>
+#include "do_http_message.h"
 #include "do_noncopyable.h"
-
-namespace web::http::client
-{
-class http_client;
-}
-
-namespace web::http
-{
-class http_response;
-}
-
-namespace web::json
-{
-class value;
-}
-
-extern const utility::string_t g_downloadUriPart;
 
 namespace microsoft::deliveryoptimization::details
 {
+class CHttpClientImpl;
+
 class CHttpClient : CDONoncopyable
 {
 public:
+    ~CHttpClient();
     static CHttpClient& GetInstance();
-
-    static void HTTPErrorCheck(const web::http::http_response& resp);
-    web::http::http_response SendRequest(const web::http::method& method, const utility::string_t& builderAsString, bool retry = true);
-    web::http::http_response SendRequest(const web::http::method& method, const utility::string_t& builderAsString,
-        const web::json::value& body, bool retry = true);
+    boost::property_tree::ptree SendRequest(HttpRequest::Method method, const std::string& url, bool retry = true);
 
 private:
     CHttpClient();
     void _InitializeDOConnection(bool launchClientFirst = false);
 
     mutable std::mutex _mutex;
-    std::unique_ptr<web::http::client::http_client> _httpClient;
+    std::unique_ptr<CHttpClientImpl> _httpClientImpl;
 };
+
 } // namespace microsoft::deliveryoptimization::details
