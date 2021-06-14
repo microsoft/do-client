@@ -36,7 +36,7 @@ steps:
   inputs:
     targetType: 'filePath'
     filePath: 'build/check_binary_size.sh'
-    arguments: '/tmp/build-deliveryoptimization-plugin-apt/linux-${{parameters.config}}/plugins/linux-apt/deliveryoptimization-plugin-apt 172168'
+    arguments: '150824 /tmp/build-deliveryoptimization-plugin-apt/linux-${{parameters.config}}/plugins/linux-apt/deliveryoptimization-plugin-apt'
   displayName: 'Limit binary size increase'
 
 - task: CmdLine@2
