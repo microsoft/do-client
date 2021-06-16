@@ -4,7 +4,6 @@ do_group_name=@do_group@
 do_user_name=@do_user@
 config_path=@docs_svc_config_dir_path@
 log_path=@docs_svc_log_dir_path@
-persistence_path=@docs_svc_persistence_dir_path@
 svc_name=@docs_svc_name@
 svc_config_path=@docs_systemd_cfg_path@
 svc_bin_path=@docs_svc_bin_path@
@@ -49,7 +48,6 @@ configure_dir() {
 
 configure_dir "$config_path"
 configure_dir "$log_path"
-configure_dir "$persistence_path"
 
 # See https://www.freedesktop.org/software/systemd/man/systemd.directives.html
 echo "Installing $svc_name"

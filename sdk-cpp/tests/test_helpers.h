@@ -12,8 +12,8 @@ public:
     static void StopService(const std::string& name);
     static void CreateRestPortFiles(int numFiles);
     static void DeleteRestPortFiles();
+    static unsigned int CountRestPortFiles();
     static void CleanTestDir();
-    static void CleanupWorkingDir();
 
     static void DisableNetwork();
     static void EnableNetwork();

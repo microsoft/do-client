@@ -68,8 +68,7 @@ inline void InitializeDOPaths()
 {
     // Config directory may have caller setting configs - therefore it should have group write permissions bit S_IWGRP set
     InitializePath(docli::GetConfigDirectory(), S_IRWXU | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH);
-    // No external process or linux user will be using the log/persistence directory, so no need for S_IWGRP
-    InitializePath(docli::GetPersistenceDirectory(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+    // No external process or linux user will be writing to the log directory, so no need for S_IWGRP
     InitializePath(docli::GetLogDirectory(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
     InitializePath(docli::GetRuntimeDirectory());
 }

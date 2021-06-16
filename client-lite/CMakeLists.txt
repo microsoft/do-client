@@ -81,14 +81,12 @@ file (GLOB files_docs_common
 # Dir path used for docs_common and debian control scripts
 set(docs_svc_config_dir_path "/etc/${DOSVC_BIN_NAME}")
 set(docs_svc_log_dir_path "/var/log/${DOSVC_BIN_NAME}")
-set(docs_svc_persistence_dir_path "/var/cache/${DOSVC_BIN_NAME}")
 set(docs_svc_run_dir_path "/var/run/${DOSVC_BIN_NAME}")
 
 # Build product files into a lib for use by other targets
 add_library(docs_common STATIC ${files_docs_common})
 target_compile_definitions(docs_common
     PRIVATE DO_CONFIG_DIRECTORY_PATH="${docs_svc_config_dir_path}"
-            DO_PERSISTENCE_DIRECTORY_PATH="${docs_svc_persistence_dir_path}"
             DO_AGENT_LOG_DIRECTORY_PATH="${docs_svc_log_dir_path}"
             DO_RUN_DIRECTORY_PATH="${docs_svc_run_dir_path}"
 )

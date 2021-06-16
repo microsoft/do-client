@@ -10,12 +10,6 @@ const std::string& GetLogDirectory()
     return logDirectory;
 }
 
-const std::string& GetPersistenceDirectory()
-{
-    static std::string myDirectory(DO_PERSISTENCE_DIRECTORY_PATH);
-    return myDirectory;
-}
-
 const std::string& GetRuntimeDirectory()
 {
     static std::string runDirectory(DO_RUN_DIRECTORY_PATH);

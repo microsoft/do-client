@@ -532,19 +532,22 @@ TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunningPortFilePresent
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
 }
 
-
 TEST_F(DownloadTests, MultipleRestPortFileExists_Download)
 {
-// Enable after we have the ability to start the daemon after creating rest port files.
-// This will ensure that the actual rest port file will have the latest timestamp.
-#if 0
+    TestHelpers::StopService("deliveryoptimization-agent.service");
+    auto startService = dotest::util::scope_exit([]()
+        {
+            TestHelpers::StartService("deliveryoptimization-agent.service");
+        });
     TestHelpers::CreateRestPortFiles(5);
+    ASSERT_GE(TestHelpers::CountRestPortFiles(), 5u);
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    startService.reset();
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    ASSERT_EQ(TestHelpers::CountRestPortFiles(), 1u) << "All other restport files must be deleted by the agent";
 
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
     msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
     ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName));
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
-
-    TestHelpers::CleanupWorkingDir();
-#endif
 }

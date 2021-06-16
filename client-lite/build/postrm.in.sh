@@ -4,7 +4,6 @@ do_group_name=@do_group@
 do_user_name=@do_user@
 config_path=@docs_svc_config_dir_path@
 log_path=@docs_svc_log_dir_path@
-persistence_path=@docs_svc_persistence_dir_path@
 run_path=@docs_svc_run_dir_path@
 svc_name=@docs_svc_name@
 svc_config_path=@docs_systemd_cfg_path@
@@ -18,9 +17,6 @@ rm $svc_config_path
 
 echo "Reloading daemons"
 systemctl daemon-reload
-
-echo "Removing working directory: $persistence_path"
-rm -rf $persistence_path
 
 echo "Removing log directory: $log_path"
 rm -rf $log_path
