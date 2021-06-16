@@ -13,7 +13,7 @@
 
 inline gid_t GetGroupIdByName(const char *name)
 {
-    struct group *grp = getgrnam(name); // don't free, see getgrnam() for details 
+    struct group *grp = getgrnam(name); // don't free, see getgrnam() for details
     if (grp == nullptr)
     {
         THROW_HR_MSG(E_FAIL, "Failed to get gid from %s, errno: %d", name, errno);
@@ -23,7 +23,7 @@ inline gid_t GetGroupIdByName(const char *name)
 
 inline uid_t GetUserIdByName(const char *name)
 {
-    struct passwd *pwd = getpwnam(name); // don't free, see getpwnam() for details 
+    struct passwd *pwd = getpwnam(name); // don't free, see getpwnam() for details
     if (pwd == nullptr)
     {
         THROW_HR_MSG(E_FAIL, "Failed to get gid from %s, errno: %d", name, errno);
@@ -66,10 +66,11 @@ inline void InitializePath(const std::string& path, mode_t mode = 0) try
 
 inline void InitializeDOPaths()
 {
-    // Config directory may have caller setting configs - therefor it should have group write permissions bit S_IWGRP set
+    // Config directory may have caller setting configs - therefore it should have group write permissions bit S_IWGRP set
     InitializePath(docli::GetConfigDirectory(), S_IRWXU | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH);
-    // No external process or linux user will be using the do persistence directory, so no need for S_IWGRP 
+    // No external process or linux user will be using the log/persistence directory, so no need for S_IWGRP
     InitializePath(docli::GetPersistenceDirectory(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+    InitializePath(docli::GetLogDirectory(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
     InitializePath(docli::GetRuntimeDirectory());
 }
 
@@ -78,14 +79,14 @@ inline void DropPermissions()
     uid_t userid = GetUserIdByName("do");
     gid_t groupid = GetGroupIdByName("do");
 
-    // process is running as root, drop privileges 
-    if (getuid() == 0) 
+    // process is running as root, drop privileges
+    if (getuid() == 0)
     {
         if (initgroups("do", groupid) != 0)
         {
             THROW_HR_MSG(E_FAIL, "initgroups: Unable to initialize supplementary group access list: errno: %d", errno);
         }
-        if (setgid(groupid) != 0) 
+        if (setgid(groupid) != 0)
         {
             THROW_HR_MSG(E_FAIL, "setgid: Unable to drop group privileges: %u, errno: %d", groupid, errno);
         }

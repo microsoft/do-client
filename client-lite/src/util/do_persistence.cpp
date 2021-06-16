@@ -4,6 +4,12 @@
 namespace docli
 {
 
+const std::string& GetLogDirectory()
+{
+    static std::string logDirectory(DO_AGENT_LOG_DIRECTORY_PATH);
+    return logDirectory;
+}
+
 const std::string& GetPersistenceDirectory()
 {
     static std::string myDirectory(DO_PERSISTENCE_DIRECTORY_PATH);
