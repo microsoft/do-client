@@ -43,10 +43,11 @@ configure_dir() {
     fi
     chgrp -R $do_group_name $dir_path
     chown $do_user_name $dir_path
-    chmod g+w $dir_path
 }
 
 configure_dir "$config_path"
+# group needs write permission to config path (SDK writing configs)
+chmod g+w $config_path
 configure_dir "$log_path"
 
 # See https://www.freedesktop.org/software/systemd/man/systemd.directives.html
