@@ -2,7 +2,7 @@
 
 namespace docli
 {
-const std::string& GetPersistenceDirectory();
+const std::string& GetLogDirectory();
 const std::string& GetRuntimeDirectory();
 const std::string& GetConfigDirectory();
 const std::string& GetSDKConfigFilePath();

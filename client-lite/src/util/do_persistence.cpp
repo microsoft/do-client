@@ -4,10 +4,10 @@
 namespace docli
 {
 
-const std::string& GetPersistenceDirectory()
+const std::string& GetLogDirectory()
 {
-    static std::string myDirectory(DO_PERSISTENCE_DIRECTORY_PATH);
-    return myDirectory;
+    static std::string logDirectory(DO_AGENT_LOG_DIRECTORY_PATH);
+    return logDirectory;
 }
 
 const std::string& GetRuntimeDirectory()

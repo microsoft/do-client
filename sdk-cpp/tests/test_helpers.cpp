@@ -139,9 +139,18 @@ void TestHelpers::DeleteRestPortFiles()
     }
 }
 
-void TestHelpers::CleanupWorkingDir()
+unsigned int TestHelpers::CountRestPortFiles()
 {
-    boost::filesystem::remove_all(msdod::GetPersistenceDirectory());
+    unsigned int count = 0;
+    for (boost::filesystem::directory_iterator itr(msdod::GetRuntimeDirectory()); itr != boost::filesystem::directory_iterator(); ++itr)
+    {
+        auto& dirEntry = itr->path();
+        if (dirEntry.filename().string().find("restport") != std::string::npos)
+        {
+            ++count;
+        }
+    }
+    return count;
 }
 
 void TestHelpers::CleanTestDir()

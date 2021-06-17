@@ -56,7 +56,7 @@ HRESULT TraceConsumer::Initialize() noexcept try
     std::unique_lock<std::shared_timed_mutex> lock(_traceSessionLock);
     RETURN_HR_IF(S_OK, _spSink);
 
-    const std::string logPath = docli::GetPersistenceDirectory() + "/log";
+    const std::string logPath = docli::GetLogDirectory();
     const std::string logNameFormat = logPath + "/do-agent.%Y%m%d_%H%M%S.log";
     auto spSink = boost::make_shared<textfile_sink>(
         keywords::file_name = logNameFormat,
