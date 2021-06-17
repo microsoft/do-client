@@ -541,7 +541,6 @@ TEST_F(DownloadTests, MultipleRestPortFileExists_Download)
         });
     TestHelpers::CreateRestPortFiles(5);
     ASSERT_GE(TestHelpers::CountRestPortFiles(), 5u);
-    std::this_thread::sleep_for(std::chrono::seconds(2));
     startService.reset();
     std::this_thread::sleep_for(std::chrono::seconds(2));
     ASSERT_EQ(TestHelpers::CountRestPortFiles(), 1u) << "All other restport files must be deleted by the agent";
