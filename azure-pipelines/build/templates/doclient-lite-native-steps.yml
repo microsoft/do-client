@@ -19,6 +19,12 @@ steps:
 
 - task: CmdLine@2
   inputs:
+    script: 'cat bootstrap-ubuntu-18.04.sh'
+    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
+  displayName: 'Install Dependencies'
+
+- task: CmdLine@2
+  inputs:
     script: 'sudo bootstrap-ubuntu-18.04.sh'
     workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
   displayName: 'Install Dependencies'
