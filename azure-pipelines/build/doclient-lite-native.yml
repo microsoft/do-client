@@ -37,7 +37,7 @@ pr:
     exclude:
       - azure-pipelines/*
 
-pool: dotestlab
+pool: 1es_hosted_pool_ubuntu1804
 
 jobs:
 - job: Debug

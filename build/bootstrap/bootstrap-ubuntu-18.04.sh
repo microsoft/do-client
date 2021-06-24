@@ -7,7 +7,7 @@ echo "Setting up development environment for do-client"
 
 # Various development machine tools
 apt-get update
-apt-get install -y build-essential g++ gdb gdbserver git wget
+apt-get install -y build-essential g++ gdb gdbserver git wget curl
 apt-get install -y python3 cmake ninja-build rpm
 
 # Open-source library dependencies

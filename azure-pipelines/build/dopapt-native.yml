@@ -39,7 +39,7 @@ pr:
       - 'azure-pipelines/*'
       - 'plugins/linux-apt/scripts/configure-apt-method.sh'
 
-pool: dotestlab
+pool: 1es_hosted_pool_ubuntu1804
 
 jobs:
 - job: Debug
