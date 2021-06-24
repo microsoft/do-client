@@ -12,10 +12,9 @@ parameters:
 
 steps:
 - task: CmdLine@2
-  condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'bootstrap-ubuntu-18.04.sh'
-    workingDirectory: 'build/bootstrap'
+    script: 'sudo bootstrap-ubuntu-18.04.sh'
+    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
   displayName: 'Install Dependencies'
 
 # TODO(shishirb) Include --skip-tests build.py option when skipTests is true
