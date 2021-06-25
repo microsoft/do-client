@@ -29,6 +29,12 @@ steps:
     workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
   displayName: 'Install Dependencies'
 
+# Use Python version
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.x' 
+    addToPath: true 
+
 # TODO(shishirb) Include --skip-tests build.py option when skipTests is true
 - task: PythonScript@0
   inputs:
