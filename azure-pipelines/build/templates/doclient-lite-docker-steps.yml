@@ -27,7 +27,7 @@ steps:
   displayName: Login to ACR
   inputs:
     command: login
-    containerRegistry: doclientcontainerregistry.azurecr.io
+    containerRegistry: doclientcontainerregistry
 
 - task: CmdLine@2
   inputs:
