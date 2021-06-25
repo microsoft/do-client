@@ -2,7 +2,7 @@
 
 #include <chrono>
 #include <unordered_map>
-#include "ban_list.h"
+#include <boost/optional.hpp>
 
 class ConfigManager;
 
@@ -11,14 +11,26 @@ class MCCManager
 public:
     MCCManager(ConfigManager& configManager);
 
-    std::string NextHost();
-    bool NoFallback() const;
-    bool ReportHostError(HRESULT hr, const std::string& host);
+    boost::optional<std::chrono::seconds> FallbackDelay();
+    std::string GetHost(const std::string& originalUrl);
+    void ReportHostError(HRESULT hr, UINT httpStatusCode, const std::string& mccHost, const std::string& originalUrl);
+    bool IsBanned(const std::string& mccHost, const std::string& originalUrl) const;
 
 private:
-    bool _IsFallbackDue(const std::string& host) const;
+    struct MccHost
+    {
+    public:
+        MccHost(const std::string& address);
+        void Ban(std::chrono::seconds banInterval);
+
+        const std::string& Address() const noexcept { return address; }
+        bool IsBanned() const;
+
+    private:
+        std::string address;
+        std::chrono::steady_clock::time_point timeOfUnban;
+    };
 
     ConfigManager& _configManager;
-    std::unordered_map<std::string, std::chrono::steady_clock::time_point> _hosts;
-    CBanList _banList;
+    std::unordered_map<std::string, MccHost> _mccHostsByOriginalHost;
 };

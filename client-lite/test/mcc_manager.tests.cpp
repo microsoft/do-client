@@ -90,7 +90,7 @@ protected:
     {
         ConfigManager configReader(g_adminConfigFilePath.string(), g_sdkConfigFilePath.string());
         MCCManager mccManager(configReader);
-        std::string mccHost = mccManager.NextHost();
+        std::string mccHost = mccManager.GetHost("http://www.example.com");
         ASSERT_EQ(mccHost, expectedHostValue);
     }
 };
@@ -171,20 +171,10 @@ TEST_F(MCCManagerTests, DISABLED_Download404NoFallback)
     const std::string destFile = g_testTempDir / "prodfile.test";
     const std::string id = manager.CreateDownload(g_404Url, destFile); // start with 404 url
     manager.StartDownload(id);
-
-    auto sw = StopWatch::StartNew();
-    auto endTime = std::chrono::steady_clock::now() + std::chrono::minutes{2};
-    while ((std::chrono::steady_clock::now() < endTime) &&
-        (manager.GetDownloadStatus(id).State == DownloadState::Transferring))
-    {
-        std::this_thread::sleep_for(1s);
-    }
-    sw.Stop();
-
+    std::this_thread::sleep_for(2s);
     auto status = manager.GetDownloadStatus(id);
-    VerifyError(status, DO_E_DOWNLOAD_NO_PROGRESS, HTTP_E_STATUS_NOT_FOUND);
-    ASSERT_GE(sw.GetElapsedInterval(), g_progressTrackerMaxNoProgressIntervalsWithMCC * g_progressTrackerCheckInterval)
-        << "Fatal error raised only after the MCC no-progress delay";
+    VerifyError(status, HTTP_E_STATUS_NOT_FOUND);
+    VerifyDownloadHttpStatus(*DownloadForId(manager, id), 404);
     manager.AbortDownload(id);
 }
 
