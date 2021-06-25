@@ -65,7 +65,7 @@ function installContainerTools()
 
 main()
 {
-    installTools
+    installContainerTools
 }
 
 main
