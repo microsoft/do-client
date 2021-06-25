@@ -29,18 +29,10 @@ steps:
     workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
   displayName: 'Install Dependencies'
 
-# Use Python version
-- task: UsePythonVersion@0
+- task: CmdLine@2
   inputs:
-    versionSpec: '3.x' 
-    addToPath: true 
-
-# TODO(shishirb) Include --skip-tests build.py option when skipTests is true
-- task: PythonScript@0
-  inputs:
-    scriptSource: 'filePath'
-    scriptPath: 'build/build.py'
-    arguments: '--project agent --config ${{parameters.config}} --package-for DEB --clean'
+    script: 'python3 ./build.py --project agent --config ${{parameters.config}} --package-for DEB --clean'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
   displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: Bash@3
