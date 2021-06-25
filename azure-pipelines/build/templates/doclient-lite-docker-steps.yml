@@ -10,6 +10,25 @@ parameters:
   type: string
 
 steps:
+# Once these are onboarded as an artifact to Image Factory, can remove the below two steps
+- task: CmdLine@2
+  inputs:
+    script: 'chmod +x bootstrap-ubuntu-18.04.sh'
+    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
+  displayName: 'chmod bootstrap script'
+
+- task: CmdLine@2
+  inputs:
+    script: 'sudo ./bootstrap-ubuntu-18.04.sh'
+    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
+  displayName: 'Install Dependencies'
+
+- task: Docker@2
+  displayName: Login to ACR
+  inputs:
+    command: login
+    containerRegistry: dockerRegistryServiceConnection1
+
 - task: CmdLine@2
   inputs:
   # Unix Makefiles used in place of Ninja due to issues with 32-bit compatability on cross-arch builds
