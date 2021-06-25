@@ -68,4 +68,6 @@ main()
     installTools
 }
 
+main
+
 echo "Finished bootstrapping"
