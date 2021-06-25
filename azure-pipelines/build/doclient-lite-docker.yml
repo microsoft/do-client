@@ -17,12 +17,12 @@ schedules:
 pool: 1es_hosted_pool_ubuntu_1804
 
 jobs:
-- template: templates/do-docker-jobs.yml
-  parameters:
-    targetOS: 'debian10'
-    targetArch: 'arm32'
-    dockerImageName: 'jimsonmsft/debian10-arm32:latest'
-    stepsTemplate: 'doclient-lite-docker-steps.yml'
+#- template: templates/do-docker-jobs.yml
+#  parameters:
+#    targetOS: 'debian10'
+#    targetArch: 'arm32'
+#    dockerImageName: 'jimsonmsft/debian10-arm32:latest'
+#    stepsTemplate: 'doclient-lite-docker-steps.yml'
 
 - template: templates/do-docker-jobs.yml
   parameters:
@@ -31,9 +31,9 @@ jobs:
     dockerImageName: 'doclientcontainerregistry.azurecr.io/debian9-arm32:latest'
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 
-- template: templates/do-docker-jobs.yml
-  parameters:
-    targetOS: 'ubuntu1804'
-    targetArch: 'arm64'
-    dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
-    stepsTemplate: 'doclient-lite-docker-steps.yml'
+#- template: templates/do-docker-jobs.yml
+#  parameters:
+#    targetOS: 'ubuntu1804'
+#    targetArch: 'arm64'
+#    dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
+#    stepsTemplate: 'doclient-lite-docker-steps.yml'
