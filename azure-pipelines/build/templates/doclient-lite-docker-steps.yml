@@ -30,7 +30,7 @@ steps:
     containerRegistry: doclientcontainerregistry
 
 - script: | 
-    sudo docker pull docker pull doclientcontainerregistry.azurecr.io/debian9-arm32:latest
+    sudo docker pull doclientcontainerregistry.azurecr.io/debian9-arm32:latest
 
 - task: CmdLine@2
   inputs:
