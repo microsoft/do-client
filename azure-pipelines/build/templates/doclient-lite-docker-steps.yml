@@ -29,15 +29,8 @@ steps:
     command: login
     containerRegistry: doclientcontainerregistry
 
-- task: CmdLine@2
-  inputs:
-    script: 'az acr login --name doclientcontainerregistry'
-  displayName: 'Test'
-
-- task: CmdLine@2
-  inputs:
-    script: 'sudo docker pull doclientcontainerregistry.azurecr.io/debian9-arm32:latest'
-  displayName: 'Test'
+- script: | 
+    sudo docker pull docker pull doclientcontainerregistry.azurecr.io/debian9-arm32:latest
 
 - task: CmdLine@2
   inputs:
