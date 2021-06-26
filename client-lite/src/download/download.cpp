@@ -529,18 +529,16 @@ std::string Download::_UpdateConnectionTypeAndGetUrl(bool retryAfterFailure)
     return urlToUse;
 }
 
-bool Download::_ShouldFallbackFromMccNow(bool isFatalError)
+bool Download::_ShouldFallbackFromMccNow(bool isFatalError) const
 {
     if (_UsingMcc())
     {
-        const bool isFallbackConfigOverridden = bool{_mccFallbackDue};
-
-        if (isFatalError && !isFallbackConfigOverridden)
+        if (isFatalError)
         {
             return true;
         }
 
-        if (isFallbackConfigOverridden)
+        if (_mccFallbackDue)
         {
             if ((*_mccFallbackDue <= std::chrono::steady_clock::now()))
             {
@@ -562,6 +560,18 @@ bool Download::_ShouldFallbackFromMccNow(bool isFatalError)
     else
     {
         return false;
+    }
+}
+
+bool Download::_ShouldFailFastPerConnectionType() const
+{
+    if (_UsingMcc())
+    {
+        return _NoFallbackFromMcc();
+    }
+    else
+    {
+        return true;
     }
 }
 
@@ -651,7 +661,7 @@ HRESULT Download::OnComplete(HRESULT hResult, UINT64 httpContext, UINT64)
                 const bool isFatalError = HttpAgent::IsClientError(_httpStatusCode);
 
                 // Fail fast on certain http errors
-                if (isFatalError && (!_UsingMcc() || _NoFallbackFromMcc()))
+                if (isFatalError && _ShouldFailFastPerConnectionType())
                 {
                     DoLogInfoHr(hResult, "%s, fatal failure, http_status: %d, headers:\n%s",
                         GuidToString(_id).data(), _httpStatusCode, _responseHeaders.data());

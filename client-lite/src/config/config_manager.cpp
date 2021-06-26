@@ -27,10 +27,10 @@ boost::optional<std::chrono::seconds> ConfigManager::CacheHostFallbackDelay()
     boost::optional<std::chrono::seconds> returnValue;
 
     // We don't yet differentiate between background and foreground downloads, so check both configs
-    boost::optional<UINT> delay = _adminConfigs.Get<UINT>(ConfigName_CacheHostFallbackDelayBgSecs);
+    boost::optional<int> delay = _adminConfigs.Get<int>(ConfigName_CacheHostFallbackDelayBgSecs);
     if (!delay)
     {
-        delay = _adminConfigs.Get<UINT>(ConfigName_CacheHostFallbackDelayFgSecs);
+        delay = _adminConfigs.Get<int>(ConfigName_CacheHostFallbackDelayFgSecs);
     }
 
     if (delay)

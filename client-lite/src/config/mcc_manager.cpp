@@ -118,7 +118,7 @@ MCCManager::MccHost::MccHost(const std::string& address) :
 void MCCManager::MccHost::Ban(std::chrono::seconds banInterval)
 {
     timeOfUnban = std::chrono::steady_clock::now() + banInterval;
-    DoLogInfo("%s banned for %ld ms", address.data(), banInterval.count());
+    DoLogInfo("%s banned for %ld s", address.data(), banInterval.count());
 }
 
 bool MCCManager::MccHost::IsBanned() const
