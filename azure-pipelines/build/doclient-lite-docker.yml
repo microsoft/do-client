@@ -21,8 +21,8 @@ resources:
       endpoint: doclientcontainerregistry
 
 #pool: 1es_hosted_pool_ubuntu_1804
-#pool:
-#  vmImage: 'ubuntu-18.04'
+pool:
+  vmImage: 'ubuntu-18.04'
 #container: debian10-arm32
 
 #steps:
