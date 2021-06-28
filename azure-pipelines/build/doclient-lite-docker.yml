@@ -57,9 +57,9 @@ pool:
 jobs:
 - template: templates/do-docker-jobs.yml
   parameters:
-    targetOS: 'debian10'
+    targetOS: 'debian9'
     targetArch: 'arm32'
-    dockerImageName: 'doclient/debian10-arm32:latest'
+    dockerImageName: 'doclient/debian9-arm32:latest'
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 
 #- template: templates/do-docker-jobs.yml
