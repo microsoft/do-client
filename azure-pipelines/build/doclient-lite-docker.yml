@@ -22,7 +22,7 @@ resources:
 
 pool: 1es_hosted_pool_ubuntu_1804
 
-container: debian9-arm32
+#container: debian9-arm32
 
 steps:
   - task: CmdLine@2
