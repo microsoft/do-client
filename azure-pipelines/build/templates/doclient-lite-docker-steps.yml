@@ -9,8 +9,8 @@ parameters:
 - name: config          # debug/release/minsizerel/relwithdebuginfo
   type: string
 
-resources:
-  containers:
+#resources:
+#  containers:
 #    - container: debian9-arm32
 #      image: doclientcontainerregistry.azurecr.io/debian9-arm32:latest
 #      endpoint: doclientcontainerregistry
