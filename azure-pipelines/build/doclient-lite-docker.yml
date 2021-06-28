@@ -14,9 +14,23 @@ schedules:
     include:
     - main
 
+resources:
+  containers:
+    - container: debian9-arm32
+      image: doclientcontainerregistry.azurecr.io/debian9-arm32:latest
+      endpoint: doclientcontainerregistry
+
 pool: 1es_hosted_pool_ubuntu_1804
 
-jobs:
+container: debian9-arm32
+
+steps:
+  - task: CmdLine@2
+  inputs:
+    script: 'python3 ./build.py --project agent --config config --package-for DEB --clean'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
+  displayName: 'Build agent debian9-arm32-debug'
+
 #- template: templates/do-docker-jobs.yml
 #  parameters:
 #    targetOS: 'debian10'
@@ -24,12 +38,12 @@ jobs:
 #    dockerImageName: 'jimsonmsft/debian10-arm32:latest'
 #    stepsTemplate: 'doclient-lite-docker-steps.yml'
 
-- template: templates/do-docker-jobs.yml
-  parameters:
-    targetOS: 'debian9'
-    targetArch: 'arm32'
-    dockerImageName: 'doclientcontainerregistry.azurecr.io/debian9-arm32:latest'
-    stepsTemplate: 'doclient-lite-docker-steps.yml'
+#- template: templates/do-docker-jobs.yml
+#  parameters:
+#    targetOS: 'debian9'
+#    targetArch: 'arm32'
+#    dockerImageName: 'doclientcontainerregistry.azurecr.io/debian9-arm32:latest'
+#    stepsTemplate: 'doclient-lite-docker-steps.yml'
 
 #- template: templates/do-docker-jobs.yml
 #  parameters:

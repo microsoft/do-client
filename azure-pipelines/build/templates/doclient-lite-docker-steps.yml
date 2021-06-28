@@ -9,6 +9,12 @@ parameters:
 - name: config          # debug/release/minsizerel/relwithdebuginfo
   type: string
 
+resources:
+  containers:
+    - container: debian9-arm32
+      image: doclientcontainerregistry.azurecr.io/debian9-arm32:latest
+      endpoint: doclientcontainerregistry
+
 steps:
 # Once these are onboarded as an artifact to Image Factory, can remove the below two steps
 - task: CmdLine@2
