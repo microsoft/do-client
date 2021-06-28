@@ -16,13 +16,19 @@ schedules:
 
 resources:
   containers:
-    - container: debian9-arm32
-      image: doclientcontainerregistry.azurecr.io/debian9-arm32:latest
+    - container: debian10-arm32
+      image: doclientcontainerregistry.azurecr.io/debian10-arm32:latest
       endpoint: doclientcontainerregistry
 
 #pool: 1es_hosted_pool_ubuntu_1804
+<<<<<<< HEAD
 
 container: debian9-arm32
+=======
+pool:
+  vmImage: 'ubuntu-18.04'
+container: debian10-arm32
+>>>>>>> de8423c887a6991dbc9143009d25b1727c317933
 
 steps:
 # Once these are onboarded as an artifact to Image Factory, can remove the below two steps
@@ -42,7 +48,20 @@ steps:
     inputs:
       script: 'python3 ./build.py --project agent --config config --package-for DEB --clean'
       workingDirectory: '$(Build.SourcesDirectory)/build'
+<<<<<<< HEAD
     displayName: 'Build agent debian9-arm32-debug'
+=======
+    displayName: 'Build agent debian10-arm32-debug'
+
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: '/tmp/build-deliveryoptimization-agent/linux-debug'
+      Contents: |
+        deliveryoptimization-agent*.deb
+      TargetFolder: '$(Build.ArtifactStagingDirectory)/debian10-arm32-debug'
+      CleanTargetFolder: true
+    displayName: 'Populate artifacts staging dir'
+>>>>>>> de8423c887a6991dbc9143009d25b1727c317933
 
 #- template: templates/do-docker-jobs.yml
 #  parameters:
