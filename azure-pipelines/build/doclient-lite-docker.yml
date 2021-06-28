@@ -26,10 +26,10 @@ container: debian9-arm32
 
 steps:
   - task: CmdLine@2
-  inputs:
-    script: 'python3 ./build.py --project agent --config config --package-for DEB --clean'
-    workingDirectory: '$(Build.SourcesDirectory)/build'
-  displayName: 'Build agent debian9-arm32-debug'
+    inputs:
+      script: 'python3 ./build.py --project agent --config config --package-for DEB --clean'
+      workingDirectory: '$(Build.SourcesDirectory)/build'
+    displayName: 'Build agent debian9-arm32-debug'
 
 #- template: templates/do-docker-jobs.yml
 #  parameters:
