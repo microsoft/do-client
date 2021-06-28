@@ -16,21 +16,16 @@ schedules:
 
 resources:
   containers:
-    - container: debian9-arm32
-      image: doclientcontainerregistry.azurecr.io/debian9-arm32:latest
+    - container: debian10-arm32
+      image: doclientcontainerregistry.azurecr.io/debian10-arm32:latest
       endpoint: doclientcontainerregistry
 
 #pool: 1es_hosted_pool_ubuntu_1804
 pool:
   vmImage: 'ubuntu-18.04'
-container: debian9-arm32
+container: debian10-arm32
 
 steps:
-  - task: CmdLine@2
-    inputs:
-      script: "echo hello world"
-    displayName: Testing
-
   - task: CmdLine@2
     inputs:
       script: 'python3 ./build.py --project agent --config config --package-for DEB --clean'
