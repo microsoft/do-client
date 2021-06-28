@@ -54,6 +54,7 @@ resources:
 #      CleanTargetFolder: true
 #    displayName: 'Populate artifacts staging dir'
 
+jobs:
 - template: templates/do-docker-jobs.yml
   parameters:
     targetOS: 'debian10'
