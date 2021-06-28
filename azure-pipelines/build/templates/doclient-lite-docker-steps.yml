@@ -41,7 +41,7 @@ steps:
     command: run
     containerRegistry: doclientcontainerregistry
     repository: doclient/debian9-arm32:latest
-    arguments: "--rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent ${{parameters.dockerImageName}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--generator" "Unix Makefiles" "--config" "${{parameters.config}}" "--project" "agent"'
+    arguments: "--rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent ${{parameters.dockerImageName}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--generator" "Unix Makefiles" "--config" "${{parameters.config}}" "--project" "agent"'"
 
 #- task: CmdLine@2
 #  inputs:
