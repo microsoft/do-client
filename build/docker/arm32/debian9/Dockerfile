@@ -32,10 +32,14 @@ WORKDIR /tmp/
 RUN chmod +x bootstrap-debian-9.sh
 RUN ./bootstrap-debian-9.sh
 
+
 VOLUME /code
 WORKDIR /code
 
-ENTRYPOINT [ "/bin/bash", "-c"]
+# NOTE: For azure pipelines, it is required that entrypoint is NOT defined
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/process/container-phases?view=azure-devops&tabs=yaml
+# When building docker images locally, and using them for local builds, uncomment the below line 
+#ENTRYPOINT [ "/bin/bash", "-c"]
 
 # We specify an empty command so that we can pass options to the ENTRYPOINT command.
 # This is a bit of a Dockerfile quirk where if the ENTRYPOINT value is defined,

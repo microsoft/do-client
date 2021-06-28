@@ -20,21 +20,29 @@ resources:
       image: doclientcontainerregistry.azurecr.io/debian9-arm32:latest
       endpoint: doclientcontainerregistry
 
-pool: 1es_hosted_pool_ubuntu_1804
+#pool: 1es_hosted_pool_ubuntu_1804
 
 container: debian9-arm32
 
 steps:
+# Once these are onboarded as an artifact to Image Factory, can remove the below two steps
+- task: CmdLine@2
+  inputs:
+    script: 'chmod +x bootstrap.sh'
+    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
+  displayName: 'chmod bootstrap script'
+
+- task: CmdLine@2
+  inputs:
+    script: 'sudo ./bootstrap.sh'
+    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
+  displayName: 'Install Dependencies'
+
   - task: CmdLine@2
     inputs:
-      script: "echo hello world"
-    displayName: Testing
-
-#  - task: CmdLine@2
-#    inputs:
-#      script: 'python3 ./build.py --project agent --config config --package-for DEB --clean'
-#      workingDirectory: '$(Build.SourcesDirectory)/build'
-#    displayName: 'Build agent debian9-arm32-debug'
+      script: 'python3 ./build.py --project agent --config config --package-for DEB --clean'
+      workingDirectory: '$(Build.SourcesDirectory)/build'
+    displayName: 'Build agent debian9-arm32-debug'
 
 #- template: templates/do-docker-jobs.yml
 #  parameters:
