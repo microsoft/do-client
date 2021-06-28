@@ -20,8 +20,9 @@ resources:
       image: doclientcontainerregistry.azurecr.io/debian9-arm32:latest
       endpoint: doclientcontainerregistry
 
-pool: 1es_hosted_pool_ubuntu_1804
-
+#pool: 1es_hosted_pool_ubuntu_1804
+pool:
+  vmImage: 'ubuntu-18.04'
 #container: debian9-arm32
 
 steps:
