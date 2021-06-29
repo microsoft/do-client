@@ -43,7 +43,7 @@ steps:
     command: pull
     containerRegistry: doclientcontainerregistry
     repository: $(parameters.dockerImageName)
-    tags: latest
+    arguments 'doclientcontainerregistry.azurecr.io/debian9-test:latest'
     #arguments: '--rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent ${{parameters.dockerImageName}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--generator" "Unix Makefiles" "--config" "${{parameters.config}}" "--project" "agent"'
 
 #- task: CmdLine@2
