@@ -49,7 +49,7 @@ steps:
 - task: CmdLine@2
   inputs:
   # Unix Makefiles used in place of Ninja due to issues with 32-bit compatability on cross-arch builds
-    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent ${{parameters.dockerImageName}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--generator" "Unix Makefiles" "--config" "${{parameters.config}}" "--project" "agent"'
+    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent doclientcontainerregistry.azurecr.io/debian9-arm32:latest "/code/build/build.py" "--clean" "--package-for" "DEB" "--generator" "Unix Makefiles" "--config" "${{parameters.config}}" "--project" "agent"'
   displayName: 'Build client-lite ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: CopyFiles@2
