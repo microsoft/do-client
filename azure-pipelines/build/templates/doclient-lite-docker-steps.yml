@@ -17,23 +17,25 @@ parameters:
 
 steps:
 # Once these are onboarded as an artifact to Image Factory, can remove the below two steps
-- task: CmdLine@2
-  inputs:
-    script: 'chmod +x bootstrap.sh'
-    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
-  displayName: 'chmod bootstrap script'
+# Actually running on a host machine already installs docker (not sure if qemu needs to also be installed/registered)
+#- task: CmdLine@2
+#  inputs:
+#    script: 'chmod +x bootstrap.sh'
+#    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
+#  displayName: 'chmod bootstrap script'
 
-- task: CmdLine@2
-  inputs:
-    script: 'sudo ./bootstrap.sh'
-    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
-  displayName: 'Install Dependencies'
+#- task: CmdLine@2
+#  inputs:
+#    script: 'sudo ./bootstrap.sh'
+#    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
+#  displayName: 'Install Dependencies'
 
 - task: Docker@2
   displayName: Login to ACR
   inputs:
     command: login
     containerRegistry: doclientcontainerregistry
+    repository: $(parameters.dockerImageName)
 
 - task: Docker@2
   displayName: Run Docker 
