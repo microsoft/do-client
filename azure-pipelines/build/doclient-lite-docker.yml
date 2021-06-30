@@ -35,6 +35,6 @@ jobs:
 
 - template: templates/do-docker-jobs.yml
   parameters:
-    targetOS: 'ubuntu18.04'
+    targetOS: 'ubuntu1804' # azure pipelines does not support '.' in display names
     targetArch: 'arm64'
     stepsTemplate: 'doclient-lite-docker-steps.yml'
