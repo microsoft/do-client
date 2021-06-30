@@ -179,10 +179,10 @@ function installContainerTools
 	  "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
 	  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 	  
-    apt-get update 
-	apt-get install docker-ce docker-ce-cli containerd.io
+    apt-get update -y
+	apt-get install -y docker-ce docker-ce-cli containerd.io
 	
-	apt-get install docker-ce-rootless-extras
+	apt-get install -y docker-ce-rootless-extras
 	
 	/usr/bin/dockerd-rootless-setuptool.sh
 }
