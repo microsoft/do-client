@@ -14,52 +14,18 @@ schedules:
     include:
     - main
 
-#resources:
-#  containers:
-#    - container: debian10-arm32
-#      image: doclientcontainerregistry.azurecr.io/debian10-arm32:latest
-#      endpoint: doclientcontainerregistry
-
 #pool: 1es_hosted_pool_ubuntu_1804
+
+#1es_hosted_pool_ubuntu_1804 doesn't come come installed with docker yet
 pool:
   vmImage: 'ubuntu-18.04'
-#container: debian10-arm32
-
-#steps:
-# Once these are onboarded as an artifact to Image Factory, can remove the below two steps
-#- task: CmdLine@2
-#  inputs:
-#    script: 'chmod +x bootstrap.sh'
-#    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
-#  displayName: 'chmod bootstrap script'
-
-#- task: CmdLine@2
-#  inputs:
-#    script: 'sudo ./bootstrap.sh'
-#    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
-#  displayName: 'Install Dependencies'
-
-#  - task: CmdLine@2
-#    inputs:
-#      script: 'python3 ./build.py --project agent --config config --package-for DEB --clean'
-#      workingDirectory: '$(Build.SourcesDirectory)/build'
-#    displayName: 'Build agent debian10-arm32-debug'
-
-#  - task: CopyFiles@2
-#    inputs:
-#      SourceFolder: '/tmp/build-deliveryoptimization-agent/linux-debug'
-#      Contents: |
-#        deliveryoptimization-agent*.deb
-#      TargetFolder: '$(Build.ArtifactStagingDirectory)/debian10-arm32-debug'
-#      CleanTargetFolder: true
-#    displayName: 'Populate artifacts staging dir'
 
 jobs:
 - template: templates/do-docker-jobs.yml
   parameters:
     targetOS: 'debian9'
     targetArch: 'arm32'
-    dockerImageName: 'debian9-arm32'
+    dockerImageName: 'debian9-arm32' # TODO: this can be created from targetOS-targetArch now 
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 
 #- template: templates/do-docker-jobs.yml
