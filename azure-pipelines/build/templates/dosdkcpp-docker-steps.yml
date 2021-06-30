@@ -18,7 +18,7 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: './bootstrap.sh --platform ${{parameters.targetOS}} --install containertools'
+    script: 'sudo ./bootstrap.sh --platform ${{parameters.targetOS}} --install containertools'
     workingDirectory: '$(Build.SourcesDirectory)/build'
   displayName: 'Install Docker'
 
