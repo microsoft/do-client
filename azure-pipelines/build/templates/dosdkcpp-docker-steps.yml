@@ -2,12 +2,16 @@
 # Consume this steps template in one or more jobs by passing in parameter values.
 
 parameters:
-- name: targetOsArch    # example: debian10-arm32
+- name: targetOS        # example: ubuntu18.04
   type: string
-- name: dockerImageName # example: jimsonmsft/debian10-arm32:latest
+- name: targetArch      # example: x64
   type: string
 - name: config          # debug/release
   type: string
+
+variables:
+- name: targetOsArch
+  value: ${{parameters-targetOS}}-${{parameters.targetArch}}
 
 steps:
 - task: CmdLine@2

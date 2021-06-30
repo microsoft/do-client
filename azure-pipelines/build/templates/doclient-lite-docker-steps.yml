@@ -2,12 +2,16 @@
 # Consume this steps template in one or more jobs by passing in parameter values.
 
 parameters:
-- name: targetOsArch    # example: debian10-arm32
+- name: targetOS        # example: debian10
   type: string
-- name: dockerImageName # example: jimsonmsft/debian10-arm32:latest
+- name: targetArch      # example: arm32
   type: string
 - name: config          # debug/release/minsizerel/relwithdebuginfo
   type: string
+
+variables:
+- name: targetOsArch
+  value: ${{parameters-targetOS}}-${{parameters.targetArch}}
 
 steps:
 - task: Docker@2
@@ -22,14 +26,21 @@ steps:
   inputs:
     command: pull
     containerRegistry: doclientcontainerregistry
-    arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.dockerImageName}}:latest'
+    arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:latest'
+
+# TODO(jimson): Once these are onboarded as an artifact to Image Factory, can remove the below two steps
+# Another alternative is to just do the build from within a docker container, and then run the tests on the host
+- task: CmdLine@2
+  inputs:
+    script: 'chmod +x bootstrap.sh'
+    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
+  displayName: 'chmod bootstrap script'
 
 - task: CmdLine@2
   inputs:
-    script: |
-      apt-get -y install qemu binfmt-support qemu-user-static
-      docker run --rm --privileged multiarch/qemu-user-static --reset -p yes 
-  displayName: 'Install and register QEMU'
+    script: 'sudo ./bootstrap.sh --platform ${{parameters.targetOS}} --install qemu'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
+  displayName: 'Install & register QEMU'
 
 - task: CmdLine@2
   inputs:

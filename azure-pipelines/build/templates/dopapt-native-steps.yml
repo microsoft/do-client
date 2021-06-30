@@ -2,20 +2,49 @@
 # Consume this steps template in one or more jobs by passing in parameter values.
 
 parameters:
-- name: targetOsArch    # example: ubuntu18.04-x64
+- name: targetOS        # example: ubuntu18.04
+  type: string
+- name: targetArch      # example: x64
   type: string
 - name: config          # debug/release/minsizerel/relwithdebuginfo
   type: string
 
+variables:
+- name: targetOsArch
+  value: ${{parameters-targetOS}}-${{parameters.targetArch}}
+
 steps:
 - checkout: self
 
-- task: PythonScript@0
+# TODO(jimson): Once these are onboarded as an artifact to Image Factory, can remove the below two steps
+# Another alternative is to just do the build from within a docker container, and then run the tests on the host
+- task: CmdLine@2
   inputs:
-    scriptSource: 'filePath'
-    scriptPath: 'build/build.py'
-    arguments: '--project sdk --cmaketarget deliveryoptimization --config ${{parameters.config}} --package-for DEB --clean '
+    script: 'chmod +x bootstrap.sh'
+    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
+  displayName: 'chmod bootstrap script'
+
+- task: CmdLine@2
+  inputs:
+    script: 'sudo ./bootstrap.sh --platform ubuntu18.04'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
+  displayName: 'Install Dependencies'
+
+# Have to use cmdline rather than built in python task, because the python env variable chooses python2
+# There is a pipeline task which allows you to specify version, but that requires configuring of the agent tools directory
+- task: CmdLine@2
+  inputs:
+    script: 'python3 ./build.py --project sdk --config ${{parameters.config}} --package-for DEB --clean'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
   displayName: 'Build sdk ${{parameters.targetOsArch}}-${{parameters.config}}'
+
+#TODO(jimson): why did this have --cmaketarget flag?
+#- task: PythonScript@0
+#  inputs:
+#    scriptSource: 'filePath'
+#    scriptPath: 'build/build.py'
+#    arguments: '--project sdk --cmaketarget deliveryoptimization --config ${{parameters.config}} --package-for DEB --clean '
+#  displayName: 'Build sdk ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: Bash@3
   inputs:
@@ -24,12 +53,20 @@ steps:
     workingDirectory: '/tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}'
   displayName: 'Install libdeliveryoptimization'
 
-- task: PythonScript@0
+# Have to use cmdline rather than built in python task, because the python env variable chooses python2
+# There is a pipeline task which allows you to specify version, but that requires configuring of the agent tools directory
+- task: CmdLine@2
   inputs:
-    scriptSource: 'filePath'
-    scriptPath: 'build/build.py'
-    arguments: '--project plugin-apt --config ${{parameters.config}} --package-for DEB --clean'
+    script: 'python3 ./build.py --project plugin-apt --config ${{parameters.config}} --package-for DEB --clean'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
   displayName: 'Build deliveryoptimization-plugin-apt ${{parameters.targetOsArch}}-${{parameters.config}}'
+
+#- task: PythonScript@0
+#  inputs:
+#    scriptSource: 'filePath'
+#    scriptPath: 'build/build.py'
+#    arguments: '--project plugin-apt --config ${{parameters.config}} --package-for DEB --clean'
+#  displayName: 'Build deliveryoptimization-plugin-apt ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: Bash@3
   condition: eq('${{parameters.config}}', 'minsizerel')

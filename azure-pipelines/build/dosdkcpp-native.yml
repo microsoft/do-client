@@ -47,13 +47,15 @@ jobs:
   steps:
   - template: templates/dosdkcpp-native-steps.yml
     parameters:
-      targetOsArch: 'ubuntu1804-x64'
+      targetOs:'ubuntu18.04'
+      targetArch: 'x64'
       config: debug
 
 - job: Release
   steps:
   - template: templates/dosdkcpp-native-steps.yml
     parameters:
-      targetOsArch: 'ubuntu1804-x64'
+      targetOs:'ubuntu18.04'
+      targetArch: 'x64'
       config: minsizerel
       skipTests: true

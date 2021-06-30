@@ -6,8 +6,6 @@ parameters:
   type: string
 - name: targetArch      # example: arm32
   type: string
-- name: dockerImageName # example: jimsonmsft/debian10-arm32:latest
-  type: string
 - name: stepsTemplate   # example: dopapt-docker-steps.yml
   type: string
 
@@ -16,14 +14,14 @@ jobs:
   steps:
   - template: ${{parameters.stepsTemplate}}
     parameters:
-      targetOsArch: ${{parameters.targetOS}}-${{parameters.targetArch}}
-      dockerImageName: ${{parameters.dockerImageName}}
+      targetOS: ${{parameters.targetOS}}
+      targetArch: ${{parameters.targetArch}}
       config: debug
 
 - job: ${{parameters.targetOS}}_${{parameters.targetArch}}_release
   steps:
   - template: ${{parameters.stepsTemplate}}
     parameters:
-      targetOsArch: ${{parameters.targetOS}}-${{parameters.targetArch}}
-      dockerImageName: ${{parameters.dockerImageName}}
+      targetOS: ${{parameters.targetOS}}
+      targetArch: ${{parameters.targetArch}}
       config: minsizerel

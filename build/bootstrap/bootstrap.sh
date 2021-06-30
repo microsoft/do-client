@@ -4,6 +4,7 @@
 set -e
 
 # Defaults 
+PLATFORM=ubuntu18.04
 INSTALL=all
 
 usage() {
@@ -86,7 +87,7 @@ function installBuildDependencies
     apt-get install -y libboost-system-dev libboost-log-dev libboost-filesystem-dev libboost-program-options-dev
     # Additional Boost libs for cpprestsdk
     apt-get install -y libboost-random-dev libboost-regex-dev
-    apt-get install -y libgtest-dev libproxy-dev libmsgsl-dev libssl-dev uuid-dev
+    apt-get install -y libproxy-dev libmsgsl-dev libssl-dev uuid-dev
 
     # Install cpprest dependencies
     # libssl-dev also required but installed above because plugin uses libssl-dev directly
@@ -120,6 +121,7 @@ function installBuildDependencies
 		make install 
 	else
 		# libgtest-dev is a source package and requires manual installation
+		apt-get -y install libgtest-dev
 		mkdir /tmp/build_gtest/
 		cd /tmp/build_gtest
 		cmake /usr/src/gtest
@@ -171,14 +173,6 @@ function installAll
 main()
 {
     parseArgs "$@"
-	
-	if [[ -v PLATFORM ]]
-	then
-		echo "[INFO] Platform check susccesful"
-	else
-		echo "[ERROR] No platform set, please set a valid platform"
-		exit
-	fi
 	
 	echo "[INFO] Updating package manager"
 	apt-get update -y --fix-missing
