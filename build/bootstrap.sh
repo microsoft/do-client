@@ -115,7 +115,7 @@ function installBuildDependencies
 
 	if [[ "$PLATFORM" == "ubuntu2004" || "$PLATFORM" == "debian10" ]];
 	then
-		# The latest native-version of gtest on Ubuntu20.04 and debian10 currently has a bug where CMakeLists doesn't declare an install target, causing 'make install' to fail
+		# The latest native-version of gtest on ubuntu2004 and debian10 currently has a bug where CMakeLists doesn't declare an install target, causing 'make install' to fail
 		# Clone from source and use release-1.10.0 instead, since gtest is a source package anyways 
 		mkdir /tmp/gtest
 		cd /tmp/gtest

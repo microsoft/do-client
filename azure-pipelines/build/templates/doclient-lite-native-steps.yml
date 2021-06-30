@@ -2,9 +2,9 @@
 # Consume this steps template in one or more jobs by passing in parameter values.
 
 parameters:
-- name: targetOS        # example: ubuntu18.04
+- name: targetOS        # example: ubuntu1804
   type: string
-- name: targetOsArch    # example: ubuntu18.04-x64
+- name: targetOsArch    # example: ubuntu1804-x64
   type: string
 - name: config          # debug/release
   type: string

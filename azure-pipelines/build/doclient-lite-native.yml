@@ -44,15 +44,15 @@ jobs:
   steps:
   - template: templates/doclient-lite-native-steps.yml
     parameters:
-      targetOS: 'ubuntu18.04'
-      targetOsArch: 'ubuntu18.04-x64'
+      targetOS: 'ubuntu1804'
+      targetOsArch: 'ubuntu1804-x64'
       config: debug
 
 - job: Release
   steps:
   - template: templates/doclient-lite-native-steps.yml
     parameters:
-      targetOS: 'ubuntu18.04'
-      targetOsArch: 'ubuntu18.04-x64'
+      targetOS: 'ubuntu1804'
+      targetOsArch: 'ubuntu1804-x64'
       config: minsizerel
       skipTests: true

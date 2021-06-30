@@ -24,19 +24,19 @@ parameters:
 stages:
 - stage: release_build
   jobs:
-  - job: deliveryoptimization_agent_ubuntu18.04_amd64
+  - job: deliveryoptimization_agent_ubuntu1804_amd64
     steps:
     - template: ../build/templates/doclient-lite-native-steps.yml
       parameters:
-        targetOsArch: 'ubuntu18.04-x64'
+        targetOsArch: 'ubuntu1804-x64'
         config: release
         skipTests: true 
-  - job: deliveryoptimization_agent_ubuntu18.04_arm64
+  - job: deliveryoptimization_agent_ubuntu1804_arm64
     steps:
     - template: ../build/templates/doclient-lite-docker-steps.yml
       parameters:
-        targetOsArch: ubuntu18.04-arm64
-        dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
+        targetOsArch: ubuntu1804-arm64
+        dockerImageName: 'jimsonmsft/ubuntu1804-arm64:latest'
         config: release
   - job: deliveryoptimization_agent_debian10_arm32
     steps:
@@ -53,19 +53,19 @@ stages:
         dockerImageName: 'jimsonmsft/debian9-arm32:latest'
         config: release
 
-  - job: libdeliveryoptimization_ubuntu18.04_amd64
+  - job: libdeliveryoptimization_ubuntu1804_amd64
     steps:
     - template: ../build/templates/dosdkcpp-native-steps.yml
       parameters:
-        targetOsArch: 'ubuntu18.04-x64'
+        targetOsArch: 'ubuntu1804-x64'
         config: release
         skipTests: true 
-  - job: libdeliveryoptimization_ubuntu18.04_arm64
+  - job: libdeliveryoptimization_ubuntu1804_arm64
     steps:
     - template: ../build/templates/dosdkcpp-docker-steps.yml
       parameters:
-        targetOsArch: ubuntu18.04-arm64
-        dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
+        targetOsArch: ubuntu1804-arm64
+        dockerImageName: 'jimsonmsft/ubuntu1804-arm64:latest'
         config: release
   - job: libdeliveryoptimization_debian10_arm32
     steps:
@@ -82,18 +82,18 @@ stages:
         dockerImageName: 'jimsonmsft/debian9-arm32:latest'
         config: release
 
-  - job: deliveryoptimization_plugin_apt_ubuntu18.04_amd64
+  - job: deliveryoptimization_plugin_apt_ubuntu1804_amd64
     steps:
     - template: ../build/templates/dopapt-native-steps.yml
       parameters:
-        targetOsArch: 'ubuntu18.04-x64'
+        targetOsArch: 'ubuntu1804-x64'
         config: release
-  - job: deliveryoptimization_plugin_apt_ubuntu18.04_arm64
+  - job: deliveryoptimization_plugin_apt_ubuntu1804_arm64
     steps:
     - template: ../build/templates/dopapt-docker-steps.yml
       parameters:
-        targetOsArch: ubuntu18.04-arm64
-        dockerImageName: 'jimsonmsft/ubuntu18.04-arm64:latest'
+        targetOsArch: ubuntu1804-arm64
+        dockerImageName: 'jimsonmsft/ubuntu1804-arm64:latest'
         config: release
   - job: deliveryoptimization_plugin_apt_debian10_arm32
     steps:

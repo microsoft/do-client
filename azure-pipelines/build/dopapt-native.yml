@@ -46,14 +46,14 @@ jobs:
   steps:
   - template: templates/dopapt-native-steps.yml
     parameters:
-      targetOs: 'ubuntu18.04'
-      targetOsArch: 'ubuntu18.04-x64'
+      targetOs: 'ubuntu1804'
+      targetOsArch: 'ubuntu1804-x64'
       config: debug
 
 - job: Release
   steps:
   - template: templates/dopapt-native-steps.yml
     parameters:
-      targetOs: 'ubuntu18.04'
-      targetOsArch: 'ubuntu18.04-x64'
+      targetOs: 'ubuntu1804'
+      targetOsArch: 'ubuntu1804-x64'
       config: minsizerel

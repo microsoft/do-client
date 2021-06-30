@@ -10,7 +10,7 @@ usage() {
     cat <<EOM
 $(basename $0) - Script to setup development environments for Delivery Optimization
 Usage: $(basename $0) --platform <platform to install for> --install <install command>
-	--platform			# Platform to provision, supported platforms: Ubuntu18.04, Ubuntu 20.04, Debian9, Debian 10. Default is Ubuntu18.04
+	--platform			# Platform to provision, supported platforms: ubuntu1804, Ubuntu 20.04, Debian9, Debian 10. Default is ubuntu1804
 	--install 			# Which command to run, supported commands: builddependencies, developertools, containertools, qemu, all. Default is All
 EOM
     exit 1
@@ -27,7 +27,7 @@ function parseArgs() {
             ;;
 		--platform | -p)
 			PLATFORM="${2,,}"
-			if [[ "$PLATFORM" == "debian9" || "$PLATFORM" == "debian10" || "$PLATFORM" == "ubuntu18.04" || "$PLATFORM" == "ubuntu20.04" ]];
+			if [[ "$PLATFORM" == "debian9" || "$PLATFORM" == "debian10" || "$PLATFORM" == "ubuntu1804" || "$PLATFORM" == "ubuntu2004" ]];
 			then
 				echo -e "[INFO] Platform set to: ${PLATFORM}"
 			else 
@@ -105,9 +105,9 @@ function installBuildDependencies
     ninja
     ninja install
 
-	if [[ "$PLATFORM" == "ubuntu20.04" || "$PLATFORM" == "debian10" ]];
+	if [[ "$PLATFORM" == "ubuntu2004" || "$PLATFORM" == "debian10" ]];
 	then
-		# The latest native-version of gtest on Ubuntu20.04 and debian10 currently has a bug where CMakeLists doesn't declare an install target, causing 'make install' to fail
+		# The latest native-version of gtest on ubuntu2004 and debian10 currently has a bug where CMakeLists doesn't declare an install target, causing 'make install' to fail
 		# Clone from source and use release-1.10.0 instead, since gtest is a source package anyways 
 		mkdir /tmp/gtest
 		cd /tmp/gtest
