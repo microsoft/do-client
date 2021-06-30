@@ -11,16 +11,11 @@ parameters:
   default: false
 
 steps:
-# Once these are onboarded as an artifact to Image Factory, can remove the below two steps
+# Once these are onboarded as an artifact to Image Factory, can remove the below step
+# Another alternative is to just do this within a docker container, and then run the tests on the host
 - task: CmdLine@2
   inputs:
-    script: 'chmod +x bootstrap-ubuntu-18.04.sh'
-    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
-  displayName: 'chmod bootstrap script'
-
-- task: CmdLine@2
-  inputs:
-    script: 'sudo ./bootstrap-ubuntu-18.04.sh'
+    script: 'sudo ./bootstrap.sh --platform ubuntu18.04'
     workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
   displayName: 'Install Dependencies'
 
