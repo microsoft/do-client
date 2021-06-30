@@ -31,6 +31,6 @@ jobs:
 
 - template: templates/do-docker-jobs.yml
   parameters:
-    targetOS: 'ubuntu18.04'
+    targetOS: 'ubuntu1804'
     targetArch: 'arm64'
     stepsTemplate: 'dosdkcpp-docker-steps.yml'
