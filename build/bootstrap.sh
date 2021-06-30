@@ -185,7 +185,7 @@ function installContainerTools
 	
 	apt-get install -y docker-ce-rootless-extras
 	
-	/usr/bin/dockerd-rootless-setuptool.sh install
+	#/usr/bin/dockerd-rootless-setuptool.sh install
 }
 
 function installQemu
