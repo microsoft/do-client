@@ -166,7 +166,7 @@ function installContainerTools
 	
 	apt-get install -y uidmap
 	
-	apt-get install \
+	apt-get install -y \
     apt-transport-https \
     ca-certificates \
     curl \
