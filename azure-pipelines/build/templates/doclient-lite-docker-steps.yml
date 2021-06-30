@@ -2,6 +2,8 @@
 # Consume this steps template in one or more jobs by passing in parameter values.
 
 parameters:
+- name: targetOS        # example: ubuntu18.04
+  type: string
 - name: targetOsArch    # example: ubuntu18.04-x64
   type: string
 - name: config          # debug/release/minsizerel/relwithdebuginfo
@@ -22,7 +24,7 @@ steps:
     containerRegistry: doclientcontainerregistry
     arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:latest'
 
-# TODO(jimson): Once these are onboarded as an artifact to Image Factory, can remove the below two steps
+# TODO(jimson): Once these are onboarded as an artifact to Image Factory, can remove the below two steps as well as the targetOS parameter
 # Another alternative is to just do the build from within a docker container, and then run the tests on the host
 - task: CmdLine@2
   inputs:
