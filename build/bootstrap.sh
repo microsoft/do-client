@@ -84,7 +84,7 @@ function installBuildDependencies
 		make
 		make install 
 	else
-		apt-get -y install cmake
+		apt-get -y install cmake libmsgsl-dev
 	fi
 	
 	apt-get install -y python3 ninja-build
@@ -94,7 +94,7 @@ function installBuildDependencies
     apt-get install -y libboost-system-dev libboost-log-dev libboost-filesystem-dev libboost-program-options-dev
     # Additional Boost libs for cpprestsdk
     apt-get install -y libboost-random-dev libboost-regex-dev
-    apt-get install -y libproxy-dev libmsgsl-dev libssl-dev uuid-dev
+    apt-get install -y libproxy-dev libssl-dev uuid-dev
 
     # Install cpprest dependencies
     # libssl-dev also required but installed above because plugin uses libssl-dev directly
@@ -156,6 +156,10 @@ function installContainerTools
     # Instructions located at: https://docs.docker.com/engine/install/ubuntu/
     curl -fsSL https://get.docker.com -o get-docker.sh
     sh get-docker.sh
+	
+	sudo groupadd docker
+	sudo usermod -aG docker $USER
+	newgrp docker
 }
 
 function installQemu
