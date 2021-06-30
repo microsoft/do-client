@@ -147,6 +147,7 @@ function installDeveloperTools
     export PATH=$PATH:~/.local/bin
 }
 
+#TODO(jimson): If this script isn't working for provisioning docker on an image, consider using someone elses docker script (from ImageFactory artifacts)
 function installContainerTools
 {
 	apt-get install -y curl
