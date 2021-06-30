@@ -15,7 +15,7 @@ jobs:
   - template: ${{parameters.stepsTemplate}}
     parameters:
       targetOS: ${{parameters.targetOS}}
-      targetArch: ${{parameters.targetArch}}
+      targetOsArch: ${{parameters.targetOS}}-${{parameters.targetArch}}
       config: debug
 
 - job: ${{parameters.targetOS}}_${{parameters.targetArch}}_release
@@ -23,5 +23,5 @@ jobs:
   - template: ${{parameters.stepsTemplate}}
     parameters:
       targetOS: ${{parameters.targetOS}}
-      targetArch: ${{parameters.targetArch}}
+      targetOsArch: ${{parameters.targetOS}}-${{parameters.targetArch}}
       config: minsizerel

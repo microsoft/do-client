@@ -24,17 +24,17 @@ jobs:
 - template: templates/do-docker-jobs.yml
   parameters:
     targetOS: 'debian9'
-    targetOsArch: 'debian9-arm32'
+    targetArch: 'arm32'
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 
 - template: templates/do-docker-jobs.yml
   parameters:
     targetOS: 'debian10'
-    targetOsArch: 'debian10-arm32'
+    targetArch: 'arm32'
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 
 - template: templates/do-docker-jobs.yml
   parameters:
     targetOS: 'ubuntu18.04'
-    targetOsArch: 'ubuntu18.04-arm64'
+    targetArch: 'arm64'
     stepsTemplate: 'doclient-lite-docker-steps.yml'
