@@ -66,7 +66,7 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization-sdk-tests--config ${{parameters.config}}'
+    script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization-sdk-tests --config ${{parameters.config}}'
     workingDirectory: '$(Build.SourcesDirectory)/build'
   displayName: 'Build sdk-cpp tests ${{parameters.targetOsArch}}-${{parameters.config}}'
 
