@@ -36,12 +36,17 @@ steps:
     containerRegistry: doclientcontainerregistry
     repository: $(parameters.targetOsArch)
 
-- task: Docker@2
-  displayName: Pull latest build image
+- task: CmdLine@2
   inputs:
-    command: pull
-    containerRegistry: doclientcontainerregistry
-    arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:latest'
+    script: 'sudo docker pull doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:latest'
+  displayName: 'Pull latest build image'
+
+#- task: Docker@2
+#  displayName: Pull latest build image
+#  inputs:
+#    command: pull
+#    containerRegistry: doclientcontainerregistry
+#    arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:latest'
 
 - task: CmdLine@2
   inputs:
