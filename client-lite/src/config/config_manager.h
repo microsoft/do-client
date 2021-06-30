@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/optional.hpp>
 #include "do_json_parser.h"
 
 class ConfigManager
@@ -10,7 +11,7 @@ public:
 
     void RefreshAdminConfigs();
 
-    std::chrono::seconds CacheHostFallbackDelay();
+    boost::optional<std::chrono::seconds> CacheHostFallbackDelay();
     std::string CacheHostServer();
     std::string IoTConnectionString();
     bool RestControllerValidateRemoteAddr();

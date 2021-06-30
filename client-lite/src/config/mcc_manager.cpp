@@ -1,8 +1,10 @@
 #include "do_common.h"
 #include "mcc_manager.h"
 
+#include <cpprest/uri.h>
 #include "config_defaults.h"
 #include "config_manager.h"
+#include "http_agent.h"
 
 static std::string GetHostNameFromIoTConnectionString(const char* connectionString)
 {
@@ -36,7 +38,12 @@ MCCManager::MCCManager(ConfigManager& sdkConfigs):
 {
 }
 
-std::string MCCManager::NextHost()
+boost::optional<std::chrono::seconds> MCCManager::FallbackDelay()
+{
+    return _configManager.CacheHostFallbackDelay();
+}
+
+std::string MCCManager::GetHost(const std::string& originalUrl)
 {
     std::string mccHostName =_configManager.CacheHostServer();
     if (mccHostName.empty())
@@ -48,57 +55,79 @@ std::string MCCManager::NextHost()
         }
     }
 
+    const auto originalHost = web::uri{originalUrl}.host();
     if (!mccHostName.empty())
     {
-        if (_banList.IsBanned(mccHostName))
+        auto it = _mccHostsByOriginalHost.find(originalHost);
+        if (it != _mccHostsByOriginalHost.end())
         {
-            _hosts.erase(mccHostName);
-            mccHostName.clear();
-        }
-        else
-        {
-            // Record the time of when we first handed out this host
-            if (_hosts.find(mccHostName) == _hosts.end())
+            if (it->second.Address() != mccHostName)
             {
-                _hosts[mccHostName] = std::chrono::steady_clock::now();
+                // MCC to be used has changed, discard existing one
+                _mccHostsByOriginalHost.erase(it);
+                it = _mccHostsByOriginalHost.end();
             }
         }
+
+        if (it == _mccHostsByOriginalHost.end())
+        {
+            MccHost newEntry{mccHostName};
+            it = _mccHostsByOriginalHost.emplace(originalHost, std::move(newEntry)).first;
+        }
+
+        DO_ASSERT(it != _mccHostsByOriginalHost.end());
     }
-    DoLogVerbose("Returning MCC host: [%s]", mccHostName.data());
+    DoLogVerbose("Returning MCC host: [%s] for original host: [%s]", mccHostName.data(), originalHost.data());
     return mccHostName;
 }
 
-bool MCCManager::NoFallback() const
+void MCCManager::ReportHostError(HRESULT hr, UINT httpStatusCode, const std::string& mccHost, const std::string& originalUrl)
 {
-    return (_configManager.CacheHostFallbackDelay() == g_cacheHostFallbackDelayNoFallback);
+    const bool isFatalError = HttpAgent::IsClientError(httpStatusCode);
+    const auto originalHost = web::uri{originalUrl}.host();
+    DoLogWarningHr(hr, "ACK error from MCC host: [%s], original host: [%s], fatal error? %d",
+        mccHost.data(), originalHost.data(), isFatalError);
+    if (isFatalError)
+    {
+        auto it = _mccHostsByOriginalHost.find(originalHost);
+        if (it != _mccHostsByOriginalHost.end() && (it->second.Address() == mccHost))
+        {
+            it->second.Ban(g_mccHostBanInterval);
+        }
+    }
 }
 
-// Returns true if fallback to original URL is due now, false otherwise
-bool MCCManager::ReportHostError(HRESULT hr, const std::string& host)
+bool MCCManager::IsBanned(const std::string& mccHost, const std::string& originalUrl) const
 {
-    const bool fallbackDue = _IsFallbackDue(host);
-    DoLogWarningHr(hr, "ACK error from MCC host: [%s], fallback due? %d", host.data(), fallbackDue);
-    if (fallbackDue)
+    const auto originalHost = web::uri{originalUrl}.host();
+    auto it = _mccHostsByOriginalHost.find(originalHost);
+    if (it != _mccHostsByOriginalHost.end() && (it->second.Address() == mccHost))
     {
-        _banList.Report(host, g_mccHostBanInterval);
+        return it->second.IsBanned();
     }
-    return fallbackDue;
+    return false;
 }
 
-bool MCCManager::_IsFallbackDue(const std::string& host) const
+MCCManager::MccHost::MccHost(const std::string& address) :
+    _address(address),
+    _timeOfUnban(std::chrono::steady_clock::time_point::min())
 {
-    auto it = _hosts.find(host);
-    DO_ASSERT(it != _hosts.end());
+}
 
-    const auto timeFirstHandedOut = it->second;
-    const auto fallbackDelay = _configManager.CacheHostFallbackDelay();
-    if (fallbackDelay == g_cacheHostFallbackDelayNoFallback)
+void MCCManager::MccHost::Ban(std::chrono::seconds banInterval)
+{
+    _timeOfUnban = std::chrono::steady_clock::now() + banInterval;
+    DoLogInfo("%s banned for %ld s", _address.data(), banInterval.count());
+}
+
+bool MCCManager::MccHost::IsBanned() const
+{
+    const auto now = std::chrono::steady_clock::now();
+    const bool isBanned = (_timeOfUnban > now);
+    if (isBanned)
     {
-        // No fallback, so don't ban this host.
-        // Will have to rework this when there can be multiple MCC hosts.
-        return false;
+        const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(_timeOfUnban - now);
+        DoLogVerbose("%s will be unbanned after %ld ms", _address.data(), diff.count());
     }
-
-    // Fallback is due if the delay interval has passed since the first time this host was handed out
-    return (timeFirstHandedOut + fallbackDelay) <= std::chrono::steady_clock::now();
+    return isBanned;
 }
