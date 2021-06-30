@@ -158,7 +158,7 @@ function installContainerTools
     sh get-docker.sh
 	
 	# Allow docker to run without sudo
-	groupadd docker
+	#groupadd docker
 	usermod -aG docker $USER
 	newgrp docker
 }
