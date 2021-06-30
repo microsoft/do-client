@@ -9,27 +9,7 @@ parameters:
 - name: config          # debug/release/minsizerel/relwithdebuginfo
   type: string
 
-#resources:
-#  containers:
-#    - container: debian9-arm32
-#      image: doclientcontainerregistry.azurecr.io/debian9-arm32:latest
-#      endpoint: doclientcontainerregistry
-
 steps:
-# Once these are onboarded as an artifact to Image Factory, can remove the below two steps
-# Actually running on a host machine already installs docker (not sure if qemu needs to also be installed/registered)
-#- task: CmdLine@2
-#  inputs:
-#    script: 'chmod +x bootstrap.sh'
-#    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
-#  displayName: 'chmod bootstrap script'
-
-#- task: CmdLine@2
-#  inputs:
-#    script: 'sudo ./bootstrap.sh'
-#    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
-#  displayName: 'Install Dependencies'
-
 - task: Docker@2
   displayName: Login to ACR
   inputs:
@@ -42,9 +22,7 @@ steps:
   inputs:
     command: pull
     containerRegistry: doclientcontainerregistry
-    repository: $(parameters.dockerImageName)
-    arguments: 'doclientcontainerregistry.azurecr.io/debian9-arm32:latest'
-    #arguments: '--rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent ${{parameters.dockerImageName}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--generator" "Unix Makefiles" "--config" "${{parameters.config}}" "--project" "agent"'
+    arguments: 'doclientcontainerregistry.azurecr.io/$(parameters.dockerImageName):latest'
 
 - task: CmdLine@2
   inputs:
@@ -56,7 +34,7 @@ steps:
 - task: CmdLine@2
   inputs:
   # Unix Makefiles used in place of Ninja due to issues with 32-bit compatability on cross-arch builds
-    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent doclientcontainerregistry.azurecr.io/debian9-arm32:latest "/code/build/build.py" "--clean" "--package-for" "DEB" "--generator" "Unix Makefiles" "--config" "${{parameters.config}}" "--project" "agent"'
+    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent doclientcontainerregistry.azurecr.io/${{parameters.dockerImageName}}:latest "/code/build/build.py" "--clean" "--package-for" "DEB" "--generator" "Unix Makefiles" "--config" "${{parameters.config}}" "--project" "agent"'
   displayName: 'Build client-lite ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: CopyFiles@2
