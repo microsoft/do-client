@@ -141,7 +141,7 @@ private:
     bool _NoFallbackFromMcc() const { return _mccFallbackDue && (*_mccFallbackDue == std::chrono::steady_clock::time_point::max()); }
     bool _FallbackFromMccDue() const { return _mccFallbackDue && (*_mccFallbackDue <= std::chrono::steady_clock::now()); }
     bool _UsingMcc() const { return _connectionType == ConnectionType::MCC; }
-    bool _ShouldFallbackFromMccNow(bool isFatalError) const;
+    bool _ShouldPauseMccUsage(bool isFatalError) const;
     bool _ShouldFailFastPerConnectionType() const;
 
     // IHttpAgentEvents

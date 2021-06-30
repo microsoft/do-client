@@ -459,11 +459,20 @@ std::string Download::_UpdateConnectionTypeAndGetUrl(bool retryAfterFailure)
     {
         DO_ASSERT(_connectionType != ConnectionType::None);
 
-        _fAllowMcc = !_FallbackFromMccDue();
-
-        if (_fAllowMcc && !_mccFallbackDue)
+        if (_mccFallbackDue)
         {
-            // Use of MCC is allowed and fallback config not overriden.
+            if (*_mccFallbackDue <= std::chrono::steady_clock::now())
+            {
+                // Fallback time is past due, do not use MCC henceforth
+                _fAllowMcc = false;
+                newConnectionType = ConnectionType::CDN;
+            }
+        }
+        else
+        {
+            DO_ASSERT(_fAllowMcc);
+
+            // Fallback config not overriden.
             // Use custom logic to decide when to switch between MCC and CDN.
 
             const bool noProgressOnCurrentConnectionType = _cbTransferredAtRequestBegin == _status.BytesTransferred;
@@ -496,7 +505,7 @@ std::string Download::_UpdateConnectionTypeAndGetUrl(bool retryAfterFailure)
     }
     else
     {
-        // Initial start or resume from caller or after transient error, always start with MCC
+        // Initial start or resume from caller/transient error, attempt with MCC
         newConnectionType = ConnectionType::MCC;
     }
 
@@ -529,7 +538,7 @@ std::string Download::_UpdateConnectionTypeAndGetUrl(bool retryAfterFailure)
     return urlToUse;
 }
 
-bool Download::_ShouldFallbackFromMccNow(bool isFatalError) const
+bool Download::_ShouldPauseMccUsage(bool isFatalError) const
 {
     if (_UsingMcc())
     {
@@ -676,7 +685,7 @@ HRESULT Download::OnComplete(HRESULT hResult, UINT64 httpContext, UINT64)
                 std::chrono::seconds retryDelay = _progressTracker.NextRetryDelay();
 
                 // If we must fallback from MCC due to this error, retry without a delay
-                if (_ShouldFallbackFromMccNow(isFatalError))
+                if (_ShouldPauseMccUsage(isFatalError))
                 {
                     retryDelay = std::chrono::seconds(0);
                 }

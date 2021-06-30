@@ -81,7 +81,6 @@ std::string MCCManager::GetHost(const std::string& originalUrl)
     return mccHostName;
 }
 
-// Returns true if MCC host is banned, false otherwise
 void MCCManager::ReportHostError(HRESULT hr, UINT httpStatusCode, const std::string& mccHost, const std::string& originalUrl)
 {
     const bool isFatalError = HttpAgent::IsClientError(httpStatusCode);
@@ -110,25 +109,25 @@ bool MCCManager::IsBanned(const std::string& mccHost, const std::string& origina
 }
 
 MCCManager::MccHost::MccHost(const std::string& address) :
-    address(address),
-    timeOfUnban(std::chrono::steady_clock::time_point::min())
+    _address(address),
+    _timeOfUnban(std::chrono::steady_clock::time_point::min())
 {
 }
 
 void MCCManager::MccHost::Ban(std::chrono::seconds banInterval)
 {
-    timeOfUnban = std::chrono::steady_clock::now() + banInterval;
-    DoLogInfo("%s banned for %ld s", address.data(), banInterval.count());
+    _timeOfUnban = std::chrono::steady_clock::now() + banInterval;
+    DoLogInfo("%s banned for %ld s", _address.data(), banInterval.count());
 }
 
 bool MCCManager::MccHost::IsBanned() const
 {
     const auto now = std::chrono::steady_clock::now();
-    const bool isBanned = (timeOfUnban > now);
+    const bool isBanned = (_timeOfUnban > now);
     if (isBanned)
     {
-        const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(timeOfUnban - now);
-        DoLogVerbose("%s will be unbanned after %ld ms", address.data(), diff.count());
+        const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(_timeOfUnban - now);
+        DoLogVerbose("%s will be unbanned after %ld ms", _address.data(), diff.count());
     }
     return isBanned;
 }

@@ -17,18 +17,18 @@ public:
     bool IsBanned(const std::string& mccHost, const std::string& originalUrl) const;
 
 private:
-    struct MccHost
+    class MccHost
     {
     public:
         MccHost(const std::string& address);
         void Ban(std::chrono::seconds banInterval);
 
-        const std::string& Address() const noexcept { return address; }
+        const std::string& Address() const noexcept { return _address; }
         bool IsBanned() const;
 
     private:
-        std::string address;
-        std::chrono::steady_clock::time_point timeOfUnban;
+        std::string _address;
+        std::chrono::steady_clock::time_point _timeOfUnban;
     };
 
     ConfigManager& _configManager;
