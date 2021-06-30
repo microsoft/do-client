@@ -154,13 +154,37 @@ function installContainerTools
     echo "[INFO] Installing Docker"
     # Install docker to enable building cross-arch for arm
     # Instructions located at: https://docs.docker.com/engine/install/ubuntu/
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sh get-docker.sh
+    #curl -fsSL https://get.docker.com -o get-docker.sh
+    #sh get-docker.sh
 	
 	# Allow docker to run without sudo
 	#groupadd docker
-	usermod -aG docker $USER
-	newgrp docker
+	#usermod -aG docker $USER
+	#newgrp docker
+	
+	# ---- lowered permissions install below
+	
+	apt-get install -y uidmap
+	
+	apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+	
+	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+	
+	echo \
+	  "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+	  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+	  
+    apt-get update 
+	apt-get install docker-ce docker-ce-cli containerd.io
+	
+	apt-get install docker-ce-rootless-extras
+	
+	/usr/bin/dockerd-rootless-setuptool.sh
 }
 
 function installQemu
