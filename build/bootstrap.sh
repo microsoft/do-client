@@ -149,7 +149,7 @@ function installDeveloperTools
 
 function installContainerTools
 {
-	sudo apt-get install -y curl
+	apt-get install -y curl
 
     echo "[INFO] Installing Docker"
     # Install docker to enable building cross-arch for arm
@@ -157,8 +157,9 @@ function installContainerTools
     curl -fsSL https://get.docker.com -o get-docker.sh
     sh get-docker.sh
 	
-	sudo groupadd docker
-	sudo usermod -aG docker $USER
+	# Allow docker to run without sudo
+	groupadd docker
+	usermod -aG docker $USER
 	newgrp docker
 }
 

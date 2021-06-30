@@ -10,6 +10,7 @@ parameters:
   type: string
 
 steps:
+# TODO(jimson): Once these are onboarded as an artifact to Image Factory, can remove all dependency install steps
 - task: CmdLine@2
   inputs:
     script: 'chmod +x bootstrap.sh'
