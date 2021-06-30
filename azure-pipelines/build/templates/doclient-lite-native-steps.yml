@@ -4,9 +4,7 @@
 parameters:
 - name: targetOS        # example: ubuntu18.04
   type: string
-- name: targetArch      # example: x64
-  type: string
-- name: targetOsArch
+- name: targetOsArch    # example: ubuntu18.04-x64
   type: string
   default: ${{parameters-targetOS}}-${{parameters.targetArch}}
 - name: config          # debug/release
