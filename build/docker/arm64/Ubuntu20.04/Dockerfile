@@ -29,11 +29,11 @@ SHELL [ "/bin/bash", "-c"]
 ENV DEBIAN_FRONTEND=noninteractive
 
 COPY qemu-aarch64-static /usr/bin/qemu-aarch64-static
-COPY bootstrap-ubuntu-20.04.sh /tmp/bootstrap-ubuntu-20.04.sh
+COPY bootstrap.sh /tmp/bootstrap.sh
 
 WORKDIR /tmp/
-RUN chmod +x bootstrap-ubuntu-20.04.sh
-RUN ./bootstrap-ubuntu-20.04.sh --no-tools
+RUN chmod +x bootstrap.sh
+RUN ./bootstrap.sh --platform ubuntu20.04 --install build
 
 ENTRYPOINT [ "/bin/bash", "-c"]
 

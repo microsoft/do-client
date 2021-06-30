@@ -26,19 +26,16 @@ SHELL [ "/bin/bash", "-c"]
 # sudo docker build -t <your image name> . --no-cache --network=host
 
 COPY qemu-arm-static /usr/bin/qemu-arm-static
-COPY bootstrap-debian-10.sh /tmp/bootstrap-debian-10.sh
+COPY bootstrap.sh /tmp/bootstrap.sh
 
 WORKDIR /tmp/
-RUN chmod +x bootstrap-debian-10.sh
-RUN ./bootstrap-debian-10.sh
+RUN chmod +x bootstrap.sh
+RUN ./bootstrap.sh --platform debian10 --install build
 
 VOLUME /code
 WORKDIR /code
 
-# NOTE: For azure pipelines, it is required that entrypoint is NOT defined
-# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/process/container-phases?view=azure-devops&tabs=yaml
-# When building docker images locally, and using them for local builds, uncomment the below line 
-#ENTRYPOINT [ "/bin/bash", "-c"]
+ENTRYPOINT [ "/bin/bash", "-c"]
 
 # We specify an empty command so that we can pass options to the ENTRYPOINT command.
 # This is a bit of a Dockerfile quirk where if the ENTRYPOINT value is defined,

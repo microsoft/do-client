@@ -26,11 +26,11 @@ SHELL [ "/bin/bash", "-c"]
 # sudo docker build -t <your image name> . --no-cache --network=host
 
 COPY qemu-aarch64-static /usr/bin/qemu-aarch64-static
-COPY bootstrap-ubuntu-18.04.sh /tmp/bootstrap-ubuntu-18.04.sh
+COPY bootstrap.sh /tmp/bootstrap.sh
 
 WORKDIR /tmp/
-RUN chmod +x bootstrap-ubuntu-18.04.sh
-RUN ./bootstrap-ubuntu-18.04.sh --no-tools
+RUN chmod +x bootstrap.sh
+RUN ./bootstrap.sh --platform ubuntu18.04 --install build
 
 ENTRYPOINT [ "/bin/bash", "-c"]
 
