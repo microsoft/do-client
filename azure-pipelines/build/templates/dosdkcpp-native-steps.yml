@@ -4,17 +4,13 @@
 parameters:
 - name: targetOS        # example: ubuntu18.04
   type: string
-- name: targetArch      # example: x64
+- name: targetOsArch    # example: ubuntu18.04-x64
   type: string
 - name: config          # debug/release/minsizerel/relwithdebuginfo
   type: string
 - name: skipTests
   type: boolean
   default: false
-
-variables:
-- name: targetOsArch
-  value: ${{parameters-targetOS}}-${{parameters.targetArch}}
 
 steps:
 # TODO(jimson): Once these are onboarded as an artifact to Image Factory, can remove the below two steps

@@ -6,15 +6,14 @@ parameters:
   type: string
 - name: targetArch      # example: x64
   type: string
+- name: targetOsArch
+  type: string
+  default: ${{parameters-targetOS}}-${{parameters.targetArch}}
 - name: config          # debug/release
   type: string
 - name: skipTests
   type: boolean
   default: false
-
-variables:
-- name: targetOsArch
-  value: ${{parameters-targetOS}}-${{parameters.targetArch}}
 
 steps:
 # TODO(jimson): Once these are onboarded as an artifact to Image Factory, can remove the below two steps
@@ -27,7 +26,7 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: 'sudo ./bootstrap.sh --platform ${{parameters.targetOs}}'
+    script: 'sudo ./bootstrap.sh --platform ${{parameters.targetOS}}'
     workingDirectory: '$(Build.SourcesDirectory)/build'
   displayName: 'Install Dependencies'
 

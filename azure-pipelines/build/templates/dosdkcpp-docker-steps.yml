@@ -4,14 +4,10 @@
 parameters:
 - name: targetOS        # example: ubuntu18.04
   type: string
-- name: targetArch      # example: x64
+- name: targetOsArch    # example: ubuntu18.04-x64
   type: string
 - name: config          # debug/release
   type: string
-
-variables:
-- name: targetOsArch
-  value: ${{parameters-targetOS}}-${{parameters.targetArch}}
 
 steps:
 - task: CmdLine@2

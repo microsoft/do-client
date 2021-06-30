@@ -4,7 +4,6 @@
 set -e
 
 # Defaults 
-PLATFORM=ubuntu18.04
 INSTALL=all
 
 usage() {
@@ -53,6 +52,14 @@ function parseArgs() {
 
 function installBuildDependencies
 {
+	if [[ -v PLATFORM ]]
+	then
+		echo "[INFO] Platform check succesful"
+	else
+		echo "[WARNING] No platform supplied, using default: Ubuntu18.04"
+		PLATFORM = "ubuntu18.04"
+	fi
+
     echo "[INFO] Installing build dependencies"
     apt-get install -y make build-essential g++ gdb gdbserver gcc git wget
 	
@@ -174,6 +181,7 @@ main()
 {
     parseArgs "$@"
 	
+
 	echo "[INFO] Updating package manager"
 	apt-get update -y --fix-missing
 	

@@ -2,16 +2,12 @@
 # Consume this steps template in one or more jobs by passing in parameter values.
 
 parameters:
-- name: targetOS        # example: debian10
+- name: targetOS        # example: ubuntu18.04
   type: string
-- name: targetArch      # example: arm32
+- name: targetOsArch    # example: ubuntu18.04-x64
   type: string
 - name: config          # debug/release/minsizerel/relwithdebuginfo
   type: string
-
-variables:
-- name: targetOsArch
-  value: ${{parameters-targetOS}}-${{parameters.targetArch}}
 
 steps:
 - checkout: self
