@@ -27,7 +27,7 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: 'sudo ./bootstrap.sh --platform ubuntu18.04'
+    script: 'sudo ./bootstrap.sh --platform ${{parameters.targetOs}}'
     workingDirectory: '$(Build.SourcesDirectory)/build'
   displayName: 'Install Dependencies'
 
