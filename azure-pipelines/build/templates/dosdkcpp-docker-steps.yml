@@ -23,18 +23,17 @@ steps:
   displayName: 'Install Docker'
 
 - task: Docker@2
-  displayName: Login to ACR
+  displayName: 'Login to ACR'
   inputs:
     command: login
     containerRegistry: doclientcontainerregistry
     repository: $(parameters.targetOsArch)
 
-- task: Docker@2
-  displayName: Pull latest build image
+- task: CmdLine@2
   inputs:
-    command: pull
-    containerRegistry: doclientcontainerregistry
-    arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:latest'
+    script: 'sudo docker pull doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:latest'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
+  displayName: 'Pull latest build image'
 
 # TODO(jimson): Once these are onboarded as an artifact to Image Factory, can remove the below two steps
 # Another alternative is to just do the build from within a docker container, and then run the tests on the host
