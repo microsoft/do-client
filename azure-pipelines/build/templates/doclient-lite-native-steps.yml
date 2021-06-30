@@ -6,7 +6,6 @@ parameters:
   type: string
 - name: targetOsArch    # example: ubuntu18.04-x64
   type: string
-  default: ${{parameters-targetOS}}-${{parameters.targetArch}}
 - name: config          # debug/release
   type: string
 - name: skipTests
