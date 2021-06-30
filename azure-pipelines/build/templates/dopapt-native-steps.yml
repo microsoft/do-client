@@ -22,7 +22,7 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: 'sudo ./bootstrap.sh --platform ${{parameters.targetOS}'
+    script: 'sudo ./bootstrap.sh --platform ${{parameters.targetOS}}'
     workingDirectory: '$(Build.SourcesDirectory)/build'
   displayName: 'Install Dependencies'
 
