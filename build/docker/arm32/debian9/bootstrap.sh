@@ -79,7 +79,7 @@ function installBuildDependencies
 		apt-get -y install cmake
 	fi
 	
-	apt-get install -y python3 ninja-build rpm
+	apt-get install -y python3 ninja-build
 
     # Open-source library dependencies
     # Boost libs for DO
@@ -105,12 +105,27 @@ function installBuildDependencies
     ninja
     ninja install
 
-    # libgtest-dev is a source package and requires manual installation
-    mkdir /tmp/build_gtest/
-    cd /tmp/build_gtest
-    cmake /usr/src/gtest
-    make
-    make install
+	if [[ "$PLATFORM" == "ubuntu20.04" || "$PLATFORM" == "debian10" ]];
+	then
+		# The latest native-version of gtest on Ubuntu20.04 and debian10 currently has a bug where CMakeLists doesn't declare an install target, causing 'make install' to fail
+		# Clone from source and use release-1.10.0 instead, since gtest is a source package anyways 
+		mkdir /tmp/gtest
+		cd /tmp/gtest
+		git clone https://github.com/google/googletest.git .
+		git checkout release-1.10.0
+		mkdir cmake 
+		cd cmake
+		cmake /tmp/gtest
+		make 
+		make install 
+	else
+		# libgtest-dev is a source package and requires manual installation
+		mkdir /tmp/build_gtest/
+		cd /tmp/build_gtest
+		cmake /usr/src/gtest
+		make
+		make install
+	fi
 }
 
 function installDeveloperTools

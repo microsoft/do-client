@@ -18,7 +18,7 @@ steps:
     repository: $(parameters.dockerImageName)
 
 - task: Docker@2
-  displayName: Run Docker 
+  displayName: Pull latest build image
   inputs:
     command: pull
     containerRegistry: doclientcontainerregistry
@@ -29,12 +29,12 @@ steps:
     script: |
       apt-get -y install qemu binfmt-support qemu-user-static
       docker run --rm --privileged multiarch/qemu-user-static --reset -p yes 
-  displayName: 'Install Dependencies'
+  displayName: 'Install and register QEMU'
 
 - task: CmdLine@2
   inputs:
   # Unix Makefiles used in place of Ninja due to issues with 32-bit compatability on cross-arch builds
-    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent doclientcontainerregistry.azurecr.io/${{parameters.dockerImageName}}:latest "/code/build/build.py" "--clean" "--package-for" "DEB" "--generator" "Unix Makefiles" "--config" "${{parameters.config}}" "--project" "agent"'
+    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent doclientcontainerregistry.azurecr.io/${{parameters.dockerImageName}}:latest "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "agent"'
   displayName: 'Build client-lite ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: CopyFiles@2

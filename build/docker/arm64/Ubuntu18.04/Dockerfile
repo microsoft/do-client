@@ -32,6 +32,9 @@ WORKDIR /tmp/
 RUN chmod +x bootstrap.sh
 RUN ./bootstrap.sh --platform ubuntu18.04 --install build
 
+VOLUME /code
+WORKDIR /code
+
 ENTRYPOINT [ "/bin/bash", "-c"]
 
 # We specify an empty command so that we can pass options to the ENTRYPOINT command.
