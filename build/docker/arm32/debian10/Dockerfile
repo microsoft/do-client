@@ -20,7 +20,7 @@ SHELL [ "/bin/bash", "-c"]
 # cp /usr/bin/qemu-arm-static <src root>/build/docker/arm32/debian10
 #
 # Then copy the build script to the build directory
-# cp <src root>/build/bootstrap/bootstrap-debian-10.sh <src root>/build/docker/arm32/debian10
+# cp <src root>/build/bootstrap.sh <src root>/build/docker/arm32/debian10
 #
 # After running the above, you can build the image by running in the current dockerfile directory
 # sudo docker build -t <your image name> . --no-cache --network=host

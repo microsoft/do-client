@@ -18,7 +18,7 @@ steps:
 - task: CmdLine@2
   inputs:
     script: 'chmod +x bootstrap.sh'
-    workingDirectory: '$(Build.SourcesDirectory)/build/bootstrap'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
   displayName: 'chmod bootstrap script'
 
 - task: CmdLine@2

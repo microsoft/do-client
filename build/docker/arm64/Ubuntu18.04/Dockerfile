@@ -20,7 +20,7 @@ SHELL [ "/bin/bash", "-c"]
 # cp /usr/bin/qemu-aarch64-static <src root>/build/docker/arm64/ubuntu18.04
 #
 # Then copy the build script to the build directory
-# cp <src root>/build/bootstrap/bootstrap-ubuntu-18.04.sh <src root>build/docker/arm64/ubuntu18.04
+# cp <src root>/build/bootstrap.sh <src root>build/docker/arm64/ubuntu18.04
 #
 # After running the above, you can build the image by running in the current dockerfile directory
 # sudo docker build -t <your image name> . --no-cache --network=host
