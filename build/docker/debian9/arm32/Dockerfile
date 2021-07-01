@@ -5,9 +5,9 @@
 # Open interactive terminal into the image in a container:
 # docker run -ti --rm --entrypoint=/bin/bash -v <project root dir>:/code -v <build root dir>:/build <image_name>
 # Example:
-# docker run -ti --rm --entrypoint=/bin/bash -v D:\do-client-lite:/code -v D:\temp\build_client_lite\arm-linux-debug:/build custom-debian10-arm32
+# docker run -ti --rm --entrypoint=/bin/bash -v D:\do-client-lite:/code -v D:\temp\build_client_lite\arm-linux-debug:/build custom-debian9-arm32
 
-FROM arm32v7/debian:buster
+FROM arm32v7/debian:stretch
 
 SHELL [ "/bin/bash", "-c"]
 
@@ -17,25 +17,25 @@ SHELL [ "/bin/bash", "-c"]
 # sudo apt-get install qemu-user
 # update-binfmts --display
 # sudo apt install qemu binfmt-support qemu-user-static
-# cp /usr/bin/qemu-arm-static <src root>/build/docker/arm32/debian10
+# cp /usr/bin/qemu-arm-static <src root>/build/docker/debian9/arm32
 #
 # Then copy the build script to the build directory
-# cp <src root>/build/bootstrap/bootstrap-debian-10.sh <src root>build/docker/arm32/debian10
+# cp <src root>/build/bootstrap.sh <src root>build/docker/debian9/arm32
 #
 # After running the above, you can build the image by running in the current dockerfile directory
 # sudo docker build -t <your image name> . --no-cache --network=host
 
 COPY qemu-arm-static /usr/bin/qemu-arm-static
-COPY bootstrap-debian-10.sh /tmp/bootstrap-debian-10.sh
+COPY bootstrap.sh /tmp/bootstrap.sh
 
 WORKDIR /tmp/
-RUN chmod +x bootstrap-debian-10.sh
-RUN ./bootstrap-debian-10.sh
+RUN chmod +x bootstrap.sh
+RUN ./bootstrap.sh --platform debian9 --install build
 
 VOLUME /code
 WORKDIR /code
 
-ENTRYPOINT [ "/bin/bash", "-c" ]
+ENTRYPOINT [ "/bin/bash", "-c"]
 
 # We specify an empty command so that we can pass options to the ENTRYPOINT command.
 # This is a bit of a Dockerfile quirk where if the ENTRYPOINT value is defined,
