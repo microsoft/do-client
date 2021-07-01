@@ -1,26 +1,26 @@
 #! /bin/bash
 
 ###
-# This script handles provisioning of the Delivery Optimization client components on supported platforms
+# This script handles provisioning of build environments for the Delivery Optimization client components on supported platforms
 ###
 
-# bootstrap scripts will exit immediately if a command exits with a non-zero status
+# Treat all command failures as fatal'
 set -e
 
 # Defaults 
 INSTALL=all
 
-usage() {
+function usage {
     cat <<EOM
 $(basename $0) - Script to setup development environments for Delivery Optimization
 Usage: $(basename $0) --platform <platform to install for> --install <install command>
-    --platform          # Platform to provision, supported platforms: Ubuntu1804, Ubuntu 2004, Debian9, Debian 10. Default is Ubuntu1804
-    --install           # Which command to run, supported commands: builddependencies, developertools, containertools, qemu, all. Default is All
+    --platform          # Platform to provision, supported platforms: ubuntu1804, ubuntu2004, debian9, debian 10. Required
+    --install           # Which command to run, supported commands: builddependencies, developertools, containertools, qemu, all. Default is all
 EOM
     exit 1
 }
 
-function parseArgs() {
+function parseArgs {
     arg_Positional=()
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -36,7 +36,7 @@ function parseArgs() {
                 echo -e "[INFO] Platform set to: ${PLATFORM}"
             else 
                 echo -e "[ERROR] Unsupported platform: ${PLATFORM}"
-                exit
+                exit 1
             fi
             
             shift
@@ -60,8 +60,8 @@ function installBuildDependencies
     then
         echo "[INFO] Platform check succesful"
     else
-        echo "[WARNING] No platform supplied, using default: Ubuntu1804"
-        PLATFORM = "ubuntu1804"
+        echo "[WARNING] No platform supplied, please supply a platform."
+        exit 1
     fi
 
     echo "[INFO] Installing build dependencies"
@@ -105,6 +105,7 @@ function installBuildDependencies
 
     # Most target platforms do not natively have a version of cpprest that supports url-redirection
     # Build and install v2.10.16 as it's the earliest version which supports url-redirection
+    rm -rf /tmp/cpprestsdk
     mkdir /tmp/cpprestsdk
     cd /tmp/cpprestsdk
     git clone https://github.com/microsoft/cpprestsdk.git .
@@ -116,12 +117,14 @@ function installBuildDependencies
     ninja
     ninja install
 
+	rm -rf /tmp/gtest
+	mkdir /tmp/gtest
+	cd /tmp/gtest
+
     if [[ "$PLATFORM" == "ubuntu2004" || "$PLATFORM" == "debian10" ]];
     then
         # The latest native-version of gtest on ubuntu2004 and debian10 currently has a bug where CMakeLists doesn't declare an install target, causing 'make install' to fail
-        # Clone from source and use release-1.10.0 instead, since gtest is a source package anyways 
-        mkdir /tmp/gtest
-        cd /tmp/gtest
+        # Clone from source and use release-1.10.0 instead, since gtest is a source package anyways
         git clone https://github.com/google/googletest.git .
         git checkout release-1.10.0
         mkdir cmake 
@@ -132,8 +135,6 @@ function installBuildDependencies
     else
         # libgtest-dev is a source package and requires manual installation
         apt-get -y install libgtest-dev
-        mkdir /tmp/build_gtest/
-        cd /tmp/build_gtest
         cmake /usr/src/gtest
         make
         make install
@@ -189,7 +190,6 @@ function installAll
 main()
 {
     parseArgs "$@"
-    
 
     echo "[INFO] Updating package manager"
     apt-get update -y --fix-missing

@@ -65,6 +65,7 @@ steps:
   displayName: 'Install libdeliveryoptimization Debian Package'
 
 - task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
   inputs:
     script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization-sdk-tests --config ${{parameters.config}}'
     workingDirectory: '$(Build.SourcesDirectory)/build'

@@ -6,7 +6,12 @@ trigger:
 pr:
 - none
 
-pool: 1es_hosted_pool_ubuntu_1804
+#pool: 1es_hosted_pool_ubuntu_1804
+
+# The microsoft-hosted agents come with docker preinstalled, the caveat being that the bootstrap script needs to be called to provision everything else
+# TODO(jimson) Switch over to the 1es_hosted_pool when those can support docker
+pool:
+  vmImage: 'ubuntu-18.04'
 
 variables:
   Release.Version: $(release_version)

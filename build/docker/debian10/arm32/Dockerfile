@@ -35,7 +35,7 @@ RUN ./bootstrap.sh --platform debian10 --install build
 VOLUME /code
 WORKDIR /code
 
-ENTRYPOINT [ "/bin/bash", "-c"]
+ENTRYPOINT [ "/bin/bash", "-c" ]
 
 # We specify an empty command so that we can pass options to the ENTRYPOINT command.
 # This is a bit of a Dockerfile quirk where if the ENTRYPOINT value is defined,
