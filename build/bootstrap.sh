@@ -1,5 +1,9 @@
 #! /bin/bash
 
+###
+# This script handles provisioning of the Delivery Optimization client components on supported platforms
+###
+
 # bootstrap scripts will exit immediately if a command exits with a non-zero status
 set -e
 
@@ -146,7 +150,12 @@ function installDeveloperTools
     export PATH=$PATH:~/.local/bin
 }
 
-#TODO(jimson): If this script isn't working for provisioning docker on an image, consider using someone elses docker script (from ImageFactory artifacts)
+# TODO(jimson): Running docker builds on 1ES hosted agents are currently blocked due to az pipeline agent not having permissions to call the docker daemon
+# Tried potential solutions here: https://docs.docker.com/engine/security/rootless/, to no avail.
+# 1. Using 'usermod -aG docker $USER' hangs the az pipeline agent on 'newgrp docker', which is required for the permission changes to take effect
+# 2. The rootless install succeeds, but azdo pipeline agent still reports permissions failure when calling into docker daemon
+# See if we can leverage someone elses docker install task from Image Factory when provisioning the 1ES managed image
+# After docker is callable on a 1ES managed image, we can swap all pipelines to use 1ES hosted pool instead of the microsoft hosted agent, and we can remove usage of the bootstrap script
 function installContainerTools
 {
     apt-get install -y curl
@@ -156,35 +165,6 @@ function installContainerTools
     # Instructions located at: https://docs.docker.com/engine/install/ubuntu/
     curl -fsSL https://get.docker.com -o get-docker.sh
     sh get-docker.sh
-    
-    # Allow docker to run without sudo
-    #usermod -aG docker $USER
-    #newgrp docker
-    
-    # ---- lowered permissions install below
-    
-    #apt-get install -y uidmap
-    
-    #apt-get install -y \
-    #apt-transport-https \
-    #ca-certificates \
-    #curl \
-    #gnupg \
-    #lsb-release
-    
-    #curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-    
-    #echo \
-    #  "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-    #  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-      
-    #apt-get update -y
-    #apt-get install -y docker-ce docker-ce-cli containerd.io
-    
-    #apt-get install -y docker-ce-rootless-extras
-    
-    # This cannot be run as sudo
-    ##/usr/bin/dockerd-rootless-setuptool.sh install
 }
 
 function installQemu
