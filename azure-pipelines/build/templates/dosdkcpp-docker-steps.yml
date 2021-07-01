@@ -26,7 +26,9 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: '/usr/bin/dockerd-rootless-setuptool.sh install'
+    script: |
+    usermod -aG docker $USER
+    newgrp docker'
   displayName: 'Install Docker rootless'
 
 - task: Docker@2
