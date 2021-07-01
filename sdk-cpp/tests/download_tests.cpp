@@ -11,6 +11,7 @@
 #include "do_download.h"
 #include "do_download_status.h"
 #include "do_exceptions.h"
+#include "do_test_helpers.h"
 #include "test_data.h"
 #include "test_helpers.h"
 
@@ -161,6 +162,11 @@ TEST_F(DownloadTests, SimpleDownloadTest_With404UrlAndMalformedPath)
     {
         ASSERT_EQ(e.error_code(), DO_ERROR_FROM_XPLAT_SYSERR(ENOENT));
         ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
+    }
+    catch (const std::exception& se)
+    {
+        std::cout << "Unexpected exception: " << se.what() << std::endl;
+        ASSERT_TRUE(false);
     }
 }
 
@@ -432,7 +438,7 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest)
 TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
 {
     std::atomic_bool cancelToken { false };
-    ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
+
     std::thread downloadThread([&]()
     {
         try
@@ -453,6 +459,7 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
         }
         catch (const msdo::exception& e)
         {
+            ASSERT_EQ(e.error_code(), static_cast<int32_t>(std::errc::operation_canceled));
         }
     });
     std::thread downloadThread3([&]()
@@ -467,9 +474,9 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
         }
     });
 
+    std::this_thread::sleep_for(2s);
     cancelToken = true;
 
-    std::this_thread::sleep_for(3s);
     downloadThread.join();
     downloadThread2.join();
     downloadThread3.join();
@@ -481,10 +488,11 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
 
 TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunning)
 {
-// Enable this after we can start the service either from sdk or tests.
-// Right now all further tests will fail because docs daemon will be stopped.
-#if 0
-    TestHelpers::ShutdownProcess(g_docsProcName);
+    TestHelpers::StopService("deliveryoptimization-agent.service");
+    auto startService = dotest::util::scope_exit([]()
+        {
+            TestHelpers::StartService("deliveryoptimization-agent.service");
+        });
     TestHelpers::DeleteRestPortFiles(); // can be removed if docs deletes file on shutdown
 
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
@@ -498,21 +506,47 @@ TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunning)
         ASSERT_EQ(ex.error_code(), static_cast<int32_t>(msdo::errc::no_service));
     }
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-#endif
+}
+
+TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunningPortFilePresent)
+{
+    // TODO(shishirb) Service name should come from cmake
+    TestHelpers::StopService("deliveryoptimization-agent.service");
+    auto startService = dotest::util::scope_exit([]()
+        {
+            TestHelpers::StartService("deliveryoptimization-agent.service");
+        });
+    TestHelpers::DeleteRestPortFiles();
+    TestHelpers::CreateRestPortFiles(1);
+
+    ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
+    try
+    {
+        msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
+        ASSERT_TRUE(!"Expected operation to throw exception");
+    }
+    catch (const msdo::exception& ex)
+    {
+        ASSERT_EQ(ex.error_code(), static_cast<int32_t>(msdo::errc::no_service));
+    }
+    ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
 }
 
 TEST_F(DownloadTests, MultipleRestPortFileExists_Download)
 {
-// Enable after we have the ability to start the daemon after creating rest port files.
-// This will ensure that the actual rest port file will have the latest timestamp.
-#if 0
+    TestHelpers::StopService("deliveryoptimization-agent.service");
+    auto startService = dotest::util::scope_exit([]()
+        {
+            TestHelpers::StartService("deliveryoptimization-agent.service");
+        });
     TestHelpers::CreateRestPortFiles(5);
+    ASSERT_GE(TestHelpers::CountRestPortFiles(), 5u);
+    startService.reset();
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    ASSERT_EQ(TestHelpers::CountRestPortFiles(), 1u) << "All other restport files must be deleted by the agent";
 
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
     msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
     ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName));
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
-
-    TestHelpers::CleanupWorkingDir();
-#endif
 }

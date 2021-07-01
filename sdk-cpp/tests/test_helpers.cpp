@@ -50,6 +50,16 @@ void TestHelpers::RestartService(const std::string& name)
     dtu::ExecuteSystemCommand(restartCmd.data());
 }
 
+void TestHelpers::StartService(const std::string& name)
+{
+    dtu::ExecuteSystemCommand(dtu::FormatString("systemctl start %s", name.c_str()).data());
+}
+
+void TestHelpers::StopService(const std::string& name)
+{
+    dtu::ExecuteSystemCommand(dtu::FormatString("systemctl stop %s", name.c_str()).data());
+}
+
 int TestHelpers::_KillProcess(int pid, int signal)
 {
     try
@@ -129,9 +139,18 @@ void TestHelpers::DeleteRestPortFiles()
     }
 }
 
-void TestHelpers::CleanupWorkingDir()
+unsigned int TestHelpers::CountRestPortFiles()
 {
-    boost::filesystem::remove_all(msdod::GetPersistenceDirectory());
+    unsigned int count = 0;
+    for (boost::filesystem::directory_iterator itr(msdod::GetRuntimeDirectory()); itr != boost::filesystem::directory_iterator(); ++itr)
+    {
+        auto& dirEntry = itr->path();
+        if (dirEntry.filename().string().find("restport") != std::string::npos)
+        {
+            ++count;
+        }
+    }
+    return count;
 }
 
 void TestHelpers::CleanTestDir()

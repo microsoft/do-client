@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <memory>
+#include <boost/optional.hpp>
 #include "do_file.h"
 #include "do_guid.h"
 #include "download_progress_tracker.h"
@@ -71,6 +72,13 @@ public:
     const DownloadStatus& Status() const { return _status; }
 
 private:
+    enum class ConnectionType
+    {
+        None,
+        MCC,
+        CDN,
+    };
+
     static const std::chrono::seconds _unsetTimeout;
 
     MCCManager& _mccManager;
@@ -84,6 +92,7 @@ private:
     std::string _url;
     std::string _destFilePath;
     std::chrono::seconds _noProgressTimeout { _unsetTimeout };
+    boost::optional<std::chrono::steady_clock::time_point> _mccFallbackDue;
 
     DownloadStatus _status;
     DownloadProgressTracker _progressTracker;
@@ -99,11 +108,18 @@ private:
     // The MCC host name we are using for the current http request, if any
     std::string _mccHost;
 
+    UINT _numAttemptsWithCurrentConnectionType { 0 };
+    ConnectionType _connectionType { ConnectionType::None };
+    UINT64 _cbTransferredAtRequestBegin { 0 };
+    bool _fOriginalHostAttempted { false };
+
     // This flag will indicate whether we have an outstanding http request or not.
     // Need this because we will not move out of Transferring state while waiting before a retry.
     bool _fHttpRequestActive { false };
 
     bool _fDestFileCreated { false };
+
+    bool _fAllowMcc { true };
 
 private:
     void _PerformStateChange(DownloadState newState);
@@ -115,11 +131,18 @@ private:
 
     void _HandleTransientError(HRESULT hr);
     void _ResumeAfterTransientError();
-    void _SendHttpRequest();
+    void _SendHttpRequest(bool retryAfterFailure = false);
     void _SchedProgressTracking();
     void _CancelTasks();
 
     UINT _MaxNoProgressIntervals() const;
+    std::string _UpdateConnectionTypeAndGetUrl(bool retryAfterFailure);
+
+    bool _NoFallbackFromMcc() const { return _mccFallbackDue && (*_mccFallbackDue == std::chrono::steady_clock::time_point::max()); }
+    bool _FallbackFromMccDue() const { return _mccFallbackDue && (*_mccFallbackDue <= std::chrono::steady_clock::now()); }
+    bool _UsingMcc() const { return _connectionType == ConnectionType::MCC; }
+    bool _ShouldPauseMccUsage(bool isFatalError) const;
+    bool _ShouldFailFastPerConnectionType() const;
 
     // IHttpAgentEvents
     HRESULT OnHeadersAvailable(UINT64 httpContext, UINT64) override;

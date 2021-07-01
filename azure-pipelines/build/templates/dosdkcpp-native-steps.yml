@@ -54,7 +54,7 @@ steps:
   inputs:
     targetType: 'filePath'
     filePath: 'build/check_binary_size.sh'
-    arguments: '/tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}/sdk-cpp/libdeliveryoptimization.so.*.*.* 2317304'
+    arguments: '385488 /tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}/sdk-cpp/libdeliveryoptimization.so.*.*.*'
   displayName: 'Limit binary size increase'
 
 - task: CmdLine@2
@@ -93,6 +93,15 @@ steps:
     TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
     CleanTargetFolder: true
   displayName: 'Populate artifacts staging dir'
+
+- task: CopyFiles@2
+  condition: eq('${{parameters.config}}', 'minsizerel')
+  inputs:
+    SourceFolder: '/tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}'
+    Contents: |
+      sdk-cpp/libdeliveryoptimization*.dbg
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+  displayName: 'Populate debug symbols to staging dir'
 
 - task: PublishBuildArtifacts@1
   inputs:

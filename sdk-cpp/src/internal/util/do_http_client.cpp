@@ -1,18 +1,64 @@
-
 #include "do_http_client.h"
 
-#include <cpprest/details/basic_types.h>
-#include <cpprest/filestream.h>
-#include <cpprest/http_client.h>
+#include <thread>
+#include <boost/asio/connect.hpp>
+// Debian10 uses 1.67 while Ubuntu18.04 has 1.65.1.
+// Starting in 1.66, boost::asio::io_service changed to io_context and retained io_service as a typedef.
+// Include this header explicitly to get it regardless of which boost version is installed.
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <gsl/gsl_util>
 
-#include "do_exceptions_internal.h"
 #include "do_exceptions.h"
+#include "do_exceptions_internal.h"
+#include "do_http_message.h"
 #include "do_port_finder.h"
 
-const utility::string_t g_downloadUriPart(U("/download"));
+namespace net = boost::asio;        // from <boost/asio.hpp>
+using tcp = net::ip::tcp;           // from <boost/asio/ip/tcp.hpp>
 
 namespace microsoft::deliveryoptimization::details
 {
+
+class CHttpClientImpl
+{
+public:
+    ~CHttpClientImpl()
+    {
+        if (_socket.is_open())
+        {
+            // Gracefully close the socket
+            boost::system::error_code ec;
+            _socket.shutdown(tcp::socket::shutdown_both, ec);
+        }
+    }
+
+    boost::system::error_code Connect(ushort port)
+    {
+        tcp::resolver resolver{_ioc};
+        const auto endpoints = resolver.resolve({ "127.0.0.1", std::to_string(port) });
+        boost::system::error_code ec;
+        boost::asio::connect(_socket, endpoints, ec);
+        return ec;
+    }
+
+    std::pair<unsigned int, boost::property_tree::ptree> GetResponse(HttpRequest::Method method, const std::string& url)
+    {
+        HttpRequest request{method, url};
+        request.Serialize(_socket);
+
+        HttpResponse response;
+        response.Deserialize(_socket);
+
+        return {response.StatusCode(), response.ExtractJsonBody()};
+    }
+
+private:
+    net::io_service _ioc;
+    net::ip::tcp::socket _socket{_ioc};
+};
+
+CHttpClient::~CHttpClient() = default;
 
 CHttpClient& CHttpClient::GetInstance()
 {
@@ -22,66 +68,47 @@ CHttpClient& CHttpClient::GetInstance()
 
 void CHttpClient::_InitializeDOConnection(bool launchClientFirst)
 {
+    const auto port = std::strtoul(CPortFinder::GetDOPort(launchClientFirst).data(), nullptr, 10);
+    auto spImpl = std::make_unique<CHttpClientImpl>();
+    auto ec = spImpl->Connect(gsl::narrow<ushort>(port));
+    if (ec)
+    {
+        // TODO(shishirb) Log the actual error when logging is available
+        ThrowException(microsoft::deliveryoptimization::errc::no_service);
+    }
+
     std::unique_lock<std::mutex> lock(_mutex);
-    _httpClient = std::make_unique<web::http::client::http_client>(
-        utility::conversions::to_string_t(CPortFinder::GetDOBaseUrl(launchClientFirst)));
+    _httpClientImpl = std::move(spImpl);
 }
 
-void CHttpClient::HTTPErrorCheck(const web::http::http_response& resp)
+boost::property_tree::ptree CHttpClient::SendRequest(HttpRequest::Method method, const std::string& url, bool retry)
 {
-    if (resp.status_code() != 200)
-    {
-        web::json::object respBody = resp.extract_json().get().as_object();
-
-        int32_t ErrorCode = respBody[U("ErrorCode")].as_integer();
-
-        ThrowException(ErrorCode);
-    }
-}
-
-web::http::http_response CHttpClient::SendRequest(const web::http::method& method, const utility::string_t& builderAsString, bool retry)
-{
+    auto responseStatusCode = 0u;
+    boost::property_tree::ptree responseBodyJson;
     try
     {
-        return _httpClient->request(method, builderAsString).get();
+        std::unique_lock<std::mutex> lock(_mutex);
+        auto pClient = static_cast<CHttpClientImpl*>(_httpClientImpl.get());
+        std::tie(responseStatusCode, responseBodyJson) = pClient->GetResponse(method, url);
     }
-    catch (const web::http::http_exception& e)
+    catch (const boost::system::system_error& e)
     {
         if (retry)
         {
             _InitializeDOConnection(true);
-            return SendRequest(method, builderAsString, false);
+            return SendRequest(method, url, false);
         }
 
-        ThrowException(e.error_code());
+        ThrowException(e.code().value());
     }
 
-    // Control flow should never get here.
-    // Adding empty return to make the compiler happy.
-    return {};
-}
-
-web::http::http_response CHttpClient::SendRequest(const web::http::method& method, const utility::string_t& builderAsString,
-    const web::json::value& body, bool retry)
-{
-    try
+    if (responseStatusCode != 200)
     {
-        return _httpClient->request(method, builderAsString, body).get();
-    }
-    catch (const web::http::http_exception& e)
-    {
-        if (retry)
-        {
-            _InitializeDOConnection(true);
-            return SendRequest(method, builderAsString, body, false);
-        }
-
-        ThrowException(e.error_code());
+        auto agentErrorCode = responseBodyJson.get_optional<int32_t>("ErrorCode");
+        ThrowException(agentErrorCode ? *agentErrorCode : -1);
     }
 
-    // Control flow should never get here.
-    // Adding empty return to make the compiler happy.
-    return {};
+    return responseBodyJson;
 }
 
 CHttpClient::CHttpClient()

@@ -3,7 +3,7 @@
 do_group_name=@do_group@
 do_user_name=@do_user@
 config_path=@docs_svc_config_dir_path@
-persistence_path=@docs_svc_persistence_dir_path@
+log_path=@docs_svc_log_dir_path@
 svc_name=@docs_svc_name@
 svc_config_path=@docs_systemd_cfg_path@
 svc_bin_path=@docs_svc_bin_path@
@@ -43,11 +43,12 @@ configure_dir() {
     fi
     chgrp -R $do_group_name $dir_path
     chown $do_user_name $dir_path
-    chmod g+w $dir_path
 }
 
 configure_dir "$config_path"
-configure_dir "$persistence_path"
+# group needs write permission to config path (SDK writing configs)
+chmod g+w $config_path
+configure_dir "$log_path"
 
 # See https://www.freedesktop.org/software/systemd/man/systemd.directives.html
 echo "Installing $svc_name"
