@@ -29,7 +29,6 @@ steps:
   inputs:
     script: |
         sudo usermod -aG docker $USER
-        newgrp docker
   displayName: 'Install Docker rootless'
 
 # try without newgrp as it hangs the CLI
