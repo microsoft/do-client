@@ -17,10 +17,10 @@ SHELL [ "/bin/bash", "-c"]
 # sudo apt-get install qemu-user
 # update-binfmts --display
 # sudo apt install qemu binfmt-support qemu-user-static
-# cp /usr/bin/qemu-aarch64-static <src root>/build/docker/arm64/ubuntu1804
+# cp /usr/bin/qemu-aarch64-static <src root>/build/docker/ubuntu1804/arm64
 #
 # Then copy the build script to the build directory
-# cp <src root>/build/bootstrap.sh <src root>build/docker/arm64/ubuntu1804
+# cp <src root>/build/bootstrap.sh <src root>build/docker/ubuntu1804/arm64
 #
 # After running the above, you can build the image by running in the current dockerfile directory
 # sudo docker build -t <your image name> . --no-cache --network=host
