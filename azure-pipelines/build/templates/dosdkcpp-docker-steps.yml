@@ -36,11 +36,13 @@ steps:
     containerRegistry: doclientcontainerregistry
     repository: $(parameters.targetOsArch)
 
+# This fails because no auth (needs to use the CLI docker)
 #- task: CmdLine@2
 #  inputs:
 #    script: 'sudo docker pull doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:latest'
 #  displayName: 'Pull latest build image'
 
+# This fails because no sudo
 - task: Docker@2
   displayName: Pull latest build image
   inputs:
