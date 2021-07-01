@@ -14,7 +14,10 @@ schedules:
     include:
     - main
 
-pool: 1es_hosted_pool_ubuntu_1804
+#pool: 1es_hosted_pool_ubuntu_1804
+
+pool:
+  vmImage: 'ubuntu-18.04'
 
 jobs:
 - template: templates/do-docker-jobs.yml

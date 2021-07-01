@@ -43,6 +43,7 @@ steps:
 #  displayName: 'Pull latest build image'
 
 # This fails because no sudo
+# TODO: can get around this by using microsoft hosted agent
 - task: Docker@2
   displayName: Pull latest build image
   inputs:
