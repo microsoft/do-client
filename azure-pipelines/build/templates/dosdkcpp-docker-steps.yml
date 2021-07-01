@@ -27,8 +27,8 @@ steps:
 - task: CmdLine@2
   inputs:
     script: |
-        usermod -aG docker $USER
-        newgrp docker
+        sudo usermod -aG docker $USER
+        sudo newgrp docker
   displayName: 'Install Docker rootless'
 
 - task: Docker@2
