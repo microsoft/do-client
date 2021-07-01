@@ -39,7 +39,8 @@ pr:
       - 'azure-pipelines/*'
       - 'plugins/linux-apt/scripts/configure-apt-method.sh'
 
-# The microsoft-hosted agents come with docker preinstalled, the caveat being that the bootstrap script needs to be called to provision everything else
+# TODO(jimson): This is a base Ubuntu 1804 Image right now, switch to an image that contains all our dependencies preinstalled
+# The advantage to using this over the Microsoft-hosted agent is parallel execution of jobs (infinite # of vms can be spun up at execution time)
 pool: 1es_hosted_pool_ubuntu_1804
 
 jobs:

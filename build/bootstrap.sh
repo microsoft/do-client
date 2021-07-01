@@ -10,8 +10,8 @@ usage() {
     cat <<EOM
 $(basename $0) - Script to setup development environments for Delivery Optimization
 Usage: $(basename $0) --platform <platform to install for> --install <install command>
-	--platform			# Platform to provision, supported platforms: Ubuntu1804, Ubuntu 2004, Debian9, Debian 10. Default is Ubuntu1804
-	--install 			# Which command to run, supported commands: builddependencies, developertools, containertools, qemu, all. Default is All
+    --platform          # Platform to provision, supported platforms: Ubuntu1804, Ubuntu 2004, Debian9, Debian 10. Default is Ubuntu1804
+    --install           # Which command to run, supported commands: builddependencies, developertools, containertools, qemu, all. Default is All
 EOM
     exit 1
 }
@@ -25,23 +25,23 @@ function parseArgs() {
             shift
             exit 0
             ;;
-		--platform | -p)
-			PLATFORM="${2,,}"
-			if [[ "$PLATFORM" == "debian9" || "$PLATFORM" == "debian10" || "$PLATFORM" == "ubuntu1804" || "$PLATFORM" == "ubuntu2004" ]];
-			then
-				echo -e "[INFO] Platform set to: ${PLATFORM}"
-			else 
-				echo -e "[ERROR] Unsupported platform: ${PLATFORM}"
-				exit
-			fi
-			
-			shift
-			;;
-		--install | -i)
-			INSTALL="${2,,}"
-			echo -e "[INFO] Install command to run set to: ${INSTALL}"
-			shift
-			;;
+        --platform | -p)
+            PLATFORM="${2,,}"
+            if [[ "$PLATFORM" == "debian9" || "$PLATFORM" == "debian10" || "$PLATFORM" == "ubuntu1804" || "$PLATFORM" == "ubuntu2004" ]];
+            then
+                echo -e "[INFO] Platform set to: ${PLATFORM}"
+            else 
+                echo -e "[ERROR] Unsupported platform: ${PLATFORM}"
+                exit
+            fi
+            
+            shift
+            ;;
+        --install | -i)
+            INSTALL="${2,,}"
+            echo -e "[INFO] Install command to run set to: ${INSTALL}"
+            shift
+            ;;
         *)
             arg_Positional+=("$1")
             shift
@@ -52,42 +52,41 @@ function parseArgs() {
 
 function installBuildDependencies
 {
-	if [[ -v PLATFORM ]]
-	then
-		echo "[INFO] Platform check succesful"
-	else
-		echo "[WARNING] No platform supplied, using default: Ubuntu1804"
-		PLATFORM = "ubuntu1804"
-	fi
+    if [[ -v PLATFORM ]]
+    then
+        echo "[INFO] Platform check succesful"
+    else
+        echo "[WARNING] No platform supplied, using default: Ubuntu1804"
+        PLATFORM = "ubuntu1804"
+    fi
 
     echo "[INFO] Installing build dependencies"
     apt-get install -y make build-essential g++ gdb gdbserver gcc git wget
-	
-	if [[ "$PLATFORM" == "debian9" ]];
-	then
-		# Cpprestsdk below requires min cmake version of 3.9, while 3.7 is the latest available on Debian9
-		# So build & install cmake from source
-		cd /tmp
-		wget https://cmake.org/files/v3.10/cmake-3.10.2.tar.gz
-		tar xzf cmake-3.10.2.tar.gz
-		cd /tmp/cmake-3.10.2
-		./bootstrap
-		make
-		make install 
-		
-		# Install gsl from source, also not available on Debian9
-		cd /tmp/
-		git clone https://github.com/Microsoft/GSL.git
-		cd GSL/
-		git checkout tags/v2.0.0
-		cmake -DGSL_TEST=OFF .
-		make
-		make install 
-	else
-		apt-get -y install cmake libmsgsl-dev
-	fi
-	
-	apt-get install -y python3 ninja-build
+    apt-get install -y python3 ninja-build
+    
+    if [[ "$PLATFORM" == "debian9" ]];
+    then
+        # Cpprestsdk below requires min cmake version of 3.9, while 3.7 is the latest available on Debian9
+        # So build & install cmake from source
+        cd /tmp
+        wget https://cmake.org/files/v3.10/cmake-3.10.2.tar.gz
+        tar xzf cmake-3.10.2.tar.gz
+        cd /tmp/cmake-3.10.2
+        ./bootstrap
+        make
+        make install 
+        
+        # Install gsl from source, also not available on Debian9
+        cd /tmp/
+        git clone https://github.com/Microsoft/GSL.git
+        cd GSL/
+        git checkout tags/v2.0.0
+        cmake -DGSL_TEST=OFF .
+        make
+        make install 
+    else
+        apt-get -y install cmake libmsgsl-dev
+    fi
 
     # Open-source library dependencies
     # Boost libs for DO
@@ -113,28 +112,28 @@ function installBuildDependencies
     ninja
     ninja install
 
-	if [[ "$PLATFORM" == "ubuntu2004" || "$PLATFORM" == "debian10" ]];
-	then
-		# The latest native-version of gtest on ubuntu2004 and debian10 currently has a bug where CMakeLists doesn't declare an install target, causing 'make install' to fail
-		# Clone from source and use release-1.10.0 instead, since gtest is a source package anyways 
-		mkdir /tmp/gtest
-		cd /tmp/gtest
-		git clone https://github.com/google/googletest.git .
-		git checkout release-1.10.0
-		mkdir cmake 
-		cd cmake
-		cmake /tmp/gtest
-		make 
-		make install 
-	else
-		# libgtest-dev is a source package and requires manual installation
-		apt-get -y install libgtest-dev
-		mkdir /tmp/build_gtest/
-		cd /tmp/build_gtest
-		cmake /usr/src/gtest
-		make
-		make install
-	fi
+    if [[ "$PLATFORM" == "ubuntu2004" || "$PLATFORM" == "debian10" ]];
+    then
+        # The latest native-version of gtest on ubuntu2004 and debian10 currently has a bug where CMakeLists doesn't declare an install target, causing 'make install' to fail
+        # Clone from source and use release-1.10.0 instead, since gtest is a source package anyways 
+        mkdir /tmp/gtest
+        cd /tmp/gtest
+        git clone https://github.com/google/googletest.git .
+        git checkout release-1.10.0
+        mkdir cmake 
+        cd cmake
+        cmake /tmp/gtest
+        make 
+        make install 
+    else
+        # libgtest-dev is a source package and requires manual installation
+        apt-get -y install libgtest-dev
+        mkdir /tmp/build_gtest/
+        cd /tmp/build_gtest
+        cmake /usr/src/gtest
+        make
+        make install
+    fi
 }
 
 function installDeveloperTools
@@ -150,42 +149,42 @@ function installDeveloperTools
 #TODO(jimson): If this script isn't working for provisioning docker on an image, consider using someone elses docker script (from ImageFactory artifacts)
 function installContainerTools
 {
-	apt-get install -y curl
+    apt-get install -y curl
 
     echo "[INFO] Installing Docker"
     # Install docker to enable building cross-arch for arm
     # Instructions located at: https://docs.docker.com/engine/install/ubuntu/
     curl -fsSL https://get.docker.com -o get-docker.sh
     sh get-docker.sh
-	
-	# Allow docker to run without sudo
-	#usermod -aG docker $USER
-	#newgrp docker
-	
-	# ---- lowered permissions install below
-	
-	#apt-get install -y uidmap
-	
-	#apt-get install -y \
+    
+    # Allow docker to run without sudo
+    #usermod -aG docker $USER
+    #newgrp docker
+    
+    # ---- lowered permissions install below
+    
+    #apt-get install -y uidmap
+    
+    #apt-get install -y \
     #apt-transport-https \
     #ca-certificates \
     #curl \
     #gnupg \
     #lsb-release
-	
-	#curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-	
-	#echo \
-	#  "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-	#  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-	  
+    
+    #curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    
+    #echo \
+    #  "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+    #  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+      
     #apt-get update -y
-	#apt-get install -y docker-ce docker-ce-cli containerd.io
-	
-	#apt-get install -y docker-ce-rootless-extras
-	
-	# This cannot be run as sudo
-	##/usr/bin/dockerd-rootless-setuptool.sh install
+    #apt-get install -y docker-ce docker-ce-cli containerd.io
+    
+    #apt-get install -y docker-ce-rootless-extras
+    
+    # This cannot be run as sudo
+    ##/usr/bin/dockerd-rootless-setuptool.sh install
 }
 
 function installQemu
@@ -200,7 +199,7 @@ function installQemu
 
 function installAll
 {
-	echo "Setting up development environment for do-client"
+    echo "Setting up development environment for do-client"
     installBuildDependencies
     installDeveloperTools
     installContainerTools
@@ -210,29 +209,29 @@ function installAll
 main()
 {
     parseArgs "$@"
-	
+    
 
-	echo "[INFO] Updating package manager"
-	apt-get update -y --fix-missing
-	
-	echo "[INFO] Running install command: $INSTALL"
-	case $INSTALL in 
-	all)
-		installAll
-		;;
-	build)
-		installBuildDependencies
-		;;
-	developertools)
-		installDeveloperTools
-		;;
-	containertools)
-		installContainerTools
-		;;
-	qemu)
-		installQemu
-		;;
-	esac
+    echo "[INFO] Updating package manager"
+    apt-get update -y --fix-missing
+    
+    echo "[INFO] Running install command: $INSTALL"
+    case $INSTALL in 
+    all)
+        installAll
+        ;;
+    build)
+        installBuildDependencies
+        ;;
+    developertools)
+        installDeveloperTools
+        ;;
+    containertools)
+        installContainerTools
+        ;;
+    qemu)
+        installQemu
+        ;;
+    esac
 
     echo "[INFO] Finished bootstrapping"
 }
