@@ -17,8 +17,15 @@ steps:
     containerRegistry: doclientcontainerregistry
     repository: $(parameters.targetOsArch)
 
+- task: Docker@2
+  displayName: Pull latest build image
+  inputs:
+    command: pull
+    containerRegistry: doclientcontainerregistry
+    arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:latest'
+
 # TODO(jimson): Once these are onboarded as an artifact to Image Factory, can remove the below two steps as well as the targetOS parameter
-# Another alternative is to just do the build from within a docker container, and then run the tests on the host
+# Another alternative is to just do the pipeline run from within a docker container, and then run the tests on the host
 - task: CmdLine@2
   inputs:
     script: 'chmod +x bootstrap.sh'
