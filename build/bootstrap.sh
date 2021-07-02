@@ -117,9 +117,9 @@ function installBuildDependencies
     ninja
     ninja install
 
-	rm -rf /tmp/gtest
-	mkdir /tmp/gtest
-	cd /tmp/gtest
+    rm -rf /tmp/gtest
+    mkdir /tmp/gtest
+    cd /tmp/gtest
 
     if [[ "$PLATFORM" == "ubuntu2004" || "$PLATFORM" == "debian10" ]];
     then
