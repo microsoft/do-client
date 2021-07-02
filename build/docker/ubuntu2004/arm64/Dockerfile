@@ -5,9 +5,9 @@
 # Open interactive terminal into the image in a container:
 # docker run -ti --rm --entrypoint=/bin/bash -v <project root dir>:/code -v <build root dir>:/build <image_name>
 # Example:
-# docker run -ti --rm --entrypoint=/bin/bash -v D:\do-client-lite:/code -v D:\temp\build_client_lite\arm-linux-debug:/build custom-ubuntu18.04-arm64
+# docker run -ti --rm --entrypoint=/bin/bash -v D:\do-client-lite:/code -v D:\temp\build_client_lite\arm-linux-debug:/build custom-ubuntu2004-arm64
 
-FROM arm64v8/ubuntu:18.04
+FROM arm64v8/ubuntu:20.04
 
 SHELL [ "/bin/bash", "-c"]
 
@@ -17,20 +17,26 @@ SHELL [ "/bin/bash", "-c"]
 # sudo apt-get install qemu-user
 # update-binfmts --display
 # sudo apt install qemu binfmt-support qemu-user-static
-# cp /usr/bin/qemu-aarch64-static <src root>/build/docker/arm64/ubuntu18.04
+# cp /usr/bin/qemu-aarch64-static <src root>/build/docker/ubuntu2004/arm64
 #
 # Then copy the build script to the build directory
-# cp <src root>/build/bootstrap/bootstrap-ubuntu-18.04.sh <src root>build/docker/arm64/ubuntu18.04
+# cp <src root>/build/bootstrap.sh <src root>build/docker/ubuntu2004/arm64
 #
 # After running the above, you can build the image by running in the current dockerfile directory
 # sudo docker build -t <your image name> . --no-cache --network=host
 
+# Ubuntu 20.04 requires user prompt for apt-get update command, docker has issues handling this input
+ENV DEBIAN_FRONTEND=noninteractive
+
 COPY qemu-aarch64-static /usr/bin/qemu-aarch64-static
-COPY bootstrap-ubuntu-18.04.sh /tmp/bootstrap-ubuntu-18.04.sh
+COPY bootstrap.sh /tmp/bootstrap.sh
 
 WORKDIR /tmp/
-RUN chmod +x bootstrap-ubuntu-18.04.sh
-RUN ./bootstrap-ubuntu-18.04.sh --no-tools
+RUN chmod +x bootstrap.sh
+RUN ./bootstrap.sh --platform ubuntu2004 --install build
+
+VOLUME /code
+WORKDIR /code
 
 ENTRYPOINT [ "/bin/bash", "-c"]
 
