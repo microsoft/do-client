@@ -688,6 +688,7 @@ HRESULT Download::OnComplete(HRESULT hResult, UINT64 httpContext, UINT64)
                 if (_ShouldPauseMccUsage(isFatalError))
                 {
                     retryDelay = std::chrono::seconds(0);
+                    _progressTracker.ResetRetryDelay();
                 }
 
                 DoLogInfoHr(hResult, "%s, failure, will retry in %lld seconds, http_status: %d, headers:\n%s",
