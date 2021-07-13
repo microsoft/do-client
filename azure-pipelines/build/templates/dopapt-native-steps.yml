@@ -12,11 +12,10 @@ parameters:
 steps:
 - checkout: self
 
-- task: PythonScript@0
+- task: CmdLine@2
   inputs:
-    scriptSource: 'filePath'
-    scriptPath: 'build/build.py'
-    arguments: '--project sdk --cmaketarget deliveryoptimization --config ${{parameters.config}} --package-for DEB --clean '
+    script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization --config ${{parameters.config}} --package-for DEB --clean'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
   displayName: 'Build sdk ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: Bash@3
@@ -26,11 +25,12 @@ steps:
     workingDirectory: '/tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}'
   displayName: 'Install libdeliveryoptimization'
 
-- task: PythonScript@0
+# Have to use cmdline rather than built in python task, because the python env variable chooses python2
+# There is a pipeline task which allows you to specify version, but that requires configuring of the agent tools directory
+- task: CmdLine@2
   inputs:
-    scriptSource: 'filePath'
-    scriptPath: 'build/build.py'
-    arguments: '--project plugin-apt --config ${{parameters.config}} --package-for DEB --clean'
+    script: 'python3 ./build.py --project plugin-apt --config ${{parameters.config}} --package-for DEB --clean'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
   displayName: 'Build deliveryoptimization-plugin-apt ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: Bash@3
