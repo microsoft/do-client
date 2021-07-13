@@ -24,20 +24,6 @@ steps:
     containerRegistry: doclientcontainerregistry
     arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:latest'
 
-# TODO(jimson): Once these are onboarded as an artifact to Image Factory, can remove the below two steps as well as the targetOS parameter
-# Another alternative is to just do the pipeline run from within a docker container, and then run the tests on the host
-- task: CmdLine@2
-  inputs:
-    script: 'chmod +x bootstrap.sh'
-    workingDirectory: '$(Build.SourcesDirectory)/build'
-  displayName: 'chmod bootstrap script'
-
-- task: CmdLine@2
-  inputs:
-    script: 'sudo ./bootstrap.sh --platform ${{parameters.targetOS}} --install qemu'
-    workingDirectory: '$(Build.SourcesDirectory)/build'
-  displayName: 'Install & register QEMU'
-
 - task: CmdLine@2
   inputs:
   # Unix Makefiles used in place of Ninja due to issues with 32-bit compatability on cross-arch builds
