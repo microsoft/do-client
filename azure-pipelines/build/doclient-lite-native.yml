@@ -37,8 +37,6 @@ pr:
     exclude:
       - azure-pipelines/*
 
-# This is a 1ES managed image built ontop of ubuntu1804, with our provisioning script called at image provisioning time.
-# The advantage to using this over the Microsoft-hosted agent is parallel execution of jobs (infinite # of vms can be spun up at execution time)
 pool: 1es_hosted_pool_ubuntu_1804
 
 jobs:
