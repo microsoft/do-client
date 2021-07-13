@@ -13,12 +13,12 @@ parameters:
   default: false
 
 steps:
-# Have to use cmdline rather than built in python task, because the python env variable chooses python2
-# There is a pipeline task which allows you to specify version, but that requires configuring of the agent tools directory
-- task: CmdLine@2
+# TODO(shishirb) Include --skip-tests build.py option when skipTests is true
+- task: PythonScript@0
   inputs:
-    script: 'python3 ./build.py --project agent --config ${{parameters.config}} --package-for DEB --clean'
-    workingDirectory: '$(Build.SourcesDirectory)/build'
+    scriptSource: 'filePath'
+    scriptPath: 'build/build.py'
+    arguments: '--project agent --config ${{parameters.config}} --package-for DEB --clean'
   displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: Bash@3

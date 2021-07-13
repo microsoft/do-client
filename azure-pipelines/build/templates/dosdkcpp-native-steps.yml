@@ -13,27 +13,13 @@ parameters:
   default: false
 
 steps:
-# TODO(jimson): Once these are onboarded as an artifact to Image Factory, can remove the below two steps
-# Another alternative is to just do the build from within a docker container, and then run the tests on the host
-- task: CmdLine@2
-  inputs:
-    script: 'chmod +x bootstrap.sh'
-    workingDirectory: '$(Build.SourcesDirectory)/build'
-  displayName: 'chmod bootstrap script'
-
-- task: CmdLine@2
-  inputs:
-    script: 'sudo ./bootstrap.sh --platform ${{parameters.targetOs}}'
-    workingDirectory: '$(Build.SourcesDirectory)/build'
-  displayName: 'Install Dependencies'
-
-# Have to use cmdline rather than built in python task, because the python env variable chooses python2
-# There is a pipeline task which allows you to specify version, but that requires configuring of the agent tools directory
 # TODO(shishirb) Include --skip-tests build.py option when skipTests is true
-- task: CmdLine@2
+- task: PythonScript@0
+  condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'python3 ./build.py --project agent --cmaketarget deliveryoptimization-agent --config ${{parameters.config}} --package-for DEB --clean'
-    workingDirectory: '$(Build.SourcesDirectory)/build'
+    scriptSource: 'filePath'
+    scriptPath: 'build/build.py'
+    arguments: '--project agent --cmaketarget deliveryoptimization-agent --config ${{parameters.config}} --package-for DEB --clean'
   displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: CmdLine@2
@@ -43,11 +29,12 @@ steps:
     workingDirectory: '/tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}'
   displayName: 'Install agent Debian package'
 
-- task: CmdLine@2
+- task: PythonScript@0
   inputs:
-    script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization --config ${{parameters.config}} --package-for DEB --clean'
-    workingDirectory: '$(Build.SourcesDirectory)/build'
-  displayName: 'Build sdk ${{parameters.targetOsArch}}-${{parameters.config}}'
+    scriptSource: 'filePath'
+    scriptPath: 'build/build.py'
+    arguments: '--project sdk --cmaketarget deliveryoptimization --config ${{parameters.config}} --package-for DEB --clean'
+  displayName: 'Build sdk-cpp ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: Bash@3
   condition: eq('${{parameters.config}}', 'minsizerel')
@@ -64,11 +51,12 @@ steps:
     workingDirectory: '/tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}'
   displayName: 'Install libdeliveryoptimization Debian Package'
 
-- task: CmdLine@2
+- task: PythonScript@0
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization-sdk-tests --config ${{parameters.config}}'
-    workingDirectory: '$(Build.SourcesDirectory)/build'
+    scriptSource: 'filePath'
+    scriptPath: 'build/build.py'
+    arguments: '--project sdk --cmaketarget deliveryoptimization-sdk-tests --config ${{parameters.config}}'
   displayName: 'Build sdk-cpp tests ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 # Run all tests. These must run as root because docs is running as the 'do' user

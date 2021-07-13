@@ -18,7 +18,6 @@ schedules:
 # The advantage to using this over the Microsoft-hosted agent is parallel execution of jobs (infinite # of vms can be spun up at execution time)
 pool: 1es_hosted_pool_ubuntu_1804
 
-
 jobs:
 - template: templates/do-docker-jobs.yml
   parameters:
