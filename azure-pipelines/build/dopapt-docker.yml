@@ -14,12 +14,7 @@ schedules:
     include:
     - main
 
-# TODO(jimson): Provision a 1ES managed image with artifacts that have all our dependencies preinstalled
-#pool: 1es_hosted_pool_ubuntu_1804
-
-# The microsoft-hosted agents come with docker preinstalled, the caveat being that the bootstrap script needs to be called to provision everything else
-pool:
-  vmImage: 'ubuntu-18.04'
+pool: 1es_hosted_pool_ubuntu_1804
 
 jobs:
 - template: templates/do-docker-jobs.yml
