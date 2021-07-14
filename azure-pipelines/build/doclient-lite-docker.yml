@@ -20,7 +20,6 @@ jobs:
 - template: templates/do-docker-jobs.yml
   parameters:
     targetOsArch: 'debian9_arm32'
-    targetArch: 'arm32'
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 
 - template: templates/do-docker-jobs.yml

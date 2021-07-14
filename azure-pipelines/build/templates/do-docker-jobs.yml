@@ -8,16 +8,16 @@ parameters:
   type: string
 
 jobs:
-- job: ${{targetOsArch}}_debug
+- job: ${{parameters.targetOsArch}}_debug
   steps:
   - template: ${{parameters.stepsTemplate}}
     parameters:
-      targetOsArch: ${{targetOsArch}}
+      targetOsArch: ${{parameters.targetOsArch}}
       config: debug
 
-- job: ${{targetOsArch}}_release
+- job: ${{parameters.targetOsArch}}_release
   steps:
   - template: ${{parameters.stepsTemplate}}
     parameters:
-      targetOsArch: ${{targetOsArch}}
+      targetOsArch: ${{parameters.targetOsArch}}
       config: minsizerel
