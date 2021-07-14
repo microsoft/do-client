@@ -146,7 +146,7 @@ stages:
         gitHubConnection: 'client2'
         repositoryName: 'microsoft/do-client'
         action: 'create'
-        assets: '$(Build.ArtifactStagingDirectory)/**/*-release/*.deb'
+        assets: '$(Build.ArtifactStagingDirectory)/**/*-minsizerel/*.deb'
         tagSource: 'userSpecifiedTag'
         tag: '$(Release.Version)'
         title: '$(Release.Title)'
