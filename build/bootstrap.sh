@@ -15,7 +15,7 @@ function usage {
 $(basename $0) - Script to setup development environments for Delivery Optimization
 Usage: $(basename $0) --platform <platform to install for> --install <install command>
     --platform          # Platform to provision, supported platforms: ubuntu1804, ubuntu2004, debian9, debian 10. Required
-    --install           # Which command to run, supported commands: builddependencies, developertools, containertools, qemu, all. Default is all
+    --install           # Which command to run, supported commands: build, developertools, containertools, qemu, all. Default is all
 EOM
     exit 1
 }
