@@ -144,7 +144,7 @@ function installBuildDependencies
 function installDeveloperTools
 {
     echo "[INFO] Installing developer tools"
-    apt install -y python-pip
+    apt-get install -y python-pip
     pip install cpplint
 
     # Installs to a non-standard location so add to PATH manually
