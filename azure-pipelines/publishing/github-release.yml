@@ -6,12 +6,7 @@ trigger:
 pr:
 - none
 
-#pool: 1es_hosted_pool_ubuntu_1804
-
-# The microsoft-hosted agents come with docker preinstalled, the caveat being that the bootstrap script needs to be called to provision everything else
-# TODO(jimson) Switch over to the 1es_hosted_pool when those can support docker
-pool:
-  vmImage: 'ubuntu-18.04'
+pool: 1es_hosted_pool_ubuntu_1804
 
 variables:
   Release.Version: $(release_version)
@@ -33,7 +28,6 @@ stages:
     steps:
     - template: ../build/templates/doclient-lite-native-steps.yml
       parameters:
-        targetOs: 'ubuntu1804'
         targetOsArch: 'ubuntu1804-x64'
         config: release
         skipTests: true 
@@ -41,21 +35,18 @@ stages:
     steps:
     - template: ../build/templates/doclient-lite-docker-steps.yml
       parameters:
-        targetOs: 'ubuntu1804'
         targetOsArch: ubuntu1804-arm64
         config: release
   - job: deliveryoptimization_agent_debian10_arm32
     steps:
     - template: ../build/templates/doclient-lite-docker-steps.yml
       parameters:
-        targetOs: 'debian10'
         targetOsArch: debian10-arm32
         config: release
   - job: deliveryoptimization_agent_debian9_arm32
     steps:
     - template: ../build/templates/doclient-lite-docker-steps.yml
       parameters:
-        targetOs: 'debian9'
         targetOsArch: debian9-arm32
         config: release
 
@@ -63,7 +54,6 @@ stages:
     steps:
     - template: ../build/templates/dosdkcpp-native-steps.yml
       parameters:
-        targetOs: 'ubuntu1804'
         targetOsArch: 'ubuntu1804-x64'
         config: release
         skipTests: true 
@@ -71,21 +61,18 @@ stages:
     steps:
     - template: ../build/templates/dosdkcpp-docker-steps.yml
       parameters:
-        targetOs: 'ubuntu1804'
         targetOsArch: ubuntu1804-arm64
         config: release
   - job: libdeliveryoptimization_debian10_arm32
     steps:
     - template: ../build/templates/dosdkcpp-docker-steps.yml
       parameters:
-        targetOs: 'debian10'
         targetOsArch: debian10-arm32
         config: release
   - job: libdeliveryoptimization_debian9_arm32
     steps:
     - template: ../build/templates/dosdkcpp-docker-steps.yml
       parameters:
-        targetOs: 'debian9'
         targetOsArch: debian9-arm32
         config: release
 
@@ -93,28 +80,24 @@ stages:
     steps:
     - template: ../build/templates/dopapt-native-steps.yml
       parameters:
-        targetOs: 'ubuntu1804'
         targetOsArch: 'ubuntu1804-x64'
         config: release
   - job: deliveryoptimization_plugin_apt_ubuntu1804_arm64
     steps:
     - template: ../build/templates/dopapt-docker-steps.yml
       parameters:
-        targetOs: 'ubuntu1804'
         targetOsArch: ubuntu1804-arm64
         config: release
   - job: deliveryoptimization_plugin_apt_debian10_arm32
     steps:
     - template: ../build/templates/dopapt-docker-steps.yml
       parameters:
-        targetOs: 'debian10'
         targetOsArch: debian10-arm32
         config: release
   - job: deliveryoptimization_plugin_apt_debian9_arm32
     steps:
     - template: ../build/templates/dopapt-docker-steps.yml
       parameters:
-        targetOs: 'debian9'
         targetOsArch: debian9-arm32
         config: release
 

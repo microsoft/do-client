@@ -151,12 +151,6 @@ function installDeveloperTools
     export PATH=$PATH:~/.local/bin
 }
 
-# TODO(jimson): Running docker builds on 1ES hosted agents are currently blocked due to az pipeline agent not having permissions to call the docker daemon
-# Tried potential solutions here: https://docs.docker.com/engine/security/rootless/, to no avail.
-# 1. Using 'usermod -aG docker $USER' hangs the az pipeline agent on 'newgrp docker', which is required for the permission changes to take effect
-# 2. The rootless install succeeds, but azdo pipeline agent still reports permissions failure when calling into docker daemon
-# See if we can leverage someone elses docker install task from Image Factory when provisioning the 1ES managed image
-# After docker is callable on a 1ES managed image, we can swap all pipelines to use 1ES hosted pool instead of the microsoft hosted agent, and we can remove usage of the bootstrap script
 function installContainerTools
 {
     apt-get install -y curl

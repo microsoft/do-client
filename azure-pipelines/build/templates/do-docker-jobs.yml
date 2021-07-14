@@ -14,7 +14,6 @@ jobs:
   steps:
   - template: ${{parameters.stepsTemplate}}
     parameters:
-      targetOS: ${{parameters.targetOS}}
       targetOsArch: ${{parameters.targetOS}}-${{parameters.targetArch}}
       config: debug
 
@@ -22,6 +21,5 @@ jobs:
   steps:
   - template: ${{parameters.stepsTemplate}}
     parameters:
-      targetOS: ${{parameters.targetOS}}
       targetOsArch: ${{parameters.targetOS}}-${{parameters.targetArch}}
       config: minsizerel
