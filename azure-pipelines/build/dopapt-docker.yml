@@ -19,18 +19,15 @@ pool: 1es_hosted_pool_ubuntu_1804
 jobs:
 - template: templates/do-docker-jobs.yml
   parameters:
-    targetOS: 'debian10'
-    targetArch: 'arm32'
+    targetOsArch: 'debian10_arm32'
     stepsTemplate: 'dopapt-docker-steps.yml'
 
 - template: templates/do-docker-jobs.yml
   parameters:
-    targetOS: 'debian9'
-    targetArch: 'arm32'
+    targetOsArch: 'debian9_arm32'
     stepsTemplate: 'dopapt-docker-steps.yml'
 
 - template: templates/do-docker-jobs.yml
   parameters:
-    targetOS: 'ubuntu1804'
-    targetArch: 'arm64'
+    targetOsArch: 'ubuntu1804_arm64'
     stepsTemplate: 'dopapt-docker-steps.yml'

@@ -19,18 +19,16 @@ pool: 1es_hosted_pool_ubuntu_1804
 jobs:
 - template: templates/do-docker-jobs.yml
   parameters:
-    targetOS: 'debian9'
+    targetOsArch: 'debian9_arm32'
     targetArch: 'arm32'
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 
 - template: templates/do-docker-jobs.yml
   parameters:
-    targetOS: 'debian10'
-    targetArch: 'arm32'
+    targetOsArch: 'debian10_arm32'
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 
 - template: templates/do-docker-jobs.yml
   parameters:
-    targetOS: 'ubuntu1804' # azure pipelines does not support '.' in display names
-    targetArch: 'arm64'
+    targetOsArch: 'ubuntu1804_arm64' # azure pipelines does not support '.' in display names
     stepsTemplate: 'doclient-lite-docker-steps.yml'
