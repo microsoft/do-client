@@ -2,7 +2,7 @@
 # Consume this jobs template in a pipeline yaml by passing in parameter values.
 
 parameters:
-- name: targetOsArch    # example: debian9-arm32
+- name: targetOsArch    # example: debian9_arm32
   type: string
 - name: stepsTemplate   # example: dopapt-docker-steps.yml
   type: string
