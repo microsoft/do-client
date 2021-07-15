@@ -40,20 +40,20 @@ pr:
       - azure-pipelines/*
       - sdk-cpp/build/cleanup-install.sh
 
-pool: dotestlab
+pool: 1es_hosted_pool_ubuntu_1804
 
 jobs:
 - job: Debug
   steps:
   - template: templates/dosdkcpp-native-steps.yml
     parameters:
-      targetOsArch: 'ubuntu1804-x64'
+      targetOsArch: 'ubuntu1804_x64'
       config: debug
 
 - job: Release
   steps:
   - template: templates/dosdkcpp-native-steps.yml
     parameters:
-      targetOsArch: 'ubuntu1804-x64'
+      targetOsArch: 'ubuntu1804_x64'
       config: minsizerel
       skipTests: true

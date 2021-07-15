@@ -2,18 +2,30 @@
 # Consume this steps template in one or more jobs by passing in parameter values.
 
 parameters:
-- name: targetOsArch    # example: debian10-arm32
-  type: string
-- name: dockerImageName # example: jimsonmsft/debian10-arm32:latest
+- name: targetOsArch    # example: debian9_arm32
   type: string
 - name: config          # debug/release/minsizerel/relwithdebuginfo
   type: string
 
 steps:
+- task: Docker@2
+  displayName: Login to ACR
+  inputs:
+    command: login
+    containerRegistry: doclientcontainerregistry
+    repository: $(parameters.targetOsArch)
+
+- task: Docker@2
+  displayName: Pull latest build image
+  inputs:
+    command: pull
+    containerRegistry: doclientcontainerregistry
+    arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:latest'
+
 - task: CmdLine@2
   inputs:
   # Unix Makefiles used in place of Ninja due to issues with 32-bit compatability on cross-arch builds
-    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent ${{parameters.dockerImageName}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--generator" "Unix Makefiles" "--config" "${{parameters.config}}" "--project" "agent"'
+    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:latest "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "agent"'
   displayName: 'Build client-lite ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: CopyFiles@2
