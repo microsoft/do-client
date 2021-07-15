@@ -28,77 +28,77 @@ stages:
     steps:
     - template: ../build/templates/doclient-lite-native-steps.yml
       parameters:
-        targetOsArch: 'ubuntu1804-x64'
+        targetOsArch: 'ubuntu1804_x64'
         config: release
         skipTests: true 
   - job: deliveryoptimization_agent_ubuntu1804_arm64
     steps:
     - template: ../build/templates/doclient-lite-docker-steps.yml
       parameters:
-        targetOsArch: ubuntu1804-arm64
+        targetOsArch: ubuntu1804_arm64
         config: release
   - job: deliveryoptimization_agent_debian10_arm32
     steps:
     - template: ../build/templates/doclient-lite-docker-steps.yml
       parameters:
-        targetOsArch: debian10-arm32
+        targetOsArch: debian10_arm32
         config: release
   - job: deliveryoptimization_agent_debian9_arm32
     steps:
     - template: ../build/templates/doclient-lite-docker-steps.yml
       parameters:
-        targetOsArch: debian9-arm32
+        targetOsArch: debian9_arm32
         config: release
 
   - job: libdeliveryoptimization_ubuntu1804_amd64
     steps:
     - template: ../build/templates/dosdkcpp-native-steps.yml
       parameters:
-        targetOsArch: 'ubuntu1804-x64'
+        targetOsArch: 'ubuntu1804_x64'
         config: release
         skipTests: true 
   - job: libdeliveryoptimization_ubuntu1804_arm64
     steps:
     - template: ../build/templates/dosdkcpp-docker-steps.yml
       parameters:
-        targetOsArch: ubuntu1804-arm64
+        targetOsArch: ubuntu1804_arm64
         config: release
   - job: libdeliveryoptimization_debian10_arm32
     steps:
     - template: ../build/templates/dosdkcpp-docker-steps.yml
       parameters:
-        targetOsArch: debian10-arm32
+        targetOsArch: debian10_arm32
         config: release
   - job: libdeliveryoptimization_debian9_arm32
     steps:
     - template: ../build/templates/dosdkcpp-docker-steps.yml
       parameters:
-        targetOsArch: debian9-arm32
+        targetOsArch: debian9_arm32
         config: release
 
   - job: deliveryoptimization_plugin_apt_ubuntu1804_amd64
     steps:
     - template: ../build/templates/dopapt-native-steps.yml
       parameters:
-        targetOsArch: 'ubuntu1804-x64'
+        targetOsArch: 'ubuntu1804_x64'
         config: release
   - job: deliveryoptimization_plugin_apt_ubuntu1804_arm64
     steps:
     - template: ../build/templates/dopapt-docker-steps.yml
       parameters:
-        targetOsArch: ubuntu1804-arm64
+        targetOsArch: ubuntu1804_arm64
         config: release
   - job: deliveryoptimization_plugin_apt_debian10_arm32
     steps:
     - template: ../build/templates/dopapt-docker-steps.yml
       parameters:
-        targetOsArch: debian10-arm32
+        targetOsArch: debian10_arm32
         config: release
   - job: deliveryoptimization_plugin_apt_debian9_arm32
     steps:
     - template: ../build/templates/dopapt-docker-steps.yml
       parameters:
-        targetOsArch: debian9-arm32
+        targetOsArch: debian9_arm32
         config: release
 
 - stage: release
