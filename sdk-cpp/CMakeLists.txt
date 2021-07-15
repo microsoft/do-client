@@ -1,4 +1,4 @@
-project (deliveryoptimization_sdk VERSION 0.4.0)
+project (deliveryoptimization_sdk VERSION 0.5.0)
 
 add_definitions(-DBOOST_ALL_DYN_LINK=1)
 

@@ -32,8 +32,13 @@ public:
     // Forget the count of no-progress until now, retry delay will start from minimum next time
     void Reset()
     {
-        _nextRetryDelay = std::chrono::seconds(1);
+        ResetRetryDelay();
         _numNoProgressIntervals = 0;
+    }
+
+    void ResetRetryDelay()
+    {
+        _nextRetryDelay = std::chrono::seconds(1);
     }
 
     auto NextRetryDelay() const

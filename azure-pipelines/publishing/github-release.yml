@@ -11,17 +11,28 @@ pool: 1es_hosted_pool_ubuntu_1804
 variables:
   Release.Version: $(release_version)
   Release.PreviousVersion: $(previous_release_version) # Select the previous version, used to generate changelog
-  Release.Title: $(title) # title of the release, following <Release.Version> (YYYY-MM-DD) format i.e. 0.6.0 (2021-03-02)
+  Release.Title: $(title) # title of the release, following <Release.Version> (YYYY-MM-DD) format i.e. v0.6.0 (2021-03-02)
 
 parameters:
   - name: SkipPublishing
     displayName: Skip publishing step
     type: boolean
-    values: 
+    values:
     - true
     - false
 
 stages:
+- stage: pre_build
+  jobs:
+  - job: print_variables
+    steps:
+    - task: CmdLine@2
+      inputs:
+        script: |
+          echo "Release title: $(Release.Title)"
+          echo "Release tag: $(Release.Version)"
+          echo "Tag used to generate changelog: $(Release.PreviousVersion)"
+
 - stage: release_build
   jobs:
   - job: deliveryoptimization_agent_ubuntu1804_amd64
@@ -29,77 +40,77 @@ stages:
     - template: ../build/templates/doclient-lite-native-steps.yml
       parameters:
         targetOsArch: 'ubuntu1804_x64'
-        config: release
+        config: minsizerel
         skipTests: true 
   - job: deliveryoptimization_agent_ubuntu1804_arm64
     steps:
     - template: ../build/templates/doclient-lite-docker-steps.yml
       parameters:
         targetOsArch: ubuntu1804_arm64
-        config: release
+        config: minsizerel
   - job: deliveryoptimization_agent_debian10_arm32
     steps:
     - template: ../build/templates/doclient-lite-docker-steps.yml
       parameters:
         targetOsArch: debian10_arm32
-        config: release
+        config: minsizerel
   - job: deliveryoptimization_agent_debian9_arm32
     steps:
     - template: ../build/templates/doclient-lite-docker-steps.yml
       parameters:
         targetOsArch: debian9_arm32
-        config: release
+        config: minsizerel
 
   - job: libdeliveryoptimization_ubuntu1804_amd64
     steps:
     - template: ../build/templates/dosdkcpp-native-steps.yml
       parameters:
         targetOsArch: 'ubuntu1804_x64'
-        config: release
+        config: minsizerel
         skipTests: true 
   - job: libdeliveryoptimization_ubuntu1804_arm64
     steps:
     - template: ../build/templates/dosdkcpp-docker-steps.yml
       parameters:
         targetOsArch: ubuntu1804_arm64
-        config: release
+        config: minsizerel
   - job: libdeliveryoptimization_debian10_arm32
     steps:
     - template: ../build/templates/dosdkcpp-docker-steps.yml
       parameters:
         targetOsArch: debian10_arm32
-        config: release
+        config: minsizerel
   - job: libdeliveryoptimization_debian9_arm32
     steps:
     - template: ../build/templates/dosdkcpp-docker-steps.yml
       parameters:
         targetOsArch: debian9_arm32
-        config: release
+        config: minsizerel
 
   - job: deliveryoptimization_plugin_apt_ubuntu1804_amd64
     steps:
     - template: ../build/templates/dopapt-native-steps.yml
       parameters:
         targetOsArch: 'ubuntu1804_x64'
-        config: release
+        config: minsizerel
   - job: deliveryoptimization_plugin_apt_ubuntu1804_arm64
     steps:
     - template: ../build/templates/dopapt-docker-steps.yml
       parameters:
         targetOsArch: ubuntu1804_arm64
-        config: release
+        config: minsizerel
   - job: deliveryoptimization_plugin_apt_debian10_arm32
     steps:
     - template: ../build/templates/dopapt-docker-steps.yml
       parameters:
         targetOsArch: debian10_arm32
-        config: release
+        config: minsizerel
   - job: deliveryoptimization_plugin_apt_debian9_arm32
     steps:
     - template: ../build/templates/dopapt-docker-steps.yml
       parameters:
         targetOsArch: debian9_arm32
-        config: release
+        config: minsizerel
 
 - stage: release
   condition: succeeded()
@@ -115,20 +126,18 @@ stages:
     - task: CmdLine@2
       inputs:
         script: |
-          echo Release title: $(Release.Title)
-          echo Release tag: $(Release.Version)
-          echo Tag used to generate changelog: $(Release.PreviousVersion)
-          echo Directory to be published: $(Build.ArtifactStagingDirectory)
+          echo "Directory to be published: $(Build.ArtifactStagingDirectory)"
           echo Content to be published:
           ls -lR $(Build.ArtifactStagingDirectory)
       displayName: Release Information
+
     - task: GitHubRelease@1
       condition: eq(${{parameters.SkipPublishing}}, false)
       inputs:
         gitHubConnection: 'client2'
         repositoryName: 'microsoft/do-client'
         action: 'create'
-        assets: '$(Build.ArtifactStagingDirectory)/**/*-release/*.deb'
+        assets: '$(Build.ArtifactStagingDirectory)/**/*-minsizerel/*.deb'
         tagSource: 'userSpecifiedTag'
         tag: '$(Release.Version)'
         title: '$(Release.Title)'
