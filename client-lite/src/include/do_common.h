@@ -10,10 +10,8 @@
 #endif
 
 #include <cstddef>  // size_t
+#include <cstring>
 #include <string>
-
-#include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
 
 #if !defined(DEBUG) && !defined(NDEBUG)
 #define DEBUG

@@ -1,19 +1,24 @@
 #include "do_common.h"
 #include "do_log.h"
 
+#include <dirent.h>
 #include <unistd.h> // getpid
 #include <sys/syscall.h> // SYS_gettid
 #include <cstdarg> // va_start, etc.
 #include <condition_variable>
+#include <fstream>
 #include <mutex>
 #include <string>
 #include <thread>
 #include "do_date_time.h"
-#include "do_file.h"
 #include "string_ops.h"
 
 namespace DOLog
 {
+
+const char* const g_logFileNamePrefix = "do-agent.";
+constexpr UINT g_maxLogFileSizeBytes = 256 * 1024;
+constexpr UINT g_maxLogFiles = 3;
 
 class LogBuffer
 {
@@ -34,21 +39,30 @@ public:
         _cursor = 0;
     }
 
-    HRESULT Flush(DOFile& file) try
+    HRESULT Flush(std::ofstream& fileStream) try
     {
-        file.Append(reinterpret_cast<BYTE*>(_buffer.data()), static_cast<UINT>(_cursor));
-        Reset();
+        if (fileStream.is_open() && BytesBuffered())
+        {
+            fileStream.write(_buffer.data(), _cursor);
+            fileStream.flush();
+            Reset();
+        }
         return S_OK;
     } CATCH_RETURN()
 
-    size_t Available() const noexcept
+    size_t BytesBuffered() const noexcept
+    {
+        return _cursor;
+    }
+
+    size_t BytesFree() const noexcept
     {
         return (_buffer.size() - _cursor);
     }
 
-    size_t AvailablePercentage() const noexcept
+    size_t BytesFreePercentage() const noexcept
     {
-        return Available() * static_cast<uint64_t>(100) / _buffer.size();
+        return BytesFree() * static_cast<uint64_t>(100) / _buffer.size();
     }
 
     HRESULT Write(const char* pszLevel, const char* pszFunc, UINT nLine, HRESULT hrIn, const char* pszFmt, va_list argList)
@@ -61,7 +75,7 @@ public:
         int cchTotalWritten = 0;
 
         char* pszBuffer = _buffer.data() + _cursor;
-        const size_t cchBuffer = Available();
+        const size_t cchBuffer = BytesFree();
 
         // Timestamp ProcessID ThreadID severity message
         HRESULT hr = StringPrintf(pszBuffer, cchBuffer, &cchWritten, "%s %-5d %-5d %-8s ", timeStr.data(), pid, tid, pszLevel);
@@ -95,22 +109,28 @@ public:
             cchTotalWritten += cchWritten;
             hr = StringPrintfV(pszBuffer + cchTotalWritten, (cchBuffer - cchTotalWritten), &cchWritten, pszFmt, argList);
         }
+        if (SUCCEEDED(hr))
+        {
+            cchTotalWritten += cchWritten;
+
+            if ((cchBuffer - cchTotalWritten) > 1)
+            {
+                *(pszBuffer + cchTotalWritten) = '\n';
+                ++cchTotalWritten;
+                *(pszBuffer + cchTotalWritten) = '\0';
+            }
+            else
+            {
+                hr = STRSAFE_E_INSUFFICIENT_BUFFER;
+            }
+        }
         // Log the entire buffer
         if (SUCCEEDED(hr))
         {
             _cursor += cchTotalWritten;
-
-            try
-            {
-                // BOOST_LOG_SEV(::boost::log::trivial::logger::get(), level) << pszBuffer;
-                printf("[hello] %s\n", pszBuffer);
-            }
-            catch (const std::exception& ex)
-            {
-    #ifdef DEBUG
-                printf("Logging exception: %s\n", ex.what());
-    #endif
-            }
+#ifdef DEBUG
+            fprintf(stdout, "%s", pszBuffer);
+#endif
         }
         return hr;
     }
@@ -124,7 +144,11 @@ private:
     std::thread _flushThread;
     std::mutex _mutex;
     std::condition_variable _cv;
+
     LogBuffer _writeBuffer;
+    std::ofstream _logFile;
+
+    bool _fRunning { true };
 
     static const char* _LevelToString(Level level)
     {
@@ -138,16 +162,117 @@ private:
         return "";
     }
 
+    static int s_LogFilesFilter(const struct dirent* logfile)
+    {
+        return (logfile->d_type == DT_REG) && (strstr(logfile->d_name, g_logFileNamePrefix) != NULL);
+    }
+
+    void _ClearOlderLogFilesIfNeeded()
+    {
+        // From: https://github.com/Azure/iot-hub-device-update/blob/main/src/logging/zlog/src/zlog.c
+
+        // List the files specified by file_select in alphabetical order
+        struct dirent** logfiles;
+        const int nFiles = scandir(_logDir.c_str(), &logfiles, s_LogFilesFilter, alphasort);
+        if (nFiles == -1)
+        {
+            return;
+        }
+
+        if (static_cast<UINT>(nFiles) > g_maxLogFiles)
+        {
+            for (UINT i = 0; i < (static_cast<UINT>(nFiles) - g_maxLogFiles); ++i)
+            {
+                char filepath[512];
+                if (SUCCEEDED(StringPrintf(filepath, ARRAYSIZE(filepath), "%s/%s", _logDir.c_str(), logfiles[i]->d_name)))
+                {
+                    remove(filepath);
+                }
+            }
+        }
+
+        // Free memory allocated by scandir.
+        for (int i = 0; i < nFiles; ++i)
+        {
+            free(logfiles[i]);
+        }
+        free(logfiles);
+    }
+
+    void _CreateLogFile()
+    {
+        const auto timestamp = SysTimePointToFileNameString(wall_clock_t::now());
+        char filePath[512];
+        const auto hr = StringPrintf(filePath, ARRAYSIZE(filePath), "%s/%s%s.log", _logDir.c_str(), g_logFileNamePrefix, timestamp.data());
+        DO_ASSERT(SUCCEEDED(hr));
+
+        _logFile.open(filePath, std::fstream::out | std::fstream::app);
+        if (_logFile.fail())
+        {
+            fprintf(stderr, "Failed to create log file at %s", filePath);
+        }
+    }
+
+    void _RotateLogFilesIfNeeded()
+    {
+        const bool fLogOpen = _logFile.is_open();
+        if (fLogOpen && (_logFile.tellp() >= static_cast<std::streampos>(g_maxLogFileSizeBytes)))
+        {
+            _logFile.close();
+        }
+        _ClearOlderLogFilesIfNeeded();
+        if (fLogOpen)
+        {
+            _CreateLogFile();
+        }
+    }
+
+    void _FlushThreadProc()
+    {
+        while (true)
+        {
+            std::unique_lock<std::mutex> lock(_mutex);
+            _cv.wait_for(lock, std::chrono::minutes(3), [this](){ return !_fRunning; });
+            if (!_fRunning)
+            {
+                break;
+            }
+
+            _writeBuffer.Flush(_logFile);
+            _RotateLogFilesIfNeeded();
+        }
+    }
+
 public:
     LoggerImpl(const std::string& logDir, Level maxLogLevel) :
         _logDir(logDir),
         _maxLogLevel(maxLogLevel),
-        _writeBuffer(512 * 1024)
+        _writeBuffer(64 * 1024)
     {
+        _RotateLogFilesIfNeeded();
+        _CreateLogFile();
+
+        _flushThread = std::thread{[this]()
+            {
+                _FlushThreadProc();
+            }};
     }
 
     ~LoggerImpl()
     {
+        {
+            std::unique_lock<std::mutex> lock(_mutex);
+            _fRunning = false;
+            _cv.notify_all();
+        }
+        _flushThread.join();
+
+        std::unique_lock<std::mutex> lock(_mutex);
+        if (_logFile.is_open())
+        {
+            _writeBuffer.Flush(_logFile);
+            _logFile.close();
+        }
     }
 
     void WriteV(Level level, const char* pszFunc, unsigned int uLine, HRESULT hrIn, const char* pszFmt, va_list argList)
@@ -163,13 +288,17 @@ public:
         va_list argCopy;
         va_copy(argCopy, argList);
 
+        std::unique_lock<std::mutex> lock(_mutex);
+
         HRESULT hr = _writeBuffer.Write(_LevelToString(level), pszFunc, uLine, hrIn, pszFmt, argCopy);
         if (hr == STRSAFE_E_INSUFFICIENT_BUFFER)
         {
-            // hr = _writeBuffer.Flush();
-            // DO_ASSERT(SUCCEEDED(hr));
+            hr = _writeBuffer.Flush(_logFile);
+            DO_ASSERT(SUCCEEDED(hr));
             if (SUCCEEDED(hr))
             {
+                _RotateLogFilesIfNeeded();
+
                 va_copy(argCopy, argList);
                 hr = _writeBuffer.Write(_LevelToString(level), pszFunc, uLine, hrIn, pszFmt, argCopy);
             }

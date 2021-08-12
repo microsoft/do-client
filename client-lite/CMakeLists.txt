@@ -32,7 +32,7 @@ function (target_link_dl_lib target)
 endfunction ()
 
 # Include external libraries here:
-find_package(Boost COMPONENTS log filesystem REQUIRED)
+find_package(Boost COMPONENTS filesystem REQUIRED)
 
 # Cpprest Issues:
 # 1. v2.10.10 min version (see required PR link below). cpprestsdk does not seem to support specifying this through cmake.

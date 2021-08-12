@@ -11,10 +11,6 @@ constexpr auto g_progressTrackerMaxRetryDelay = std::chrono::seconds(30);
 // of steady_clock (timing, event waits, condition_variable waits).
 constexpr auto g_steadyClockInfiniteWaitTime = std::chrono::milliseconds(MAXUINT);
 
-#define DEF_TRACE_FILE_MAXSIZE_BYTES    (8U * 1024 * 1024)
-#define DEF_TRACE_FOLDER_MAXSIZE_BYTES  (DEF_TRACE_FILE_MAXSIZE_BYTES * 2)
-#define DEF_TRACE_LEVEL                 boost::log::trivial::trace
-
 const char* const ConfigName_AduIoTConnectionString = "ADUC_IoTConnectionString";
 
 const char* const ConfigName_CacheHostFallbackDelayBgSecs = "DODelayCacheServerFallbackBackground";

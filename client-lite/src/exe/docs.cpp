@@ -19,7 +19,6 @@ namespace msdoutil = microsoft::deliveryoptimization::util::details;
 #include "proc_launch_helper.h"
 #include "rest_http_controller.h"
 #include "rest_port_advertiser.h"
-#include "trace_sink.h"
 
 using namespace std::chrono_literals; // NOLINT(build/namespaces) how else should we use chrono literals?
 
@@ -41,14 +40,10 @@ public:
         constexpr auto idleTimeout = 60s;
         while (true)
         {
-
             if (_shutdownEvent.Wait(idleTimeout))
             {
                 break;
             }
-
-            // Use this opportunity to flush logs periodically
-            TraceConsumer::getInstance().Flush();
 
             if (fnIsIdle())
             {
@@ -99,7 +94,6 @@ HRESULT Run() try
 
     DropPermissions();
 
-    RETURN_IF_FAILED(TraceConsumer::getInstance().Initialize());
     DOLog::Init(docli::GetLogDirectory(), DOLog::Level::Verbose);
 
     DoLogInfo("Started, %s", msdoutil::ComponentVersion().c_str());
@@ -130,7 +124,6 @@ int main(int argc, char** argv) try
     const HRESULT hr = LOG_IF_FAILED(Run());
 
     DOLog::Close();
-    TraceConsumer::getInstance().Finalize();
 
     printf("Reached end of main, hr: %x\n", hr);
     return hr;
@@ -140,6 +133,5 @@ catch (...)
     const HRESULT hrEx = LOG_CAUGHT_EXCEPTION();
     printf("Caught exception in main, hr: %x\n", hrEx);
     DOLog::Close();
-    TraceConsumer::getInstance().Finalize();
     return hrEx;
 }
