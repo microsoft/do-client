@@ -100,7 +100,7 @@ HRESULT Run() try
     DropPermissions();
 
     RETURN_IF_FAILED(TraceConsumer::getInstance().Initialize());
-    DoTraceLoggingRegister();
+    DOLog::Init(docli::GetLogDirectory(), DOLog::Level::Verbose);
 
     DoLogInfo("Started, %s", msdoutil::ComponentVersion().c_str());
 
@@ -129,7 +129,7 @@ int main(int argc, char** argv) try
 
     const HRESULT hr = LOG_IF_FAILED(Run());
 
-    DoTraceLoggingUnregister();
+    DOLog::Close();
     TraceConsumer::getInstance().Finalize();
 
     printf("Reached end of main, hr: %x\n", hr);
@@ -139,7 +139,7 @@ catch (...)
 {
     const HRESULT hrEx = LOG_CAUGHT_EXCEPTION();
     printf("Caught exception in main, hr: %x\n", hrEx);
-    DoTraceLoggingUnregister();
+    DOLog::Close();
     TraceConsumer::getInstance().Finalize();
     return hrEx;
 }

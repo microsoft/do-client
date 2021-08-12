@@ -85,10 +85,16 @@ HRESULT StringPrintf(PSTR buf, size_t len, _In_opt_ int* pWritten, PCSTR fmt, Ty
 }
 
 template <typename... Types>
-HRESULT StringPrintfV(PSTR buf, size_t cchBuf, PCSTR fmt, Types&&... args)
+HRESULT StringPrintfV(PSTR buf, size_t cchBuf, _In_opt_ int* pWritten, PCSTR fmt, Types&&... args)
 {
     const int cchWritten = vsnprintf(buf, cchBuf, fmt, std::forward<Types>(args)...);
-    return ((0 < cchWritten) && ((UINT)cchWritten < cchBuf)) ? S_OK : STRSAFE_E_INSUFFICIENT_BUFFER;
+    if ((0 < cchWritten) && ((UINT)cchWritten < cchBuf))
+    {
+        assign_to_opt_param(pWritten, cchWritten);
+        return S_OK;
+    }
+    assign_to_opt_param(pWritten, 0);
+    return STRSAFE_E_INSUFFICIENT_BUFFER;
 }
 
 template <typename... Types>

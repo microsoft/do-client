@@ -44,4 +44,4 @@ inline void assign_to_opt_param(_Out_opt_ T* outParam, T val)
 #include "error_macros.h" // required by headers below
 #include "do_assert.h"
 #include "hresult_helpers.h"
-#include "trace_src.h"
+#include "do_log.h"
