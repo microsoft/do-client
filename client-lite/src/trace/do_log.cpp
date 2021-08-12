@@ -9,45 +9,62 @@
 #include <string>
 #include <thread>
 #include "do_date_time.h"
+#include "do_file.h"
 #include "string_ops.h"
 
 namespace DOLog
 {
 
-class LoggerImpl
+class LogBuffer
 {
 private:
-    std::string _logDir;
-    Level _maxLogLevel;
-    std::thread _flushThread;
-    std::mutex _mutex;
-    std::condition_variable _cv;
+    std::vector<char> _buffer;
+    size_t _cursor;
 
-    static const char* _LevelToString(Level level)
+public:
+    LogBuffer(size_t bufSize) :
+        _buffer(bufSize)
     {
-        switch (level)
-        {
-            case Level::Error:      return "error";
-            case Level::Warning:    return "warn ";
-            case Level::Info:       return "info ";
-            case Level::Verbose:    return "     ";
-        }
-        return "";
+        Reset();
     }
 
-    HRESULT _WriteMessage(PSTR pszBuffer, size_t cchBuffer, Level level, PCSTR pszFunc, UINT nLine, HRESULT hrIn, PCSTR pszFmt,
-        va_list argList)
+    void Reset()
+    {
+        memset(_buffer.data(), 0, _buffer.size());
+        _cursor = 0;
+    }
+
+    HRESULT Flush(DOFile& file) try
+    {
+        file.Append(reinterpret_cast<BYTE*>(_buffer.data()), static_cast<UINT>(_cursor));
+        Reset();
+        return S_OK;
+    } CATCH_RETURN()
+
+    size_t Available() const noexcept
+    {
+        return (_buffer.size() - _cursor);
+    }
+
+    size_t AvailablePercentage() const noexcept
+    {
+        return Available() * static_cast<uint64_t>(100) / _buffer.size();
+    }
+
+    HRESULT Write(const char* pszLevel, const char* pszFunc, UINT nLine, HRESULT hrIn, const char* pszFmt, va_list argList)
     {
         static const pid_t pid = getpid();
         const auto tid = static_cast<int>(syscall(SYS_gettid)); // using syscall because glibc wrapper is unavailable
-        const char* sev = _LevelToString(level);
         const auto timeStr = SysTimePointToUTCString(wall_clock_t::now());
 
         int cchWritten = 0;
         int cchTotalWritten = 0;
 
+        char* pszBuffer = _buffer.data() + _cursor;
+        const size_t cchBuffer = Available();
+
         // Timestamp ProcessID ThreadID severity message
-        HRESULT hr = StringPrintf(pszBuffer, cchBuffer, &cchWritten, "%s %-5d %-5d %-8s ", timeStr.data(), pid, tid, sev);
+        HRESULT hr = StringPrintf(pszBuffer, cchBuffer, &cchWritten, "%s %-5d %-5d %-8s ", timeStr.data(), pid, tid, pszLevel);
         if (SUCCEEDED(hr))
         {
             cchTotalWritten += cchWritten;
@@ -81,10 +98,12 @@ private:
         // Log the entire buffer
         if (SUCCEEDED(hr))
         {
+            _cursor += cchTotalWritten;
+
             try
             {
                 // BOOST_LOG_SEV(::boost::log::trivial::logger::get(), level) << pszBuffer;
-                printf("%s\n", pszBuffer);
+                printf("[hello] %s\n", pszBuffer);
             }
             catch (const std::exception& ex)
             {
@@ -95,11 +114,35 @@ private:
         }
         return hr;
     }
+};
+
+class LoggerImpl
+{
+private:
+    std::string _logDir;
+    Level _maxLogLevel;
+    std::thread _flushThread;
+    std::mutex _mutex;
+    std::condition_variable _cv;
+    LogBuffer _writeBuffer;
+
+    static const char* _LevelToString(Level level)
+    {
+        switch (level)
+        {
+            case Level::Error:      return "error";
+            case Level::Warning:    return "warn ";
+            case Level::Info:       return "info ";
+            case Level::Verbose:    return "     ";
+        }
+        return "";
+    }
 
 public:
     LoggerImpl(const std::string& logDir, Level maxLogLevel) :
         _logDir(logDir),
-        _maxLogLevel(maxLogLevel)
+        _maxLogLevel(maxLogLevel),
+        _writeBuffer(512 * 1024)
     {
     }
 
@@ -120,25 +163,21 @@ public:
         va_list argCopy;
         va_copy(argCopy, argList);
 
-        // Build the message text
-        char szMessage[200];
-        size_t cchMessage = ARRAYSIZE(szMessage);
-
-        // Try first with the stack buffer
-        HRESULT hr = _WriteMessage(szMessage, cchMessage, level, pszFunc, uLine, hrIn, pszFmt, argCopy);
-        while (hr == STRSAFE_E_INSUFFICIENT_BUFFER)
+        HRESULT hr = _writeBuffer.Write(_LevelToString(level), pszFunc, uLine, hrIn, pszFmt, argCopy);
+        if (hr == STRSAFE_E_INSUFFICIENT_BUFFER)
         {
-            // Use a heap buffer
-            cchMessage *= 2;
-
-            std::unique_ptr<char[]> spMessage;
-            spMessage.reset(new (std::nothrow) char[cchMessage]);
-            hr = spMessage ? S_OK : E_OUTOFMEMORY;
+            // hr = _writeBuffer.Flush();
+            // DO_ASSERT(SUCCEEDED(hr));
             if (SUCCEEDED(hr))
             {
                 va_copy(argCopy, argList);
-                hr = _WriteMessage(spMessage.get(), cchMessage, level, pszFunc, uLine, hrIn, pszFmt, argCopy);
+                hr = _writeBuffer.Write(_LevelToString(level), pszFunc, uLine, hrIn, pszFmt, argCopy);
             }
+        }
+
+        if (FAILED(hr))
+        {
+            fprintf(stderr, "Log write failed with 0x%x", hr);
         }
     }
 };
