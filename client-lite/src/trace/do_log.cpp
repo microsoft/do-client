@@ -215,13 +215,13 @@ private:
 
     void _RotateLogFilesIfNeeded()
     {
-        const bool fLogOpen = _logFile.is_open();
-        if (fLogOpen && (_logFile.tellp() >= static_cast<std::streampos>(g_maxLogFileSizeBytes)))
+        const bool fLogWasOpen = _logFile.is_open();
+        if (fLogWasOpen && (_logFile.tellp() >= static_cast<std::streampos>(g_maxLogFileSizeBytes)))
         {
             _logFile.close();
         }
         _ClearOlderLogFilesIfNeeded();
-        if (fLogOpen)
+        if (fLogWasOpen && !_logFile.is_open())
         {
             _CreateLogFile();
         }
