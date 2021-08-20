@@ -30,7 +30,7 @@ void WriteResult(Level level, const char* pszFunc, unsigned int uLine, HRESULT h
 // to officially support this behavior.
 
 #define DoLogMessage(level, msg, ...)   DOLog::Write((level), __FUNCTION__, __LINE__, (msg), ##__VA_ARGS__)
-#define DoLogResult(lvl, hr, msg, ...)  DOLog::WriteResult((lvl), __FUNCTION__, __LINE__, (hr), (msg), ##__VA_ARGS__)
+#define DoLogResult(level, hr, msg, ...)  DOLog::WriteResult((level), __FUNCTION__, __LINE__, (hr), (msg), ##__VA_ARGS__)
 
 #define DoLogError(msg, ...)            DoLogMessage(EVENT_LEVEL_ERROR,    (msg), ##__VA_ARGS__)
 #define DoLogWarning(msg, ...)          DoLogMessage(EVENT_LEVEL_WARNING,  (msg), ##__VA_ARGS__)
