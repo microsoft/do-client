@@ -21,6 +21,7 @@ constexpr uint32_t g_maxLogFileSizeBytes = 256 * 1024;
 constexpr uint32_t g_maxLogFiles = 3;
 constexpr uint32_t g_logBufferSizeBytes = 64 * 1024;
 
+// Heap-based buffer where log messages are stored before flushing to disk
 class LogBuffer
 {
 public:
@@ -95,7 +96,7 @@ public:
         char* pszBuffer = _buffer.data() + _cursor;
         const size_t cchBuffer = BytesFree();
 
-        // Timestamp ProcessID ThreadID severity message
+        // Timestamp ProcessID ThreadID severity
         HRESULT hr = StringPrintf(pszBuffer, cchBuffer, &cchWritten, "%s %-5d %-5d %-8s ", timeStr.data(), pid, tid, pszLevel);
         if (SUCCEEDED(hr))
         {
@@ -127,6 +128,7 @@ public:
             cchTotalWritten += cchWritten;
             hr = StringPrintfV(pszBuffer + cchTotalWritten, (cchBuffer - cchTotalWritten), &cchWritten, pszFmt, argList);
         }
+        // Append a new line (and ensure null-termination for console output)
         if (SUCCEEDED(hr))
         {
             cchTotalWritten += cchWritten;
@@ -142,10 +144,10 @@ public:
                 hr = STRSAFE_E_INSUFFICIENT_BUFFER;
             }
         }
-        // Log the entire buffer
+
         if (SUCCEEDED(hr))
         {
-            _cursor += cchTotalWritten;
+            _cursor += cchTotalWritten; // wrote everything needed; update cursor now
 #ifdef DEBUG
             fprintf(stdout, "%s", pszBuffer);
 #endif
@@ -388,6 +390,8 @@ void g_LogRuntimeFailure(const docli::FailureInfo& failure) noexcept
     }
 }
 
+// LoggerImpl destructor performs non-trivial tasks like waiting for thread termination.
+// Use raw pointer to avoid executing the destructor on process termination if Close() was not invoked.
 static LoggerImpl* g_pLogger = nullptr;
 
 void Init(const std::string& logDir, Level maxLogLevel)
