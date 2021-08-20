@@ -17,9 +17,9 @@ namespace DOLog
 {
 
 const char* const g_logFileNamePrefix = "do-agent.";
-constexpr UINT g_maxLogFileSizeBytes = 256 * 1024;
-constexpr UINT g_maxLogFiles = 3;
-constexpr UINT g_logBufferSizeBytes = 64 * 1024;
+constexpr uint32_t g_maxLogFileSizeBytes = 256 * 1024;
+constexpr uint32_t g_maxLogFiles = 3;
+constexpr uint32_t g_logBufferSizeBytes = 64 * 1024;
 
 class LogBuffer
 {
@@ -83,7 +83,7 @@ public:
         return _stats;
     }
 
-    HRESULT Write(const char* pszLevel, const char* pszFunc, UINT nLine, HRESULT hrIn, const char* pszFmt, va_list argList)
+    HRESULT Write(const char* pszLevel, const char* pszFunc, uint32_t nLine, HRESULT hrIn, const char* pszFmt, va_list argList)
     {
         static const pid_t pid = getpid();
         const auto tid = static_cast<int>(syscall(SYS_gettid)); // using syscall because glibc wrapper is unavailable
@@ -218,9 +218,9 @@ private:
             return;
         }
 
-        if (static_cast<UINT>(nFiles) > g_maxLogFiles)
+        if (static_cast<uint32_t>(nFiles) > g_maxLogFiles)
         {
-            for (UINT i = 0; i < (static_cast<UINT>(nFiles) - g_maxLogFiles); ++i)
+            for (uint32_t i = 0; i < (static_cast<uint32_t>(nFiles) - g_maxLogFiles); ++i)
             {
                 char filepath[512];
                 if (SUCCEEDED(StringPrintf(filepath, ARRAYSIZE(filepath), "%s/%s", _logDir.c_str(), logfiles[i]->d_name)))
