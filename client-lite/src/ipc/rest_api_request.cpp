@@ -134,7 +134,6 @@ HRESULT RestApiDownloadStateChangeRequest::ParseAndProcess(DownloadManager& down
 HRESULT RestApiGetStatusRequest::ParseAndProcess(DownloadManager& downloadManager, RestApiParser& parser,
     web::json::value& responseBody)
 {
-    DoLogInfo("");
     auto status = downloadManager.GetDownloadStatus(GetDownloadId(parser));
     responseBody["Status"] = web::json::value::string(DownloadStateToString(status.State));
     responseBody["BytesTotal"] = static_cast<uint64_t>(status.BytesTotal);

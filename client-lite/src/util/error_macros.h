@@ -355,7 +355,8 @@ namespace docli
         }
         else
         {
-            StringPrintfV(pszDest, cchDest, formatString, argList);
+            int cchWritten;
+            StringPrintfV(pszDest, cchDest, &cchWritten, formatString, argList);
         }
     }
 
