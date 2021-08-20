@@ -67,7 +67,7 @@ template <typename... Types>
 HRESULT StringPrintf(PSTR buf, size_t len, PCSTR fmt, Types&&... args)
 {
     const int cchWritten = StringPrintfEx(buf, len, fmt, std::forward<Types>(args)...);
-    return ((0 < cchWritten) && ((UINT)cchWritten < len)) ? S_OK : STRSAFE_E_INSUFFICIENT_BUFFER;
+    return ((0 <= cchWritten) && ((UINT)cchWritten < len)) ? S_OK : STRSAFE_E_INSUFFICIENT_BUFFER;
 }
 
 // HRESULT return with optional argument to return number of characters written
@@ -75,7 +75,7 @@ template <typename... Types>
 HRESULT StringPrintf(PSTR buf, size_t len, _In_opt_ int* pWritten, PCSTR fmt, Types&&... args)
 {
     const int cchWritten = StringPrintfEx(buf, len, fmt, std::forward<Types>(args)...);
-    if ((0 < cchWritten) && ((UINT)cchWritten < len))
+    if ((0 <= cchWritten) && ((UINT)cchWritten < len))
     {
         assign_to_opt_param(pWritten, cchWritten);
         return S_OK;
@@ -88,7 +88,7 @@ template <typename... Types>
 HRESULT StringPrintfV(PSTR buf, size_t cchBuf, _In_opt_ int* pWritten, PCSTR fmt, Types&&... args)
 {
     const int cchWritten = vsnprintf(buf, cchBuf, fmt, std::forward<Types>(args)...);
-    if ((0 < cchWritten) && ((UINT)cchWritten < cchBuf))
+    if ((0 <= cchWritten) && ((UINT)cchWritten < cchBuf))
     {
         assign_to_opt_param(pWritten, cchWritten);
         return S_OK;
