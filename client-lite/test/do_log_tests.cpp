@@ -35,13 +35,14 @@ TEST_F(DOLoggerTests, BasicWriteToFile)
 
         char readBuf[256];
         UINT i = 0;
+        // Expect the 2 lines and the final stats line for a total of 3 lines
         while (fs.getline(readBuf, ARRAYSIZE(readBuf)))
         {
-            ASSERT_LT(i, 2);
+            ASSERT_LT(i, 3);
             ASSERT_NE(strstr(readBuf, pInputData[i]), nullptr);
             ++i;
         }
-        ASSERT_EQ(i, 2);
+        ASSERT_EQ(i, 3);
     }
     ASSERT_EQ(nLogFilesFound, 1);
 }
