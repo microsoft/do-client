@@ -19,12 +19,23 @@ namespace DOLog
 const char* const g_logFileNamePrefix = "do-agent.";
 constexpr UINT g_maxLogFileSizeBytes = 256 * 1024;
 constexpr UINT g_maxLogFiles = 3;
+constexpr UINT g_logBufferSizeBytes = 64 * 1024;
 
 class LogBuffer
 {
+public:
+    struct Stats
+    {
+        uint32_t numResets;
+        uint32_t numFlushes;
+        uint32_t numWritesSucceeded;
+        uint32_t numWritesFailed;
+    };
+
 private:
     std::vector<char> _buffer;
     size_t _cursor;
+    Stats _stats {};
 
 public:
     LogBuffer(size_t bufSize) :
@@ -37,6 +48,7 @@ public:
     {
         memset(_buffer.data(), 0, _buffer.size());
         _cursor = 0;
+        ++_stats.numResets;
     }
 
     HRESULT Flush(std::ofstream& fileStream) try
@@ -46,6 +58,7 @@ public:
             fileStream.write(_buffer.data(), _cursor);
             fileStream.flush();
             Reset();
+            ++_stats.numFlushes;
         }
         return S_OK;
     } CATCH_RETURN()
@@ -63,6 +76,11 @@ public:
     size_t BytesFreePercentage() const noexcept
     {
         return BytesFree() * static_cast<uint64_t>(100) / _buffer.size();
+    }
+
+    const Stats& PerfStats() const noexcept
+    {
+        return _stats;
     }
 
     HRESULT Write(const char* pszLevel, const char* pszFunc, UINT nLine, HRESULT hrIn, const char* pszFmt, va_list argList)
@@ -131,6 +149,15 @@ public:
 #ifdef DEBUG
             fprintf(stdout, "%s", pszBuffer);
 #endif
+            ++_stats.numWritesSucceeded;
+        }
+        else
+        {
+#ifdef DEBUG
+            fprintf(stderr, "Log write failed with 0x%x, bytes_free: %zu, written: %d, total_written: %d\n",
+                hr, cchBuffer, cchWritten, cchTotalWritten);
+#endif
+            ++_stats.numWritesFailed;
         }
         return hr;
     }
@@ -139,6 +166,16 @@ public:
 class LoggerImpl
 {
 private:
+    struct Stats
+    {
+        uint32_t numFilesDeleted;
+        uint32_t numFileCreationAttempts;
+        uint32_t numFilesCreated;
+        uint64_t numFlushThreadLoops;
+        uint64_t numFlushWrites;
+        uint32_t numWritesFailed;
+    };
+
     std::string _logDir;
     Level _maxLogLevel;
     std::thread _flushThread;
@@ -147,6 +184,8 @@ private:
 
     LogBuffer _writeBuffer;
     std::ofstream _logFile;
+
+    Stats _stats {};
 
     bool _fRunning { true };
 
@@ -187,6 +226,7 @@ private:
                 if (SUCCEEDED(StringPrintf(filepath, ARRAYSIZE(filepath), "%s/%s", _logDir.c_str(), logfiles[i]->d_name)))
                 {
                     remove(filepath);
+                    ++_stats.numFilesDeleted;
                 }
             }
         }
@@ -201,6 +241,8 @@ private:
 
     void _CreateLogFile()
     {
+        ++_stats.numFileCreationAttempts;
+
         const auto timestamp = SysTimePointToFileNameString(wall_clock_t::now());
         char filePath[512];
         const auto hr = StringPrintf(filePath, ARRAYSIZE(filePath), "%s/%s%s.log", _logDir.c_str(), g_logFileNamePrefix, timestamp.data());
@@ -210,6 +252,10 @@ private:
         if (_logFile.fail())
         {
             fprintf(stderr, "Failed to create log file at %s", filePath);
+        }
+        else
+        {
+            ++_stats.numFilesCreated;
         }
     }
 
@@ -240,6 +286,7 @@ private:
 
             _writeBuffer.Flush(_logFile);
             _RotateLogFilesIfNeeded();
+            ++_stats.numFlushThreadLoops;
         }
     }
 
@@ -247,7 +294,7 @@ public:
     LoggerImpl(const std::string& logDir, Level maxLogLevel) :
         _logDir(logDir),
         _maxLogLevel(maxLogLevel),
-        _writeBuffer(64 * 1024)
+        _writeBuffer(g_logBufferSizeBytes)
     {
         _RotateLogFilesIfNeeded();
         _CreateLogFile();
@@ -266,6 +313,13 @@ public:
             _cv.notify_all();
         }
         _flushThread.join();
+
+        const auto& bufferStats = _writeBuffer.PerfStats();
+        DoLogInfo("Logger stats: [creation_attempts: %u, created: %u, deleted: %u, threadproc: %lu, flush_writes: %lu, writes_f: %u], "
+            "buffer: [resets: %u, flushes: %u, writes_s: %u, writes_f: %u]",
+            _stats.numFileCreationAttempts, _stats.numFilesCreated, _stats.numFilesDeleted, _stats.numFlushThreadLoops,
+            _stats.numFlushWrites, _stats.numWritesFailed,
+            bufferStats.numResets, bufferStats.numFlushes, bufferStats.numWritesSucceeded, bufferStats.numWritesFailed);
 
         std::unique_lock<std::mutex> lock(_mutex);
         if (_logFile.is_open())
@@ -302,11 +356,12 @@ public:
                 va_copy(argCopy, argList);
                 hr = _writeBuffer.Write(_LevelToString(level), pszFunc, uLine, hrIn, pszFmt, argCopy);
             }
+            ++_stats.numFlushWrites;
         }
 
         if (FAILED(hr))
         {
-            fprintf(stderr, "Log write failed with 0x%x", hr);
+            ++_stats.numWritesFailed;
         }
     }
 };
