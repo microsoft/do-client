@@ -14,11 +14,12 @@ public:
 
 TEST_F(DOLoggerTests, BasicWriteToFile)
 {
-    const char* pInputData[] = { "First line", "Second line" };
+    const char* pTestData[] = { "First line", "Second line", "{~LoggerImpl} Logger stats" };
 
     DOLog::Init(g_testTempDir.string(), DOLog::Level::Verbose);
-    DoLogInfo("%s", pInputData[0]);
-    DoLogError("%s", pInputData[1]);
+    DoLogInfo("%s", pTestData[0]);
+    DoLogError("%s", pTestData[1]);
+    // The 3rd string is written by the logger on close
     DOLog::Close();
 
     UINT nLogFilesFound = 0;
@@ -39,7 +40,7 @@ TEST_F(DOLoggerTests, BasicWriteToFile)
         while (fs.getline(readBuf, ARRAYSIZE(readBuf)))
         {
             ASSERT_LT(i, 3);
-            ASSERT_NE(strstr(readBuf, pInputData[i]), nullptr);
+            ASSERT_NE(strstr(readBuf, pTestData[i]), nullptr);
             ++i;
         }
         ASSERT_EQ(i, 3);
