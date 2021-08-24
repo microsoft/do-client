@@ -8,7 +8,7 @@
 
 //*****************************************************************************
 // This is a port of some of the result macros from WIL
-// https://osgwiki.com/wiki/Windows_Internal_Libraries_(wil)
+// https://github.com/microsoft/wil
 //*****************************************************************************
 
 #if (DBG || defined(DEBUG) || defined(_DEBUG)) && !defined(NDEBUG)
@@ -355,7 +355,8 @@ namespace docli
         }
         else
         {
-            StringPrintfV(pszDest, cchDest, formatString, argList);
+            int cchWritten;
+            StringPrintfV(pszDest, cchDest, &cchWritten, formatString, argList);
         }
     }
 

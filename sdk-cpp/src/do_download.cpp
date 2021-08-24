@@ -52,70 +52,98 @@ download_status download::get_status() const
     return _download->GetStatus();
 }
 
-void download::start_and_wait_until_completion(std::chrono::seconds timeOut)
+void download::download_url_to_path(const std::string& uri, const std::string& downloadFilePath, std::chrono::seconds timeOut)
 {
-    std::atomic_bool isCancelled { false };
-    start_and_wait_until_completion(isCancelled, timeOut);
+    std::atomic_bool isCancelled{ false };
+    download_url_to_path(uri, downloadFilePath, isCancelled, timeOut);
 }
 
-void download::start_and_wait_until_completion(const std::atomic_bool& isCancelled, std::chrono::seconds timeOut)
+// Ensures download is finalized/aborted in the agent to avoid stale download objects.
+// Future: We could expect callers to explicitly opt-in to persist downloads in the agent and
+//   use that as an indicator to perform/skip the cleanup directly in ~download().
+class download_cleanup_call
+{
+private:
+    download* _ptr { nullptr };
+
+public:
+    download_cleanup_call(download* pObj) :
+        _ptr(pObj)
+    {
+    }
+
+    ~download_cleanup_call()
+    {
+        if (_ptr != nullptr)
+        {
+            try
+            {
+                const auto state = _ptr->get_status().state();
+                if (state == download_state::transferred)
+                {
+                    _ptr->finalize();
+                }
+                else if ((state != download_state::aborted) && (state != download_state::finalized))
+                {
+                    _ptr->abort();
+                }
+            }
+            catch (...)
+            {
+            }
+        }
+    }
+};
+
+void download::download_url_to_path(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeOut)
 {
     constexpr std::chrono::seconds maxPollTime = 5s;
     std::chrono::milliseconds pollTime = 500ms;
     const auto endTime = std::chrono::system_clock::now() + timeOut;
 
-    start();
-    download_status status = get_status();
+    download oneShotDownload(uri, downloadFilePath);
+    download_cleanup_call scopedCleanup{&oneShotDownload};
 
-    bool timedOut = std::chrono::system_clock::now() >= endTime;
-    while ((status.state() == download_state::created || status.state() == download_state::transferring || status.is_transient_error()) && !timedOut)
+    oneShotDownload.start();
+
+    download_status status;
+    bool timedOut = false;
+    do
     {
         if (isCancelled)
         {
-            abort();
-            msdod::ThrowException(std::errc::operation_canceled);
+            break;
         }
         std::this_thread::sleep_for(pollTime);
         if (pollTime < maxPollTime)
         {
             pollTime += 500ms;
         }
-        status = get_status();
+        status = oneShotDownload.get_status();
         timedOut = std::chrono::system_clock::now() >= endTime;
-    }
+    } while ((status.state() == download_state::created || status.state() == download_state::transferring || status.is_transient_error())
+        && !timedOut);
+
     if (status.state() == download_state::transferred)
     {
-        finalize();
-    }
-    else if (status.state() == download_state::paused && !status.is_transient_error())
-    {
-        assert(status.error_code() != 0);
-        msdod::ThrowException(status.error_code());
+        // nothing to do, download_cleanup_call invokes finalize()
     }
     else
     {
-        abort();
-        if (timedOut)
+        if (isCancelled)
+        {
+            msdod::ThrowException(std::errc::operation_canceled);
+        }
+        else if (timedOut)
         {
             msdod::ThrowException(std::errc::timed_out);
         }
-        else
+        else if (status.state() == download_state::paused && !status.is_transient_error())
         {
-            msdod::ThrowException(std::errc::connection_refused);
+            assert(status.error_code() != 0);
+            msdod::ThrowException(status.error_code());
         }
     }
-}
-
-void download::download_url_to_path(const std::string& uri, const std::string& downloadFilePath, std::chrono::seconds timeOut)
-{
-    download oneShotDownload(uri, downloadFilePath);
-    oneShotDownload.start_and_wait_until_completion(timeOut);
-}
-
-void download::download_url_to_path(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeOut)
-{
-    download oneShotDownload(uri, downloadFilePath);
-    oneShotDownload.start_and_wait_until_completion(isCancelled, timeOut);
 }
 
 } // namespace microsoft::deliveryoptimization

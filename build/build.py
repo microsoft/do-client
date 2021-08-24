@@ -154,9 +154,8 @@ class BuildRunnerBase(object):
         else:
             self.config = 'debug'
 
-        if not (self.config == 'debug' or self.config == 'release'):
-            raise ValueError('Building configuration {self.config} for {self.platform} is not supported.'.format(self.config, self.platform))
-
+        if self.config not in ['debug', 'release', 'relwithdebinfo', 'minsizerel']:
+            raise ValueError('Building configuration for {self.platform} is not supported.'.format(self.config, self.platform))
         if self.script_args.generator:
             self.generator = self.script_args.generator
 
@@ -334,6 +333,10 @@ class BuildRunnerBase(object):
 
         if self.config == "debug":
             generate_options.extend(["-DCMAKE_BUILD_TYPE=Debug"])
+        elif self.config == "relwithdebinfo":
+            generate_options.extend(["-DCMAKE_BUILD_TYPE=RelWithDebInfo"])
+        elif self.config == "minsizerel":
+            generate_options.extend(["-DCMAKE_BUILD_TYPE=MinSizeRel"])
         else:
             generate_options.extend(["-DCMAKE_BUILD_TYPE=Release"])
 

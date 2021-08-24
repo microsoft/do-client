@@ -2,28 +2,22 @@
 # Consume this jobs template in a pipeline yaml by passing in parameter values.
 
 parameters:
-- name: targetOS        # example: debian10
-  type: string
-- name: targetArch      # example: arm32
-  type: string
-- name: dockerImageName # example: jimsonmsft/debian10-arm32:latest
+- name: targetOsArch    # example: debian9_arm32
   type: string
 - name: stepsTemplate   # example: dopapt-docker-steps.yml
   type: string
 
 jobs:
-- job: ${{parameters.targetOS}}_${{parameters.targetArch}}_debug
+- job: ${{parameters.targetOsArch}}_debug
   steps:
   - template: ${{parameters.stepsTemplate}}
     parameters:
-      targetOsArch: ${{parameters.targetOS}}-${{parameters.targetArch}}
-      dockerImageName: ${{parameters.dockerImageName}}
+      targetOsArch: ${{parameters.targetOsArch}}
       config: debug
 
-- job: ${{parameters.targetOS}}_${{parameters.targetArch}}_release
+- job: ${{parameters.targetOsArch}}_release
   steps:
   - template: ${{parameters.stepsTemplate}}
     parameters:
-      targetOsArch: ${{parameters.targetOS}}-${{parameters.targetArch}}
-      dockerImageName: ${{parameters.dockerImageName}}
-      config: release
+      targetOsArch: ${{parameters.targetOsArch}}
+      config: minsizerel

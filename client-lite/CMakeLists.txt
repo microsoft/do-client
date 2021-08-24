@@ -2,7 +2,7 @@ if (NOT DOSVC_BIN_NAME)
     message (FATAL_ERROR "Agent daemon name not defined")
 endif ()
 
-project (${DOSVC_BIN_NAME} VERSION 0.4.0)
+project (${DOSVC_BIN_NAME} VERSION 0.5.0)
 
 option (DO_PROXY_SUPPORT "Set DO_PROXY_SUPPORT to OFF to turn off proxy support for downloads and thus remove dependency on libproxy." ON)
 
@@ -32,7 +32,7 @@ function (target_link_dl_lib target)
 endfunction ()
 
 # Include external libraries here:
-find_package(Boost COMPONENTS log filesystem REQUIRED)
+find_package(Boost COMPONENTS filesystem REQUIRED)
 
 # Cpprest Issues:
 # 1. v2.10.10 min version (see required PR link below). cpprestsdk does not seem to support specifying this through cmake.
@@ -80,14 +80,14 @@ file (GLOB files_docs_common
 
 # Dir path used for docs_common and debian control scripts
 set(docs_svc_config_dir_path "/etc/${DOSVC_BIN_NAME}")
-set(docs_svc_persistence_dir_path "/var/cache/${DOSVC_BIN_NAME}")
+set(docs_svc_log_dir_path "/var/log/${DOSVC_BIN_NAME}")
 set(docs_svc_run_dir_path "/var/run/${DOSVC_BIN_NAME}")
 
 # Build product files into a lib for use by other targets
 add_library(docs_common STATIC ${files_docs_common})
 target_compile_definitions(docs_common
     PRIVATE DO_CONFIG_DIRECTORY_PATH="${docs_svc_config_dir_path}"
-            DO_PERSISTENCE_DIRECTORY_PATH="${docs_svc_persistence_dir_path}"
+            DO_AGENT_LOG_DIRECTORY_PATH="${docs_svc_log_dir_path}"
             DO_RUN_DIRECTORY_PATH="${docs_svc_run_dir_path}"
 )
 
@@ -110,13 +110,18 @@ add_do_version_lib(${PROJECT_NAME} ${PROJECT_VERSION})
 # Add the executable
 add_executable(${DOSVC_BIN_NAME} ${files_docs_exe})
 target_include_directories(${DOSVC_BIN_NAME} PRIVATE ${docs_common_includes})
+# For Ubuntu 20.04 support, need to explicitly link to Boost_LOG_LIBRARIES, breaking changes were made in later boost versions
+# See https://github.com/boostorg/log/issues/18 and https://github.com/boostorg/log/issues/46
 target_link_libraries(${DOSVC_BIN_NAME}
     doversion
     docs_common
     cpprestsdk::cpprest
-    ${Boost_LIBRARIES})
+    ${Boost_LIBRARIES}
+    ${Boost_LOG_LIBRARIES})
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    strip_symbols(${DOSVC_BIN_NAME})
+
     include(GNUInstallDirs)
 
     # Install binary

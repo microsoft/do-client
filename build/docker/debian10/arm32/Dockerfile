@@ -17,20 +17,20 @@ SHELL [ "/bin/bash", "-c"]
 # sudo apt-get install qemu-user
 # update-binfmts --display
 # sudo apt install qemu binfmt-support qemu-user-static
-# cp /usr/bin/qemu-arm-static <src root>/build/docker/arm32/debian10
+# cp /usr/bin/qemu-arm-static <src root>/build/docker/debian10/arm32
 #
 # Then copy the build script to the build directory
-# cp <src root>/build/bootstrap/bootstrap-debian-10.sh <src root>build/docker/arm32/debian10
+# cp <src root>/build/bootstrap.sh <src root>/build/docker/debian10/arm32
 #
 # After running the above, you can build the image by running in the current dockerfile directory
 # sudo docker build -t <your image name> . --no-cache --network=host
 
 COPY qemu-arm-static /usr/bin/qemu-arm-static
-COPY bootstrap-debian-10.sh /tmp/bootstrap-debian-10.sh
+COPY bootstrap.sh /tmp/bootstrap.sh
 
 WORKDIR /tmp/
-RUN chmod +x bootstrap-debian-10.sh
-RUN ./bootstrap-debian-10.sh
+RUN chmod +x bootstrap.sh
+RUN ./bootstrap.sh --platform debian10 --install build
 
 VOLUME /code
 WORKDIR /code

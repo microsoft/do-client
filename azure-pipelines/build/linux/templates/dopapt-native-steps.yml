@@ -2,19 +2,18 @@
 # Consume this steps template in one or more jobs by passing in parameter values.
 
 parameters:
-- name: targetOsArch    # example: ubuntu18.04-x64
+- name: targetOsArch    # example: ubuntu1804_x64
   type: string
-- name: config          # debug/release
+- name: config          # debug/release/minsizerel/relwithdebuginfo
   type: string
 
 steps:
 - checkout: self
 
-- task: PythonScript@0
+- task: CmdLine@2
   inputs:
-    scriptSource: 'filePath'
-    scriptPath: 'build/build.py'
-    arguments: '--project sdk --cmaketarget deliveryoptimization --config ${{parameters.config}} --package-for DEB --clean '
+    script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization --config ${{parameters.config}} --package-for DEB --clean'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
   displayName: 'Build sdk ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: Bash@3
@@ -24,12 +23,21 @@ steps:
     workingDirectory: '/tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}'
   displayName: 'Install libdeliveryoptimization'
 
-- task: PythonScript@0
+# Have to use cmdline rather than built in python task, because the python env variable chooses python2
+# There is a pipeline task which allows you to specify version, but that requires configuring of the agent tools directory
+- task: CmdLine@2
   inputs:
-    scriptSource: 'filePath'
-    scriptPath: 'build/build.py'
-    arguments: '--project plugin-apt --config ${{parameters.config}} --package-for DEB --clean'
+    script: 'python3 ./build.py --project plugin-apt --config ${{parameters.config}} --package-for DEB --clean'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
   displayName: 'Build deliveryoptimization-plugin-apt ${{parameters.targetOsArch}}-${{parameters.config}}'
+
+- task: Bash@3
+  condition: eq('${{parameters.config}}', 'minsizerel')
+  inputs:
+    targetType: 'filePath'
+    filePath: 'build/check_binary_size.sh'
+    arguments: '150824 /tmp/build-deliveryoptimization-plugin-apt/linux-${{parameters.config}}/plugins/linux-apt/deliveryoptimization-plugin-apt'
+  displayName: 'Limit binary size increase'
 
 - task: CmdLine@2
   inputs:
@@ -50,6 +58,15 @@ steps:
     TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
     CleanTargetFolder: true
   displayName: 'Populate artifacts staging dir'
+
+- task: CopyFiles@2
+  condition: eq('${{parameters.config}}', 'minsizerel')
+  inputs:
+    SourceFolder: '/tmp/build-deliveryoptimization-plugin-apt/linux-${{parameters.config}}'
+    Contents: |
+      plugins/linux-apt/deliveryoptimization-plugin-apt.dbg
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+  displayName: 'Populate debug symbols to staging dir'
 
 - task: PublishBuildArtifacts@1
   inputs:

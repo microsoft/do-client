@@ -2,22 +2,22 @@
 # Consume this steps template in one or more jobs by passing in parameter values.
 
 parameters:
-- name: targetOsArch    # example: ubuntu18.04-x64
+- name: targetOsArch    # example: ubuntu1804_x64
   type: string
-- name: config          # debug/release
+- name: config          # debug/release/minsizerel/relwithdebuginfo
   type: string
 - name: skipTests
   type: boolean
   default: false
 
 steps:
+# Have to use cmdline rather than built in python task, because the python env variable chooses python2
+# There is a pipeline task which allows you to specify version, but that requires configuring of the agent tools directory
 # TODO(shishirb) Include --skip-tests build.py option when skipTests is true
-- task: PythonScript@0
-  condition: eq('${{parameters.skipTests}}', false)
+- task: CmdLine@2
   inputs:
-    scriptSource: 'filePath'
-    scriptPath: 'build/build.py'
-    arguments: '--project agent --cmaketarget deliveryoptimization-agent --config ${{parameters.config}} --package-for DEB --clean'
+    script: 'python3 ./build.py --project agent --cmaketarget deliveryoptimization-agent --config ${{parameters.config}} --package-for DEB --clean'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
   displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: CmdLine@2
@@ -27,12 +27,19 @@ steps:
     workingDirectory: '/tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}'
   displayName: 'Install agent Debian package'
 
-- task: PythonScript@0
+- task: CmdLine@2
   inputs:
-    scriptSource: 'filePath'
-    scriptPath: 'build/build.py'
-    arguments: '--project sdk --cmaketarget deliveryoptimization --config ${{parameters.config}} --package-for DEB --clean'
-  displayName: 'Build sdk-cpp ${{parameters.targetOsArch}}-${{parameters.config}}'
+    script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization --config ${{parameters.config}} --package-for DEB --clean'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
+  displayName: 'Build sdk ${{parameters.targetOsArch}}-${{parameters.config}}'
+
+- task: Bash@3
+  condition: eq('${{parameters.config}}', 'minsizerel')
+  inputs:
+    targetType: 'filePath'
+    filePath: 'build/check_binary_size.sh'
+    arguments: '385488 /tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}/sdk-cpp/libdeliveryoptimization.so.*.*.*'
+  displayName: 'Limit binary size increase'
 
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
@@ -41,12 +48,11 @@ steps:
     workingDirectory: '/tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}'
   displayName: 'Install libdeliveryoptimization Debian Package'
 
-- task: PythonScript@0
+- task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    scriptSource: 'filePath'
-    scriptPath: 'build/build.py'
-    arguments: '--project sdk --cmaketarget deliveryoptimization-sdk-tests --config ${{parameters.config}}'
+    script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization-sdk-tests --config ${{parameters.config}}'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
   displayName: 'Build sdk-cpp tests ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 # Run all tests. These must run as root because docs is running as the 'do' user
@@ -72,6 +78,15 @@ steps:
     TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
     CleanTargetFolder: true
   displayName: 'Populate artifacts staging dir'
+
+- task: CopyFiles@2
+  condition: eq('${{parameters.config}}', 'minsizerel')
+  inputs:
+    SourceFolder: '/tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}'
+    Contents: |
+      sdk-cpp/libdeliveryoptimization*.dbg
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+  displayName: 'Populate debug symbols to staging dir'
 
 - task: PublishBuildArtifacts@1
   inputs:

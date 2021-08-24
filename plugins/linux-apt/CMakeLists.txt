@@ -2,7 +2,7 @@ if (NOT DO_PLUGIN_APT_BIN_NAME)
     message (FATAL_ERROR "APT plugin binary name not defined")
 endif ()
 
-project (${DO_PLUGIN_APT_BIN_NAME} VERSION 0.2.0)
+project (${DO_PLUGIN_APT_BIN_NAME} VERSION 0.3.0)
 
 find_package(deliveryoptimization_sdk CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
@@ -30,6 +30,8 @@ target_link_libraries(${DO_PLUGIN_APT_BIN_NAME} PRIVATE
 )
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    strip_symbols(${DO_PLUGIN_APT_BIN_NAME})
+
     include(GNUInstallDirs)
     set(dopapt_install_dir ${CMAKE_INSTALL_FULL_BINDIR})
     install(TARGETS ${DO_PLUGIN_APT_BIN_NAME} DESTINATION ${dopapt_install_dir})

@@ -35,7 +35,7 @@ void TelemetryLogger::TraceDownloadCanceled(const EventDataDownloadCanceled& eve
 {
     DoLogInfoHr(eventData._commonData._status.Error, "id: %s, extError: %x, cdnUrl: %s, mccHost: %s, filePath: %s, bytes: [total: %ld, down: %ld]",
         GuidToString(eventData._commonData._guid).data(), eventData._commonData._status.ExtendedError, eventData._commonData._url.c_str(),
-        eventData._commonData._destinationPath.c_str(), eventData._commonData._mccHost.c_str(), eventData._commonData._status.BytesTotal,
+        eventData._commonData._mccHost.c_str(), eventData._commonData._destinationPath.c_str(), eventData._commonData._status.BytesTotal,
         eventData._commonData._status.BytesTransferred);
 }
 

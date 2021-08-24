@@ -1,7 +1,6 @@
 #include "do_common.h"
 #include "download.h"
 
-#include <boost/filesystem.hpp>
 #include <cpprest/uri.h>
 #include "do_error.h"
 #include "event_data.h"
@@ -253,20 +252,26 @@ void Download::_Start()
     THROW_HR_IF(DO_E_DOWNLOAD_NO_URI, _url.empty());
     THROW_HR_IF(DO_E_FILE_DOWNLOADSINK_UNSPECIFIED, _destFilePath.empty());
 
-    // TODO(shishirb) expect file to not exist
-    _fileStream = std::make_unique<std::fstream>();
-    _fileStream->exceptions(std::fstream::badbit | std::fstream::failbit);
-    try
-    {
-        _fileStream->open(_destFilePath, (std::fstream::out | std::fstream::binary | std::fstream::trunc));
-    }
-    catch (const std::system_error& e)
-    {
-        THROW_HR_MSG(E_INVALIDARG, "Error: %d, %s, file: %s", e.code().value(), e.what(), _destFilePath.data());
-    }
-
+    _fileStream = DOFile::Create(_destFilePath);
+    _fDestFileCreated = true;
     _httpAgent = std::make_unique<HttpAgent>(*this);
     _proxyList.Refresh(_url);
+
+    const auto mccFallbackDelay = _mccManager.FallbackDelay();
+    if (mccFallbackDelay)
+    {
+        if (*mccFallbackDelay == g_cacheHostFallbackDelayNoFallback)
+        {
+            _mccFallbackDue = std::chrono::steady_clock::time_point::max();
+        }
+        else
+        {
+            _mccFallbackDue = std::chrono::steady_clock::now() + *mccFallbackDelay;
+        }
+        DoLogInfo("MCC fallback to original URL throttled for %ld s", mccFallbackDelay->count());
+    }
+
+    _mccHost = _mccManager.GetHost(_url);
 
     DO_ASSERT((_status.BytesTotal == 0) && (_status.BytesTransferred == 0));
     _SendHttpRequest();
@@ -275,18 +280,10 @@ void Download::_Start()
 void Download::_Resume()
 {
     DO_ASSERT(_httpAgent);
-    DO_ASSERT(_fileStream);
     // BytesTotal can be zero if the start request never completed due to an error/pause
     DO_ASSERT((_status.BytesTotal != 0) || (_status.BytesTransferred == 0));
 
-    try
-    {
-        _fileStream->open(_destFilePath, (std::fstream::out | std::fstream::binary | std::fstream::app));
-    }
-    catch (const std::system_error& e)
-    {
-        THROW_HR_MSG(E_INVALIDARG, "Error: %d, %s, file: %s", e.code().value(), e.what(), _destFilePath.data());
-    }
+    _fileStream = DOFile::Open(_destFilePath);
 
     if ((_status.BytesTotal != 0) && (_status.BytesTransferred == _status.BytesTotal))
     {
@@ -301,6 +298,10 @@ void Download::_Resume()
     }
     else
     {
+        if (_fAllowMcc)
+        {
+            _mccHost = _mccManager.GetHost(_url);
+        }
         _SendHttpRequest();
     }
 }
@@ -310,14 +311,14 @@ void Download::_Pause()
     _httpAgent->Close();    // waits until all callbacks are complete
     _timer.Stop();
     _fHttpRequestActive = false;
-    _fileStream->close();   // safe to close now that no callbacks are expected
+    _fileStream.Close();   // safe to close now that no callbacks are expected
 }
 
 void Download::_Finalize()
 {
     _httpAgent->Close();    // waits until all callbacks are complete
     _fHttpRequestActive = false;
-    _fileStream.reset();    // safe since no callbacks are expected
+    _fileStream.Close();    // safe since no callbacks are expected
     _CancelTasks();
 }
 
@@ -328,11 +329,13 @@ void Download::_Abort() try
         _httpAgent->Close();
     }
     _timer.Stop();
-    _fileStream.reset();
+    _fileStream.Close();
     _CancelTasks();
-    if (!_destFilePath.empty())
+    // Delete file only if this download is the creator/owner. The abort could be from an
+    // error downloading to an already existing file.
+    if (_fDestFileCreated && !_destFilePath.empty())
     {
-        boost::filesystem::remove(_destFilePath);
+        DOFile::Delete(_destFilePath);
     }
 } CATCH_LOG()
 
@@ -370,24 +373,12 @@ void Download::_ResumeAfterTransientError()
     // else nothing to do since we are not in transient error state
 }
 
-void Download::_SendHttpRequest()
+void Download::_SendHttpRequest(bool retryAfterFailure)
 {
     const auto& proxy = _proxyList.Next();
     const PCSTR szProxyUrl = !proxy.empty() ? proxy.data() : nullptr;
 
-    std::string url = _url;
-    std::string mccHost = _mccManager.NextHost();
-    if (!mccHost.empty())
-    {
-        DoLogInfo("Found MCC host: %s", mccHost.data());
-        url = SwapUrlHostNameForMCC(_url, mccHost);
-    }
-
-    if ((_status.State != DownloadState::Created) && (mccHost != _mccHost))
-    {
-        DoLogInfo("%s, MCC host changed, reset progress tracker", GuidToString(_id).data());
-        _progressTracker.Reset();
-    }
+    const std::string url = _UpdateConnectionTypeAndGetUrl(retryAfterFailure);
 
     if (_status.BytesTransferred == 0)
     {
@@ -405,7 +396,11 @@ void Download::_SendHttpRequest()
 
     _timer.Start();
     _fHttpRequestActive = true;
-    _mccHost = std::move(mccHost);
+    _cbTransferredAtRequestBegin = _status.BytesTransferred;
+    if (_connectionType == ConnectionType::CDN)
+    {
+        _fOriginalHostAttempted = true;
+    }
 
     // Clear error codes, they will get updated once the request completes
     _status.Error = S_OK;
@@ -449,20 +444,144 @@ UINT Download::_MaxNoProgressIntervals() const
 {
     if (_noProgressTimeout == _unsetTimeout)
     {
-        if (!_mccHost.empty() && _mccManager.NoFallback() && HttpAgent::IsClientError(_httpStatusCode))
-        {
-            // Special case for MCC without CDN fallback and 4xx errors
-            return g_progressTrackerMaxNoProgressIntervalsWithMCC;
-        }
-        else
-        {
-            return g_progressTrackerMaxNoProgressIntervals;
-        }
+        return g_progressTrackerMaxNoProgressIntervals;
     }
 
     auto maxNoProgressIntervals = std::round(std::chrono::duration<double>(_noProgressTimeout) / g_progressTrackerCheckInterval);
     DO_ASSERT(maxNoProgressIntervals >= 1);
     return static_cast<UINT>(maxNoProgressIntervals);
+}
+
+std::string Download::_UpdateConnectionTypeAndGetUrl(bool retryAfterFailure)
+{
+    auto newConnectionType = _connectionType;
+    if (retryAfterFailure)
+    {
+        DO_ASSERT(_connectionType != ConnectionType::None);
+
+        if (_mccFallbackDue)
+        {
+            if (*_mccFallbackDue <= std::chrono::steady_clock::now())
+            {
+                // Fallback time is past due, do not use MCC henceforth
+                _fAllowMcc = false;
+                newConnectionType = ConnectionType::CDN;
+            }
+        }
+        else
+        {
+            DO_ASSERT(_fAllowMcc);
+
+            // Fallback config not overriden.
+            // Use custom logic to decide when to switch between MCC and CDN.
+
+            const bool noProgressOnCurrentConnectionType = _cbTransferredAtRequestBegin == _status.BytesTransferred;
+            if (_connectionType == ConnectionType::MCC)
+            {
+                if (_fOriginalHostAttempted)
+                {
+                    if (noProgressOnCurrentConnectionType && (_numAttemptsWithCurrentConnectionType >= 2))
+                    {
+                        newConnectionType = ConnectionType::CDN;
+                    }
+                }
+                else
+                {
+                    newConnectionType = ConnectionType::CDN;
+                }
+            }
+            else if (_connectionType == ConnectionType::CDN)
+            {
+                if (noProgressOnCurrentConnectionType && (_numAttemptsWithCurrentConnectionType >= 2))
+                {
+                    newConnectionType = ConnectionType::MCC;
+                }
+            }
+            else
+            {
+                DO_ASSERT(false);
+            }
+        }
+    }
+    else
+    {
+        // Initial start or resume from caller/transient error, attempt with MCC
+        newConnectionType = ConnectionType::MCC;
+    }
+
+    DO_ASSERT(newConnectionType != ConnectionType::None);
+
+    std::string urlToUse;
+    if ((newConnectionType == ConnectionType::MCC) && _fAllowMcc && !_mccHost.empty() && !_mccManager.IsBanned(_mccHost, _url))
+    {
+        newConnectionType = ConnectionType::MCC;
+        urlToUse = SwapUrlHostNameForMCC(_url, _mccHost);
+    }
+    else
+    {
+        newConnectionType = ConnectionType::CDN;
+        urlToUse = _url;
+    }
+
+    if (newConnectionType != _connectionType)
+    {
+        _connectionType = newConnectionType;
+        _numAttemptsWithCurrentConnectionType = 1;
+    }
+    else
+    {
+        _numAttemptsWithCurrentConnectionType++;
+    }
+
+    DoLogInfo("%s, connection type: %d, numAttempts: %u, url: %s",
+        GuidToString(_id).data(), static_cast<int>(_connectionType), _numAttemptsWithCurrentConnectionType, urlToUse.data());
+    return urlToUse;
+}
+
+bool Download::_ShouldPauseMccUsage(bool isFatalError) const
+{
+    if (_UsingMcc())
+    {
+        if (isFatalError)
+        {
+            return true;
+        }
+
+        if (_mccFallbackDue)
+        {
+            if ((*_mccFallbackDue <= std::chrono::steady_clock::now()))
+            {
+                // From config override, time to fallback is past due
+                return true;
+            }
+        }
+        else
+        {
+            if (!_fOriginalHostAttempted)
+            {
+                // Fallback config not overridden and original URL is not yet attempted, fallback now
+                return true;
+            }
+        }
+
+        return false;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool Download::_ShouldFailFastPerConnectionType() const
+{
+    if (_UsingMcc())
+    {
+        return _NoFallbackFromMcc();
+    }
+    else
+    {
+        return true;
+    }
 }
 
 // IHttpAgentEvents
@@ -501,12 +620,7 @@ HRESULT Download::OnHeadersAvailable(UINT64 httpContext, UINT64) try
 
 HRESULT Download::OnData(_In_reads_bytes_(cbData) BYTE* pData, UINT cbData, UINT64, UINT64) try
 {
-    const auto before = _fileStream->tellp();
-    _fileStream->write(reinterpret_cast<const char*>(pData), cbData);
-    const auto after = _fileStream->tellp();
-    _fileStream->flush();
-    DO_ASSERT(before < after);
-    RETURN_HR_IF(HRESULT_FROM_WIN32(ERROR_BAD_LENGTH), (after - before) != cbData);
+    _fileStream.Append(pData, cbData);
     _taskThread.Sched([this, cbData]()
     {
         _status.BytesTransferred += cbData;
@@ -548,9 +662,15 @@ HRESULT Download::OnComplete(HRESULT hResult, UINT64 httpContext, UINT64)
                     return;
                 }
 
-                // Fail fast on certain http errors if we are not using MCC.
-                // Logic differs slightly when MCC is used. See _MaxNoProgressIntervals().
-                if (_mccHost.empty() && HttpAgent::IsClientError(_httpStatusCode))
+                if (_UsingMcc())
+                {
+                    _mccManager.ReportHostError(hResult, _httpStatusCode, _mccHost, _url);
+                }
+
+                const bool isFatalError = HttpAgent::IsClientError(_httpStatusCode);
+
+                // Fail fast on certain http errors
+                if (isFatalError && _ShouldFailFastPerConnectionType())
                 {
                     DoLogInfoHr(hResult, "%s, fatal failure, http_status: %d, headers:\n%s",
                         GuidToString(_id).data(), _httpStatusCode, _responseHeaders.data());
@@ -564,15 +684,11 @@ HRESULT Download::OnComplete(HRESULT hResult, UINT64 httpContext, UINT64)
                 _progressTracker.OnDownloadFailure();
                 std::chrono::seconds retryDelay = _progressTracker.NextRetryDelay();
 
-                // Report error to MCC manager if MCC was used
-                if (!_mccHost.empty())
+                // If we must fallback from MCC due to this error, retry without a delay
+                if (_ShouldPauseMccUsage(isFatalError))
                 {
-                    // We were using MCC. If it is time to fallback to original URL, it should happen without delay.
-                    const bool isFallbackDue = _mccManager.ReportHostError(hResult, _mccHost);
-                    if (isFallbackDue)
-                    {
-                        retryDelay = std::chrono::seconds(0);
-                    }
+                    retryDelay = std::chrono::seconds(0);
+                    _progressTracker.ResetRetryDelay();
                 }
 
                 DoLogInfoHr(hResult, "%s, failure, will retry in %lld seconds, http_status: %d, headers:\n%s",
@@ -583,7 +699,7 @@ HRESULT Download::OnComplete(HRESULT hResult, UINT64 httpContext, UINT64)
                     // if the http request was already made by a pause-resume cycle.
                     if ((_status.State == DownloadState::Transferring) && !_fHttpRequestActive)
                     {
-                        _SendHttpRequest();
+                        _SendHttpRequest(true);
                     }
                 }, retryDelay, this);
             }, this);

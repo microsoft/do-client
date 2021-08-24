@@ -11,13 +11,15 @@
 #include "do_download.h"
 #include "do_download_status.h"
 #include "do_exceptions.h"
+#include "do_test_helpers.h"
 #include "test_data.h"
 #include "test_helpers.h"
 
 namespace msdo = microsoft::deliveryoptimization;
 using namespace std::chrono_literals; // NOLINT(build/namespaces)
 
-#define HTTP_E_STATUS_NOT_FOUND                 ((int32_t)0x80190194L)
+#define DO_ERROR_FROM_XPLAT_SYSERR(err) (int32_t)(0xC0000000 | (0xD0 << 16) | ((int32_t)(err) & 0x0000FFFF))
+#define HTTP_E_STATUS_NOT_FOUND         ((int32_t)0x80190194L)
 
 void WaitForDownloadCompletion(msdo::download& simpleDownload)
 {
@@ -38,31 +40,6 @@ class DownloadTests : public ::testing::Test
 public:
     void SetUp() override;
     void TearDown() override;
-
-    void SimpleDownloadTest();
-    void SimpleDownloadTest_With404Url();
-    void SimpleDownloadTest_WithMalformedPath();
-    void SimpleDownloadTest_With404UrlAndMalformedPath();
-
-    //void Download1PausedDownload2SameDestTest();
-    void Download1PausedDownload2SameFileDownload1Resume();
-    void Download1NeverStartedDownload2CancelledSameFileTest();
-    void ResumeOnAlreadyDownloadedFileTest();
-
-    void CancelDownloadOnCompletedState();
-    void CancelDownloadInTransferredState();
-
-    void PauseResumeTest();
-    void PauseResumeTestWithDelayAfterStart();
-
-    void SimpleBlockingDownloadTest();
-    void CancelBlockingDownloadTest();
-    void MultipleConsecutiveDownloadTest();
-    void MultipleConcurrentDownloadTest();
-    void MultipleConcurrentDownloadTest_WithCancels();
-
-    void SimpleBlockingDownloadTest_ClientNotRunning();
-    void MultipleRestPortFileExists_Download();
 };
 
 void DownloadTests::SetUp()
@@ -124,6 +101,24 @@ TEST_F(DownloadTests, CancelBlockingDownloadTest)
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
 }
 
+TEST_F(DownloadTests, BlockingDownloadTimeout)
+{
+    auto startTime = std::chrono::steady_clock::now();
+    try
+    {
+        msdo::download::download_url_to_path(g_largeFileUrl, g_tmpFileName, std::chrono::seconds(2));
+        ASSERT_TRUE(!"Expected download to time out");
+    }
+    catch (const msdo::exception& e)
+    {
+        ASSERT_EQ(e.error_code(), static_cast<int32_t>(std::errc::timed_out));
+        auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - startTime);
+        ASSERT_GE(elapsedTime, std::chrono::seconds(2));
+        ASSERT_LE(elapsedTime, std::chrono::seconds(5));
+    }
+    ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
+}
+
 // Note: This test takes a long time to execute due to 30 retry intervals from DOCS
 TEST_F(DownloadTests, SimpleDownloadTest_With404Url)
 {
@@ -149,7 +144,7 @@ TEST_F(DownloadTests, SimpleDownloadTest_WithMalformedPath)
     }
     catch (const msdo::exception& e)
     {
-        ASSERT_EQ(e.error_code(), static_cast<int32_t>(msdo::errc::invalid_arg));
+        ASSERT_EQ(e.error_code(), DO_ERROR_FROM_XPLAT_SYSERR(ENOENT));
         ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
     }
 }
@@ -165,37 +160,53 @@ TEST_F(DownloadTests, SimpleDownloadTest_With404UrlAndMalformedPath)
     }
     catch (const msdo::exception& e)
     {
-        ASSERT_EQ(e.error_code(), static_cast<int32_t>(msdo::errc::invalid_arg));
+        ASSERT_EQ(e.error_code(), DO_ERROR_FROM_XPLAT_SYSERR(ENOENT));
         ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
+    }
+    catch (const std::exception& se)
+    {
+        std::cout << "Unexpected exception: " << se.what() << std::endl;
+        ASSERT_TRUE(false);
     }
 }
 
-// TODO(shishirb): Commented out until DOCS throws for trying to download to same destination
-//void DownloadTests::Download1PausedDownload2SameDestTest()
-//{
-    //ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-    //msdo::download simpleDownload(g_largeFileUrl, g_tmpFileName);
-    //msdo::download_status status = simpleDownload.get_status();
-    //ASSERT_EQ(status.state(), msdo::download_state::created);
-    //ASSERT_EQ(status.bytes_transferred(), 0u);
+TEST_F(DownloadTests, Download1PausedDownload2SameDestTest)
+{
+    ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
+    msdo::download simpleDownload(g_largeFileUrl, g_tmpFileName);
+    msdo::download_status status = simpleDownload.get_status();
+    ASSERT_EQ(status.state(), msdo::download_state::created);
+    ASSERT_EQ(status.bytes_transferred(), 0u);
 
-    //simpleDownload.start();
-    //simpleDownload.pause();
-    //status = simpleDownload.get_status();
-    //ASSERT_EQ(status.state(), msdo::download_state::paused);
+    simpleDownload.start();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    simpleDownload.pause();
+    status = simpleDownload.get_status();
+    ASSERT_EQ(status.state(), msdo::download_state::paused);
+    ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName));
 
-    //try
-    //{
-    //    msdo::download simpleDownload2(g_smallFileUrl, g_tmpFileName);
-    //    ASSERT_TRUE(false);
-    //}
-    //catch
-    //{
-    //    //TODO: Use proper error code for trying to download duplicate file dest.
-    //    ASSERT_EQ(e.error_code(), -2147024322);
-    //    ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-    //}
-//}
+    msdo::download simpleDownload2(g_smallFileUrl, g_tmpFileName);
+    try
+    {
+        simpleDownload2.start();
+       ASSERT_TRUE(false);
+    }
+    catch (const msdo::exception& e)
+    {
+       ASSERT_EQ(e.error_code(), DO_ERROR_FROM_XPLAT_SYSERR(EEXIST));
+    }
+    simpleDownload2.abort();
+    ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName)); // not deleted, the earlier download is still active
+
+    simpleDownload.abort();
+    ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
+
+    // download2 should now succeed
+    simpleDownload2 = msdo::download{g_smallFileUrl, g_tmpFileName};
+    simpleDownload2.start();
+    WaitForDownloadCompletion(simpleDownload2);
+    ASSERT_EQ(boost::filesystem::file_size(g_tmpFileName), g_smallFileSizeBytes);
+}
 
 TEST_F(DownloadTests, Download1PausedDownload2SameFileDownload1Resume)
 {
@@ -428,7 +439,7 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest)
 TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
 {
     std::atomic_bool cancelToken { false };
-    ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
+
     std::thread downloadThread([&]()
     {
         try
@@ -449,6 +460,7 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
         }
         catch (const msdo::exception& e)
         {
+            ASSERT_EQ(e.error_code(), static_cast<int32_t>(std::errc::operation_canceled));
         }
     });
     std::thread downloadThread3([&]()
@@ -463,9 +475,9 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
         }
     });
 
+    std::this_thread::sleep_for(2s);
     cancelToken = true;
 
-    std::this_thread::sleep_for(3s);
     downloadThread.join();
     downloadThread2.join();
     downloadThread3.join();
@@ -477,10 +489,11 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
 
 TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunning)
 {
-// Enable this after we can start the service either from sdk or tests.
-// Right now all further tests will fail because docs daemon will be stopped.
-#if 0
-    TestHelpers::ShutdownProcess(g_docsProcName);
+    TestHelpers::StopService("deliveryoptimization-agent.service");
+    auto startService = dotest::util::scope_exit([]()
+        {
+            TestHelpers::StartService("deliveryoptimization-agent.service");
+        });
     TestHelpers::DeleteRestPortFiles(); // can be removed if docs deletes file on shutdown
 
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
@@ -494,21 +507,47 @@ TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunning)
         ASSERT_EQ(ex.error_code(), static_cast<int32_t>(msdo::errc::no_service));
     }
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-#endif
+}
+
+TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunningPortFilePresent)
+{
+    // TODO(shishirb) Service name should come from cmake
+    TestHelpers::StopService("deliveryoptimization-agent.service");
+    auto startService = dotest::util::scope_exit([]()
+        {
+            TestHelpers::StartService("deliveryoptimization-agent.service");
+        });
+    TestHelpers::DeleteRestPortFiles();
+    TestHelpers::CreateRestPortFiles(1);
+
+    ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
+    try
+    {
+        msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
+        ASSERT_TRUE(!"Expected operation to throw exception");
+    }
+    catch (const msdo::exception& ex)
+    {
+        ASSERT_EQ(ex.error_code(), static_cast<int32_t>(msdo::errc::no_service));
+    }
+    ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
 }
 
 TEST_F(DownloadTests, MultipleRestPortFileExists_Download)
 {
-// Enable after we have the ability to start the daemon after creating rest port files.
-// This will ensure that the actual rest port file will have the latest timestamp.
-#if 0
+    TestHelpers::StopService("deliveryoptimization-agent.service");
+    auto startService = dotest::util::scope_exit([]()
+        {
+            TestHelpers::StartService("deliveryoptimization-agent.service");
+        });
     TestHelpers::CreateRestPortFiles(5);
+    ASSERT_GE(TestHelpers::CountRestPortFiles(), 5u);
+    startService.reset();
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    ASSERT_EQ(TestHelpers::CountRestPortFiles(), 1u) << "All other restport files must be deleted by the agent";
 
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
     msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
     ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName));
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
-
-    TestHelpers::CleanupWorkingDir();
-#endif
 }

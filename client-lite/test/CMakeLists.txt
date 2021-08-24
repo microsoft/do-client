@@ -2,7 +2,7 @@
 
 # Only need program_options here but have to include others required by docs_common.
 # TODO: docs_common should declare what it needs via target_link_libraries(PUBLIC).
-find_package(Boost COMPONENTS log filesystem program_options REQUIRED)
+find_package(Boost COMPONENTS filesystem program_options REQUIRED)
 find_package(GTest REQUIRED)
 
 file (GLOB files_docs_tests

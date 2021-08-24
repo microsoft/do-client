@@ -5,13 +5,6 @@
 namespace microsoft::deliveryoptimization::details
 {
 
-// TODO(shishirb): this is used only in test
-const std::string& GetPersistenceDirectory()
-{
-    static std::string myDirectory("/var/cache/deliveryoptimization-agent");
-    return myDirectory;
-}
-
 const std::string& GetRuntimeDirectory()
 {
     static std::string runDirectory("/var/run/deliveryoptimization-agent");

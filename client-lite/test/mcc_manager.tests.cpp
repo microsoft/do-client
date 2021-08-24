@@ -6,7 +6,8 @@
 #include <iostream>
 
 #include <boost/asio.hpp>
-#include <cpprest/json.h>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 #include "config_defaults.h"
 #include "config_manager.h"
@@ -29,38 +30,35 @@ const cppfs::path g_sdkConfigFilePath = g_testTempDir / "sdk-config.json";
 
 static void SetIoTConnectionString(const char* connectionString)
 {
-    web::json::value json;
-    json[ConfigName_AduIoTConnectionString] = web::json::value(connectionString);
-    utility::string_t jsonStr = json.serialize();
-
-    std::ofstream writer;
-    writer.exceptions(std::fstream::badbit | std::fstream::failbit);
-    writer.open(g_sdkConfigFilePath.string(), std::ios_base::out | std::ios_base::trunc);
-    writer << jsonStr.c_str();
+    boost::property_tree::ptree json;
+    if (cppfs::exists(g_sdkConfigFilePath))
+    {
+        boost::property_tree::read_json(g_sdkConfigFilePath, json);
+    }
+    json.put(ConfigName_AduIoTConnectionString, connectionString);
+    boost::property_tree::write_json(g_sdkConfigFilePath, json);
 }
 
 static void SetDOCacheHostConfig(const char* server)
 {
-    web::json::value json;
-    json[ConfigName_CacheHostServer] = web::json::value(server);
-    utility::string_t jsonStr = json.serialize();
-
-    std::ofstream writer;
-    writer.exceptions(std::fstream::badbit | std::fstream::failbit);
-    writer.open(g_adminConfigFilePath.string(), std::ios_base::out | std::ios_base::app);
-    writer << jsonStr;
+    boost::property_tree::ptree json;
+    if (cppfs::exists(g_adminConfigFilePath))
+    {
+        boost::property_tree::read_json(g_adminConfigFilePath, json);
+    }
+    json.put(ConfigName_CacheHostServer, server);
+    boost::property_tree::write_json(g_adminConfigFilePath, json);
 }
 
 static void SetFallbackDelayConfig(std::chrono::seconds delay)
 {
-    web::json::value json;
-    json[ConfigName_CacheHostFallbackDelayFgSecs] = web::json::value(delay.count());
-    utility::string_t jsonStr = json.serialize();
-
-    std::ofstream writer;
-    writer.exceptions(std::fstream::badbit | std::fstream::failbit);
-    writer.open(g_adminConfigFilePath.string(), std::ios_base::out | std::ios_base::app);
-    writer << jsonStr;
+    boost::property_tree::ptree json;
+    if (cppfs::exists(g_adminConfigFilePath))
+    {
+        boost::property_tree::read_json(g_adminConfigFilePath, json);
+    }
+    json.put(ConfigName_CacheHostFallbackDelayFgSecs, delay.count());
+    boost::property_tree::write_json(g_adminConfigFilePath, json);
 }
 
 class MCCManagerTests : public ::testing::Test
@@ -68,6 +66,8 @@ class MCCManagerTests : public ::testing::Test
 public:
     void SetUp() override
     {
+        ClearTestTempDir();
+
         if (cppfs::exists(g_adminConfigFilePath))
         {
             cppfs::remove(g_adminConfigFilePath);
@@ -88,7 +88,7 @@ protected:
     {
         ConfigManager configReader(g_adminConfigFilePath.string(), g_sdkConfigFilePath.string());
         MCCManager mccManager(configReader);
-        std::string mccHost = mccManager.NextHost();
+        std::string mccHost = mccManager.GetHost("http://www.example.com");
         ASSERT_EQ(mccHost, expectedHostValue);
     }
 };
@@ -96,12 +96,10 @@ protected:
 TEST_F(MCCManagerTests, ParseIoTConnectionString)
 {
     // Gateway specified as the last element
-    // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Not credentials (false positive)")]
     SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=" TEST_MOCK_MCC_HOST);
     _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST);
 
     // Gateway specified in the middle
-    // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Not credentials (false positive)")]
     SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;GatewayHostName=" TEST_MOCK_MCC_HOST ";DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=");
     _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST);
 
@@ -112,7 +110,6 @@ TEST_F(MCCManagerTests, ParseIoTConnectionString)
 
 TEST_F(MCCManagerTests, AdminConfigOverride)
 {
-    // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Not credentials (false positive)")]
     SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=" TEST_MOCK_MCC_HOST);
     SetDOCacheHostConfig(TEST_MOCK_MCC_HOST2);
     _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST2);
@@ -134,22 +131,15 @@ TEST_F(MCCManagerTests, DISABLED_Download404WithFallback)
     const std::string destFile = g_testTempDir / "prodfile.test";
     const std::string id = manager.CreateDownload(g_404Url, destFile); // start with 404 url
     manager.StartDownload(id);
-    auto sw = StopWatch::StartNew();
-    auto endTime = std::chrono::steady_clock::now() + fallbackDelay + std::chrono::seconds{5};
-    while ((std::chrono::steady_clock::now() < endTime) &&
-        (manager.GetDownloadStatus(id).State == DownloadState::Transferring))
-    {
-        std::this_thread::sleep_for(1s);
-    }
-    sw.Stop();
-
+    std::this_thread::sleep_for(2s); // fail fast even with the fallback delay because 4xx error is considered fatal
     auto status = manager.GetDownloadStatus(id);
     VerifyError(status, HTTP_E_STATUS_NOT_FOUND);
-    ASSERT_GE(sw.GetElapsedInterval(), fallbackDelay) << "Fatal error raised only after fallback delay";
+    VerifyDownloadHttpStatus(*DownloadForId(manager, id), 404);
 
+    // Update with valid URL and expect download to complete
     manager.SetDownloadProperty(id, DownloadProperty::Uri, g_prodFileUrl);
     manager.StartDownload(id);
-    endTime = std::chrono::steady_clock::now() + fallbackDelay + std::chrono::seconds{60};
+    const auto endTime = std::chrono::steady_clock::now() + fallbackDelay + std::chrono::seconds{60};
     status = manager.GetDownloadStatus(id);
     while ((std::chrono::steady_clock::now() < endTime) && (status.State == DownloadState::Transferring))
     {
@@ -172,27 +162,16 @@ TEST_F(MCCManagerTests, DISABLED_Download404NoFallback)
     const std::string destFile = g_testTempDir / "prodfile.test";
     const std::string id = manager.CreateDownload(g_404Url, destFile); // start with 404 url
     manager.StartDownload(id);
-
-    auto sw = StopWatch::StartNew();
-    auto endTime = std::chrono::steady_clock::now() + std::chrono::minutes{2};
-    while ((std::chrono::steady_clock::now() < endTime) &&
-        (manager.GetDownloadStatus(id).State == DownloadState::Transferring))
-    {
-        std::this_thread::sleep_for(1s);
-    }
-    sw.Stop();
-
+    std::this_thread::sleep_for(2s);
     auto status = manager.GetDownloadStatus(id);
-    VerifyError(status, DO_E_DOWNLOAD_NO_PROGRESS, HTTP_E_STATUS_NOT_FOUND);
-    ASSERT_GE(sw.GetElapsedInterval(), g_progressTrackerMaxNoProgressIntervalsWithMCC * g_progressTrackerCheckInterval)
-        << "Fatal error raised only after the MCC no-progress delay";
+    VerifyError(status, HTTP_E_STATUS_NOT_FOUND);
+    VerifyDownloadHttpStatus(*DownloadForId(manager, id), 404);
     manager.AbortDownload(id);
 }
 
 // Set invalid MCC host and no-fallback config. Expect download to timeout.
 TEST_F(MCCManagerTests, NoFallbackDownload)
 {
-    // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Not credentials (false positive)")]
     SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=ahdkhkasdhaksd");
     SetFallbackDelayConfig(g_cacheHostFallbackDelayNoFallback);
 
@@ -222,7 +201,6 @@ TEST_F(MCCManagerTests, NoFallbackDownload)
 // and the issue on WSL can be reproduced with the BoostResolver* tests below. Test works fine on Ubuntu 18.04 VM.
 TEST_F(MCCManagerTests, FallbackWithDelayDownload)
 {
-    // [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Not credentials (false positive)")]
     SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=ahdkhkasdhaksd");
 
     const auto fallbackDelay = 45s;
