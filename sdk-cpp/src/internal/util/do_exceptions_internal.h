@@ -5,10 +5,18 @@
 
 #include "do_exceptions.h"
 
-namespace microsoft::deliveryoptimization::details
+namespace microsoft
 {
-    void ThrowException(int32_t errorCode);
-    void ThrowException(std::errc error);
-    void ThrowException(std::error_code error);
-    void ThrowException(errc error);
+namespace deliveryoptimization
+{
+namespace details
+{
+
+void ThrowException(int32_t errorCode);
+void ThrowException(std::errc error);
+void ThrowException(std::error_code error);
+void ThrowException(errc error);
+
+}
+}
 }

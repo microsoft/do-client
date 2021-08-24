@@ -5,8 +5,13 @@
 #include "download_interface.h"
 #include "do_download_status.h"
 
-namespace microsoft::deliveryoptimization::details
+namespace microsoft
 {
+namespace deliveryoptimization
+{
+namespace details
+{
+
 class CDownloadRest : public IDownload
 {
 public:
@@ -25,4 +30,7 @@ private:
 
     std::string _id;
 };
+
+}
+}
 }

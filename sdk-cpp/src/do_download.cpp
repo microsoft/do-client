@@ -12,7 +12,9 @@
 namespace msdod = microsoft::deliveryoptimization::details;
 using namespace std::chrono_literals; // NOLINT(build/namespaces)
 
-namespace microsoft::deliveryoptimization
+namespace microsoft
+{
+namespace deliveryoptimization
 {
 
 download::download(const std::string& uri, const std::string& downloadFilePath)
@@ -145,5 +147,5 @@ void download::download_url_to_path(const std::string& uri, const std::string& d
         }
     }
 }
-
+}
 } // namespace microsoft::deliveryoptimization

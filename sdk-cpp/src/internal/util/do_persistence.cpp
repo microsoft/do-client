@@ -2,7 +2,11 @@
 
 #include "do_persistence.h"
 
-namespace microsoft::deliveryoptimization::details
+namespace microsoft
+{
+namespace deliveryoptimization
+{
+namespace details
 {
 
 const std::string& GetRuntimeDirectory()
@@ -24,4 +28,6 @@ const std::string& GetAdminConfigFilePath()
     return configFilePath;
 }
 
+}
+}
 } // namespace microsoft::deliveryoptimization::details

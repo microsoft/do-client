@@ -4,7 +4,11 @@
 #include <string>
 #include <vector>
 
-namespace microsoft::deliveryoptimization::details
+namespace microsoft
+{
+namespace deliveryoptimization
+{
+namespace details
 {
 
 // Very limited parsing abilities, just enough to support the Agent's responses.
@@ -44,4 +48,6 @@ private:
     std::stringstream& _body;
 };
 
+}
+}
 } // microsoft::deliveryoptimization::details

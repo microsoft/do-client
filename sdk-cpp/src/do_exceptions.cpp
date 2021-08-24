@@ -1,7 +1,9 @@
 
 #include "do_exceptions.h"
 
-namespace microsoft::deliveryoptimization
+namespace microsoft
+{
+namespace deliveryoptimization
 {
 const error_category& error_category_instance()
 {
@@ -51,5 +53,6 @@ int32_t exception::error_code() const
 const std::error_code& exception::get_error_code() const
 {
     return _code;
+}
 }
 } // namespace microsoft::deliveryoptimization

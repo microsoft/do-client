@@ -5,8 +5,13 @@
 #include "do_http_message.h"
 #include "do_noncopyable.h"
 
-namespace microsoft::deliveryoptimization::details
+namespace microsoft
 {
+namespace deliveryoptimization
+{
+namespace details
+{
+
 class CHttpClientImpl;
 
 class CHttpClient : CDONoncopyable
@@ -23,5 +28,6 @@ private:
     mutable std::mutex _mutex;
     std::unique_ptr<CHttpClientImpl> _httpClientImpl;
 };
-
+}
+}
 } // namespace microsoft::deliveryoptimization::details

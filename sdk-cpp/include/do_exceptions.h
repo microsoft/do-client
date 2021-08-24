@@ -4,7 +4,9 @@
 #include <stdint.h>
 #include <system_error>
 
-namespace microsoft::deliveryoptimization
+namespace microsoft
+{
+namespace deliveryoptimization
 {
 
 enum class errc : int32_t
@@ -41,4 +43,5 @@ private:
     std::error_code _code;
     std::string _msg;
 };
+}
 }

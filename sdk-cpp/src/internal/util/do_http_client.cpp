@@ -17,7 +17,11 @@
 namespace net = boost::asio;        // from <boost/asio.hpp>
 using tcp = net::ip::tcp;           // from <boost/asio/ip/tcp.hpp>
 
-namespace microsoft::deliveryoptimization::details
+namespace microsoft
+{
+namespace deliveryoptimization
+{
+namespace details
 {
 
 class CHttpClientImpl
@@ -116,4 +120,6 @@ CHttpClient::CHttpClient()
     _InitializeDOConnection();
 }
 
+}
+}
 } // namespace microsoft::deliveryoptimization::details
