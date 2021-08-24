@@ -4,7 +4,6 @@
 #include <boost/asio/ip/address.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <pplx/pplxtasks.h>
 
 #include "config_manager.h"
 #include "do_http_packet.h"
@@ -23,11 +22,13 @@ RestHttpController::~RestHttpController()
     (void)_callTracker.Wait();
 }
 
-void RestHttpController::Start()
+void RestHttpController::Start(boost::asio::io_service& ioService)
 {
-    _listener.Start("http://127.0.0.1");
-    _listener.AddHandler(web::http::methods::GET, std::bind(&RestHttpController::_Handler, this, std::placeholders::_1));
-    _listener.AddHandler(web::http::methods::POST, std::bind(&RestHttpController::_Handler, this, std::placeholders::_1));
+    _listener.Start(ioService);
+    _listener.AddHandler([this](RestHttpListener::Message httpRequest)
+        {
+            _Handler(httpRequest);
+        });
 }
 
 std::string RestHttpController::ServerEndpoint() const
@@ -40,14 +41,15 @@ uint16_t RestHttpController::Port() const
     return _listener.Port();
 }
 
-void RestHttpController::_Handler(web::http::http_request request)
+void RestHttpController::_Handler(RestHttpListener::Message& request)
 {
+#if 0
     HRESULT hr = S_OK;
     try
     {
         if (_config.RestControllerValidateRemoteAddr() && !_IsValidRemoteAddress(request.remote_address()))
         {
-            request.reply(web::http::status_codes::BadRequest);
+            request.reply(400);
             return;
         }
 
@@ -103,6 +105,7 @@ void RestHttpController::_Handler(web::http::http_request request)
     {
         _OnFailure(request, hr);
     }
+#endif
 }
 
 bool RestHttpController::_IsValidRemoteAddress(const std::string& addr)
@@ -126,33 +129,33 @@ bool RestHttpController::_IsValidRemoteAddress(const std::string& addr)
     return fValidAddress;
 }
 
-void RestHttpController::_OnFailure(const web::http::http_request& clientRequest, HRESULT hr) try
+void RestHttpController::_OnFailure(const RestHttpListener::Message& clientRequest, HRESULT hr) try
 {
     std::stringstream responseBody;
     responseBody << "{ \"ErrorCode\": " << hr << " }";
-    (void)clientRequest.reply(_HttpStatusFromHRESULT(hr), responseBody.str());
+    // (void)clientRequest.reply(_HttpStatusFromHRESULT(hr), responseBody.str());
 } CATCH_LOG()
 
-web::http::status_code RestHttpController::_HttpStatusFromHRESULT(HRESULT hr)
+UINT RestHttpController::_HttpStatusFromHRESULT(HRESULT hr)
 {
-    web::http::status_code status;
+    UINT status;
     switch (hr)
     {
     case S_OK:
     case S_FALSE:
-        status = web::http::status_codes::OK;
+        status = 200;
         break;
     case E_NOT_SET:
-        status = web::http::status_codes::NotFound;
+        status = 404;
         break;
     case E_OUTOFMEMORY:
-        status = web::http::status_codes::ServiceUnavailable;
+        status = 503;
         break;
     case HRESULT_FROM_WIN32(ERROR_UNHANDLED_EXCEPTION):
-        status = web::http::status_codes::InternalError;
+        status = 500;
         break;
     default:
-        status = web::http::status_codes::BadRequest;
+        status = 400;
         break;
     }
     return status;

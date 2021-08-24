@@ -10,6 +10,10 @@
 #include <iostream>
 #endif
 #include <chrono>
+#ifdef DEBUG
+#include <iostream> // std::cin
+#endif
+#include <boost/asio.hpp>
 #include "do_event.h"
 #include "do_persistence.h"
 
@@ -65,7 +69,6 @@ public:
                 DoLogInfo("Received idle notification. Initiating shutdown.");
                 break;
             }
-
         }
     }
 
@@ -93,15 +96,42 @@ private:
 std::function<void()> ProcessController::_sighupHandler;
 ManualResetEvent ProcessController::_shutdownEvent;
 
+class BoostAsioService
+{
+public:
+    BoostAsioService()
+    {
+        _workerThread = std::thread{[this] { _io.run(); }};
+    }
+
+    ~BoostAsioService()
+    {
+        _io.stop();
+        _workerThread.join();
+    }
+
+    boost::asio::io_service& IoService()
+    {
+        return _io;
+    }
+
+private:
+    boost::asio::io_service _io;
+    boost::asio::io_service::work _work { _io };
+    std::thread _workerThread;
+};
+
 HRESULT Run() try
 {
     InitializeDOPaths();
+
+    BoostAsioService asioService;
 
     ConfigManager clientConfigs;
     auto downloadManager = std::make_shared<DownloadManager>(clientConfigs);
     RestHttpController controller(clientConfigs, downloadManager);
 
-    controller.Start();
+    controller.Start(asioService.IoService());
     DoLogInfo("HTTP controller listening at: %s", controller.ServerEndpoint().data());
 
     RestPortAdvertiser portAdvertiser(controller.Port());

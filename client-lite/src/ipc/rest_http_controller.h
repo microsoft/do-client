@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cpprest/http_msg.h>
 #include "rest_http_listener.h"
 #include "waitable_counter.h"
 
@@ -17,15 +16,15 @@ public:
     RestHttpController(ConfigManager& config, std::shared_ptr<DownloadManager> downloadManager);
     ~RestHttpController();
 
-    void Start();
+    void Start(boost::asio::io_service& ioService);
     std::string ServerEndpoint() const;
     uint16_t Port() const;
 
 private:
-    void _Handler(web::http::http_request request);
+    void _Handler(RestHttpListener::Message& request);
     static bool _IsValidRemoteAddress(const std::string& addr);
-    static void _OnFailure(const web::http::http_request& clientRequest, HRESULT hr);
-    static web::http::status_code _HttpStatusFromHRESULT(HRESULT hr);
+    static void _OnFailure(const RestHttpListener::Message& clientRequest, HRESULT hr);
+    static UINT _HttpStatusFromHRESULT(HRESULT hr);
 
 private:
     ConfigManager& _config;
