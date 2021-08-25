@@ -102,7 +102,7 @@ if (DO_DEV_DEBUG)
 endif ()
 target_link_libraries(docs_common PUBLIC dohttp)
 target_include_directories(docs_common PUBLIC ${docs_common_includes})
-
+target_link_libraries(docs_common PUBLIC dohttp)
 if (DO_PROXY_SUPPORT)
     target_compile_definitions(docs_common PRIVATE DO_PROXY_SUPPORT)
     target_link_libraries(docs_common PUBLIC libproxy::proxy)

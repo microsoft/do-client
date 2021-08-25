@@ -1,6 +1,6 @@
 #include "do_http_parser.h"
 
-// #include <iostream>
+#include <iostream>
 #include <regex>
 #include <gsl/gsl_util>
 
@@ -57,14 +57,14 @@ bool HttpParser::_ParseBuf()
             if (std::regex_match(firstLine.data(), matches, rxStatusLine))
             {
                 _parsedData->statusCode = static_cast<unsigned int>(std::strtoul(matches[1].str().data(), nullptr, 10));
-                // std::cout << "Result: " << _parsedData->statusCode << std::endl;
+                std::cout << "Result: " << _parsedData->statusCode << std::endl;
             }
             else if (std::regex_match(firstLine.data(), matches, rxRequestLine))
             {
                 _parsedData->method = matches[1].str();
                 _parsedData->url = matches[2].str();
-                // std::cout << "Method: " << _parsedData->method << std::endl;
-                // std::cout << "Path: " << _parsedData->url << std::endl;
+                std::cout << "Method: " << _parsedData->method << std::endl;
+                std::cout << "Url: " << _parsedData->url << std::endl;
             }
             else
             {
@@ -98,7 +98,7 @@ bool HttpParser::_ParseBuf()
             if (availableBodySize == _parsedData->contentLength)
             {
                 _parsedData->body.write(&(*_itParseFrom), _parsedData->contentLength);
-                // std::cout << "Body: " << _parsedData->body.str() << std::endl;
+                std::cout << "Body: " << _parsedData->body.str() << std::endl;
                 _state = ParserState::Complete;
                 _itParseFrom = _incomingDataBuf.end();
             }

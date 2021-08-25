@@ -21,9 +21,8 @@ public:
     uint16_t Port() const;
 
 private:
-    void _Handler(RestHttpListener::Message& request);
-    static bool _IsValidRemoteAddress(const std::string& addr);
-    static void _OnFailure(const RestHttpListener::Message& clientRequest, HRESULT hr);
+    void _Handler(const std::shared_ptr<microsoft::deliveryoptimization::details::HttpPacket>& packet, HttpListenerConnection& conn);
+    static void _OnFailure(HttpListenerConnection& conn, HRESULT hr);
     static UINT _HttpStatusFromHRESULT(HRESULT hr);
 
 private:

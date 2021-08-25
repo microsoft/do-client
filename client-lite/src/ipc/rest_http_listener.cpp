@@ -3,7 +3,7 @@
 
 using boost_tcp_t = boost::asio::ip::tcp;
 
-void RestHttpListener::AddHandler(const std::function<void(Message)>& handler)
+void RestHttpListener::AddHandler(const http_listener_callback_t& handler)
 {
     _handler = handler;
 }
@@ -64,40 +64,140 @@ uint16_t RestHttpListener::Port() const
     return _listener->local_endpoint().port();
 }
 
-static std::vector<char>::iterator g_FindCRLF(std::vector<char>& buf, std::vector<char>::iterator itStart)
-{
-    auto itCR = std::find(itStart, buf.end(), '\r');
-    if (itCR == buf.end() || (itCR + 1) == buf.end())
-    {
-        return buf.end(); // need more data
-    }
-    if (*(itCR + 1) != '\n')
-    {
-        throw std::exception();
-    }
-    return itCR;
-}
-
 void RestHttpListener::_BeginAccept()
 {
     auto acceptSocket = std::make_shared<boost_tcp_t::socket>(*_io);
     _listener->async_accept(*acceptSocket, [this, acceptSocket](const boost::system::error_code& ec) mutable
         {
-            if (!ec)
+            if (ec)
             {
-                try
-                {
-                    std::stringstream ss;
-                    ss << acceptSocket->remote_endpoint();
-                    DoLogVerbose("Received connection from %s", ss.str().data());
-                    acceptSocket->shutdown(boost_tcp_t::socket::shutdown_both);
-                    acceptSocket->close();
-                } CATCH_LOG()
-                _BeginAccept(); // accept the next connection
+                DoLogError("Async accept failed, error = %d", ec.value());
+                // TODO(shishirb) terminate process by throwing exception?
+                return;
             }
-            else
+
+            try
             {
-                DoLogWarning("Async accept failed, error = %d", ec.value());
-            }
+                auto request = HttpListenerConnection::Make(*_io, acceptSocket);
+                request->Receive(_handler);
+            } CATCH_LOG()
+
+            _BeginAccept(); // accept the next connection
         });
+}
+
+HttpListenerConnection::HttpListenerConnection(boost::asio::io_service& ioService, std::shared_ptr<boost::asio::ip::tcp::socket> socket) :
+    _socket(std::move(socket)),
+    _io(ioService)
+{
+    _recvBuf.resize(2048);
+}
+
+HttpListenerConnection::~HttpListenerConnection()
+{
+    if (_socket->is_open())
+    {
+        std::stringstream ss;
+        ss << _socket->remote_endpoint();
+        DoLogDebug("Socket closing: was connected to %s", ss.str().c_str());
+        _socket->shutdown(boost_tcp_t::socket::shutdown_both);
+        _socket->close();
+    }
+}
+
+std::shared_ptr<HttpListenerConnection> HttpListenerConnection::Make(boost::asio::io_service& ioService,
+    std::shared_ptr<boost::asio::ip::tcp::socket> socket)
+{
+    return std::make_shared<HttpListenerConnection>(ioService, std::move(socket));
+}
+
+void HttpListenerConnection::Receive(http_listener_callback_t& callback)
+{
+    _socket->async_read_some(boost::asio::buffer(_recvBuf.data(), _recvBuf.size()),
+        [this, lifetime = shared_from_this(), &callback](const boost::system::error_code& ec, size_t cbRead)
+            {
+                _OnData(ec, cbRead, callback);
+            });
+}
+
+void HttpListenerConnection::Reply(unsigned int statusCode)
+{
+    Reply(statusCode, std::string{});
+}
+
+void HttpListenerConnection::Reply(unsigned int statusCode, const std::string& body)
+{
+    std::stringstream ss;
+    ss << statusCode << ' ' << "Description" << "\r\n"; // caller doesn't care about description
+    if (!body.empty())
+    {
+        ss << "Content-Length: " << body.size() << "\r\n";
+    }
+    ss << "Server: DO-Agent" << "\r\n";
+    ss << "\r\n";
+    if (!body.empty())
+    {
+        ss << body;
+    }
+
+    auto replyHttpMessage = std::make_shared<std::string>(ss.str());
+    DoLogDebug("Sending response: %s\n", replyHttpMessage->c_str());
+    boost::asio::async_write(*_socket, boost::asio::buffer(replyHttpMessage->data(), replyHttpMessage->size()),
+        [this, lifetime = shared_from_this(), msgLifetime = replyHttpMessage](const boost::system::error_code& ec, size_t cbSent)
+            {
+                if (ec)
+                {
+                    DoLogWarning("Socket send error: %d, %s", ec.value(), ec.message().c_str());
+                }
+                else
+                {
+                    DoLogDebug("Socket sent %zu bytes", cbSent);
+                }
+            });
+}
+
+boost::asio::ip::tcp::endpoint HttpListenerConnection::RemoteEndpoint() const
+{
+    boost::system::error_code ec;
+    auto endpoint = _socket->remote_endpoint(ec);
+    return endpoint;
+}
+
+void HttpListenerConnection::_OnData(const boost::system::error_code& ec, size_t cbRead, http_listener_callback_t& callback)
+{
+    if (ec)
+    {
+        DoLogWarning("Socket receive error: %d, %s", ec.value(), ec.message().c_str());
+        return;
+    }
+
+    if (cbRead == 0)
+    {
+        DoLogDebug("Socket graceful close from remote endpoint");
+        return;
+    }
+
+    try
+    {
+        _httpParser.OnData(_recvBuf.data(), cbRead);
+    }
+    catch (const std::exception&)
+    {
+        Reply(400);
+        return;
+    }
+
+    if (_httpParser.Done())
+    {
+        _io.post([this, lifetime = shared_from_this(), parsedData = _httpParser.ParsedData(), &callback]()
+            {
+                callback(parsedData, *this);
+            });
+        _httpParser.Reset(); // get ready for the next message
+    }
+    else
+    {
+        // read more data
+        Receive(callback);
+    }
 }

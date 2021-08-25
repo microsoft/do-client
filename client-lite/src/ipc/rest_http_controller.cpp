@@ -25,10 +25,7 @@ RestHttpController::~RestHttpController()
 void RestHttpController::Start(boost::asio::io_service& ioService)
 {
     _listener.Start(ioService);
-    _listener.AddHandler([this](RestHttpListener::Message httpRequest)
-        {
-            _Handler(httpRequest);
-        });
+    _listener.AddHandler(std::bind(&RestHttpController::_Handler, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 std::string RestHttpController::ServerEndpoint() const
@@ -41,99 +38,54 @@ uint16_t RestHttpController::Port() const
     return _listener.Port();
 }
 
-void RestHttpController::_Handler(RestHttpListener::Message& request)
+void RestHttpController::_Handler(const std::shared_ptr<microsoft::deliveryoptimization::details::HttpPacket>& packet,
+    HttpListenerConnection& conn)
 {
-#if 0
     HRESULT hr = S_OK;
+    std::stringstream responseBodyStream;
     try
     {
-        if (_config.RestControllerValidateRemoteAddr() && !_IsValidRemoteAddress(request.remote_address()))
+        if (_config.RestControllerValidateRemoteAddr())
         {
-            request.reply(400);
-            return;
+            const auto addr = conn.RemoteEndpoint().address();
+            if (!addr.is_loopback())
+            {
+                DoLogVerbose("Request unexpected from non-loopback address: %s", addr.to_string().c_str());
+                hr = E_INVALIDARG;
+            }
         }
 
-        auto httpPacket = std::make_shared<microsoft::deliveryoptimization::details::HttpPacket>();
-        // httpPacket->body = request.extract_json().get(); // not required at present
-        // httpPacket->contentLength // not required
-        httpPacket->method = request.method();
-        // httpPacket->statusCode // not required
-        httpPacket->url = request.request_uri().to_string();
-
-        // shared_ptr because the lambda below needs to be copyable
-        auto apiRequest = std::make_shared<RestApiRequestBase>(httpPacket);
-
-        // Handle the request asynchronously and then reply to the client request
-        // Note: the tracker is moved to only the last task-based lambda because it
-        // will always get executed whereas a value-based lambda can be skipped due
-        // to exceptions or cancellations.
-        auto tracker = _callTracker.Enter();
-        pplx::create_task([this, request, apiRequest]()
-            {
-                boost::property_tree::ptree responseBody;
-                THROW_IF_FAILED(apiRequest->Process(*_downloadManager, responseBody));
-
-                std::stringstream responseBodyStream;
-                boost::property_tree::write_json(responseBodyStream, responseBody, false);
-                (void)request.reply(web::http::status_codes::OK, responseBodyStream.str());
-            }).then([request, tracker = std::move(tracker)](pplx::task<void> t)
-            {
-                HRESULT hr = S_OK;
-                try
-                {
-                    // get() inside a 'then' handler will re-throw any exception that resulted
-                    // from previous task(s). Thus, it allows exceptions to be seen and handled.
-                    t.get();
-                }
-                catch (...)
-                {
-                    hr = LOG_CAUGHT_EXCEPTION();
-                }
-
-                if (FAILED(hr))
-                {
-                    _OnFailure(request, hr);
-                }
-            });
+        boost::property_tree::ptree responseBody;
+        if (SUCCEEDED(hr))
+        {
+            hr = RestApiRequestBase{packet}.Process(*_downloadManager, responseBody);
+        }
+        if (SUCCEEDED(hr))
+        {
+            std::stringstream ss;
+            boost::property_tree::write_json(responseBodyStream, responseBody, false);
+        }
     }
     catch (...)
     {
         hr = LOG_CAUGHT_EXCEPTION();
     }
 
-    if (FAILED(hr))
+    if (SUCCEEDED(hr))
     {
-        _OnFailure(request, hr);
+        conn.Reply(200, responseBodyStream.str());
     }
-#endif
+    else
+    {
+        _OnFailure(conn, hr);
+    }
 }
 
-bool RestHttpController::_IsValidRemoteAddress(const std::string& addr)
-{
-    bool fValidAddress = true;
-    try
-    {
-        const auto remoteAddrAsIP = boost::asio::ip::address::from_string(addr);
-        if (!remoteAddrAsIP.is_loopback())
-        {
-            // Log at verbose level to avoid flooding the log (attacker trying to DoS us).
-            DoLogVerbose("Request unexpected from non-loopback address: %s", addr.c_str());
-            fValidAddress = false;
-        }
-    }
-    catch (...)
-    {
-        DoLogVerboseHr(docli::ResultFromCaughtException(), "Exception in trying to validate remote address");
-        fValidAddress = false;
-    }
-    return fValidAddress;
-}
-
-void RestHttpController::_OnFailure(const RestHttpListener::Message& clientRequest, HRESULT hr) try
+void RestHttpController::_OnFailure(HttpListenerConnection& conn, HRESULT hr) try
 {
     std::stringstream responseBody;
     responseBody << "{ \"ErrorCode\": " << hr << " }";
-    // (void)clientRequest.reply(_HttpStatusFromHRESULT(hr), responseBody.str());
+    conn.Reply(_HttpStatusFromHRESULT(hr), responseBody.str());
 } CATCH_LOG()
 
 UINT RestHttpController::_HttpStatusFromHRESULT(HRESULT hr)
