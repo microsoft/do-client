@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include "do_log.h"
 
 #ifdef DEBUG
