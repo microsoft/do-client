@@ -5,7 +5,11 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-namespace microsoft::deliveryoptimization::details
+namespace microsoft
+{
+namespace deliveryoptimization
+{
+namespace details
 {
 
 // Credit: Code takes a little inspiration from Boost.Beast. Too bad it is not available on Ubuntu 18.04.
@@ -40,4 +44,6 @@ private:
     std::stringstream _body;
 };
 
-} // microsoft::deliveryoptimization::details
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

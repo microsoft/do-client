@@ -7,7 +7,11 @@
 
 namespace net = boost::asio;        // from <boost/asio.hpp>
 
-namespace microsoft::deliveryoptimization::details
+namespace microsoft
+{
+namespace deliveryoptimization
+{
+namespace details
 {
 
 HttpRequest::HttpRequest(Method method, const std::string& url) :
@@ -57,4 +61,6 @@ boost::property_tree::ptree HttpResponse::ExtractJsonBody()
     return responseBodyJson;
 }
 
-} // microsoft::deliveryoptimization::details
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

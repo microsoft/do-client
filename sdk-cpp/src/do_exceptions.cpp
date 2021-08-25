@@ -1,8 +1,11 @@
 
 #include "do_exceptions.h"
 
-namespace microsoft::deliveryoptimization
+namespace microsoft
 {
+namespace deliveryoptimization
+{
+
 const error_category& error_category_instance()
 {
     static error_category instance;
@@ -52,4 +55,6 @@ const std::error_code& exception::get_error_code() const
 {
     return _code;
 }
-} // namespace microsoft::deliveryoptimization
+
+} // namespace deliveryoptimization
+} // namespace microsoft

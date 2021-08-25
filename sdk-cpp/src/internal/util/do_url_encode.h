@@ -3,7 +3,11 @@
 #include <cctype>
 #include <string>
 
-namespace microsoft::deliveryoptimization::details
+namespace microsoft
+{
+namespace deliveryoptimization
+{
+namespace details
 {
 
 class Url
@@ -42,4 +46,6 @@ public:
 
 };
 
-} // namespace microsoft::deliveryoptimization::details
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

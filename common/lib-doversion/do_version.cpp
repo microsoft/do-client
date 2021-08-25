@@ -10,7 +10,13 @@ const char* const g_appBuildTime = DO_VER_BUILD_TIME;
 const char* const g_gitHeadRev = DO_VER_GIT_HEAD_REVISION;
 const char* const g_gitHeadName = DO_VER_GIT_HEAD_NAME;
 
-namespace microsoft::deliveryoptimization::util::details
+namespace microsoft
+{
+namespace deliveryoptimization
+{
+namespace util
+{
+namespace details
 {
 
 const char* SimpleVersion()
@@ -58,4 +64,7 @@ bool OutputVersionIfNeeded(int argc, char** argv)
     return false;
 }
 
-} // namespace microsoft::deliveryoptimization::util::details
+} // namespace details
+} // namespace util
+} // namespace deliveryoptimization
+} // namespace microsoft
