@@ -22,6 +22,6 @@ public:
 
     virtual download_status GetStatus() = 0;
 };
-}
-}
-}
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

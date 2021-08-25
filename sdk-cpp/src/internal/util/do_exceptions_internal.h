@@ -17,6 +17,6 @@ void ThrowException(std::errc error);
 void ThrowException(std::error_code error);
 void ThrowException(errc error);
 
-}
-}
-}
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

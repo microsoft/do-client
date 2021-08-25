@@ -61,6 +61,6 @@ boost::property_tree::ptree HttpResponse::ExtractJsonBody()
     return responseBodyJson;
 }
 
-}
-}
-} // microsoft::deliveryoptimization::details
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

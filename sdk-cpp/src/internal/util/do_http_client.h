@@ -28,6 +28,6 @@ private:
     mutable std::mutex _mutex;
     std::unique_ptr<CHttpClientImpl> _httpClientImpl;
 };
-}
-}
-} // namespace microsoft::deliveryoptimization::details
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

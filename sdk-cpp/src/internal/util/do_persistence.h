@@ -6,9 +6,11 @@ namespace deliveryoptimization
 {
 namespace details
 {
+
 const std::string& GetRuntimeDirectory();
 const std::string& GetConfigFilePath();
 const std::string& GetAdminConfigFilePath();
-}
-}
-}
+
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

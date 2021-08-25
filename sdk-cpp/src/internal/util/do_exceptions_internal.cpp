@@ -26,6 +26,6 @@ void ThrowException(errc errorCode)
     throw exception(errorCode);
 }
 
-}
-}
-} // namespace microsoft::deliveryoptimization::details
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

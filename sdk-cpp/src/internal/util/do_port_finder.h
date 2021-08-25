@@ -15,6 +15,6 @@ public:
     static std::string GetDOPort(bool launchClientFirst = false);
 };
 
-}
-}
-} // namespace microsoft::deliveryoptimization::details
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

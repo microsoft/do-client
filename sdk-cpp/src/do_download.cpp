@@ -69,7 +69,7 @@ private:
     download* _ptr { nullptr };
 
 public:
-    download_cleanup_call(download* pObj) :
+    explicit download_cleanup_call(download* pObj) :
         _ptr(pObj)
     {
     }
@@ -147,5 +147,6 @@ void download::download_url_to_path(const std::string& uri, const std::string& d
         }
     }
 }
-}
-} // namespace microsoft::deliveryoptimization
+
+} // namespace deliveryoptimization
+} // namespace microsoft

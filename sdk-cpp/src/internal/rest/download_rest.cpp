@@ -121,6 +121,6 @@ void CDownloadRest::_DownloadOperationCall(const std::string& type)
     (void)CHttpClient::GetInstance().SendRequest(HttpRequest::POST, url.str());
 }
 
-}
-}
-} // namespace microsoft::deliveryoptimization::details
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

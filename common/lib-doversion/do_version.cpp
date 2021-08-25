@@ -64,7 +64,7 @@ bool OutputVersionIfNeeded(int argc, char** argv)
     return false;
 }
 
-}
-}
-}
-} // namespace microsoft::deliveryoptimization::util::details
+} // namespace details
+} // namespace util
+} // namespace deliveryoptimization
+} // namespace microsoft

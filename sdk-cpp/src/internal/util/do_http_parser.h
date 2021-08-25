@@ -48,6 +48,6 @@ private:
     std::stringstream& _body;
 };
 
-}
-}
-} // microsoft::deliveryoptimization::details
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

@@ -28,6 +28,6 @@ const std::string& GetAdminConfigFilePath()
     return configFilePath;
 }
 
-}
-}
-} // namespace microsoft::deliveryoptimization::details
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

@@ -120,6 +120,6 @@ CHttpClient::CHttpClient()
     _InitializeDOConnection();
 }
 
-}
-}
-} // namespace microsoft::deliveryoptimization::details
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

@@ -77,6 +77,6 @@ std::string CPortFinder::GetDOPort(bool launchClientFirst)
     return port;
 }
 
-}
-}
-} // namespace microsoft::deliveryoptimization::details
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

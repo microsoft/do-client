@@ -19,5 +19,6 @@ bool download_status::is_complete() const
 {
     return _state == download_state::transferred;
 }
-}
-} // namespace microsoft::deliveryoptimization
+
+} // namespace deliveryoptimization
+} // namespace microsoft

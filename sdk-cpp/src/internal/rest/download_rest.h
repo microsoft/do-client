@@ -31,6 +31,6 @@ private:
     std::string _id;
 };
 
-}
-}
-}
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

@@ -151,6 +151,6 @@ std::vector<char>::iterator HttpResponseParser::_FindCRLF(std::vector<char>::ite
     return itCR;
 }
 
-}
-}
-} // microsoft::deliveryoptimization::details
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft
