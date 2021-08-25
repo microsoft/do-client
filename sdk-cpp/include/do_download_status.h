@@ -2,7 +2,9 @@
 
 #include <stdint.h>
 
-namespace microsoft::deliveryoptimization
+namespace microsoft
+{
+namespace deliveryoptimization
 {
 
 enum class download_state
@@ -68,4 +70,5 @@ private:
     download_state  _state { download_state::created };
 
 };
+}
 }

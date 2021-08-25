@@ -6,7 +6,11 @@
 #include "do_exceptions.h"
 #include "do_exceptions_internal.h"
 
-namespace microsoft::deliveryoptimization::details
+namespace microsoft
+{
+namespace deliveryoptimization
+{
+namespace details
 {
 
 HttpResponseParser::HttpResponseParser(unsigned int& statusCodeBuf, size_t& contentLenBuf, std::stringstream& bodyBuf) :
@@ -147,4 +151,6 @@ std::vector<char>::iterator HttpResponseParser::_FindCRLF(std::vector<char>::ite
     return itCR;
 }
 
-} // microsoft::deliveryoptimization::details
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

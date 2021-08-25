@@ -6,9 +6,10 @@
 #include <string>
 #include "do_download_status.h"
 
-namespace microsoft::deliveryoptimization
+namespace microsoft
 {
-
+namespace deliveryoptimization
+{
 namespace details
 {
 class IDownload;
@@ -37,5 +38,5 @@ public:
 private:
     std::shared_ptr<details::IDownload> _download;
 };
-
+} 
 } // namespace microsoft::deliveryoptimization

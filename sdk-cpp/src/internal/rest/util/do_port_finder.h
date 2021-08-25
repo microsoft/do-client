@@ -2,11 +2,19 @@
 
 #include <string>
 
-namespace microsoft::deliveryoptimization::details
+namespace microsoft
 {
+namespace deliveryoptimization
+{
+namespace details
+{
+
 class CPortFinder
 {
 public:
     static std::string GetDOPort(bool launchClientFirst = false);
 };
-} // namespace microsoft::deliveryoptimization::details
+
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

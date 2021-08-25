@@ -15,8 +15,13 @@ using namespace std::chrono_literals; // NOLINT(build/namespaces)
 
 const int32_t g_maxNumPortFileReadAttempts = 3;
 
-namespace microsoft::deliveryoptimization::details
+namespace microsoft
 {
+namespace deliveryoptimization
+{
+namespace details
+{
+
 static std::string g_DiscoverDOPort()
 {
     const std::string runtimeDirectory = GetRuntimeDirectory();
@@ -72,4 +77,6 @@ std::string CPortFinder::GetDOPort(bool launchClientFirst)
     return port;
 }
 
-} // namespace microsoft::deliveryoptimization::details
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

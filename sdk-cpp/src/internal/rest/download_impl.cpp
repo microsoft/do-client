@@ -16,7 +16,11 @@ const int g_maxNumRetryAttempts = 3;
 
 const char* const g_downloadUriPart = "download";
 
-namespace microsoft::deliveryoptimization::details
+namespace microsoft
+{
+namespace deliveryoptimization
+{
+namespace details
 {
 CDownloadImpl::CDownloadImpl(const std::string& uri, const std::string& downloadFilePath)
 {
@@ -117,4 +121,6 @@ void CDownloadImpl::_DownloadOperationCall(const std::string& type)
     (void)CHttpClient::GetInstance().SendRequest(HttpRequest::POST, url.str());
 }
 
-} // namespace microsoft::deliveryoptimization::details
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

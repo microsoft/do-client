@@ -2,8 +2,13 @@
 
 #include "do_download_status.h"
 
-namespace microsoft::deliveryoptimization::details
+namespace microsoft
 {
+namespace deliveryoptimization
+{
+namespace details
+{
+
 class IDownload
 {
 public:
@@ -17,4 +22,6 @@ public:
 
     virtual download_status GetStatus() = 0;
 };
-}
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft
