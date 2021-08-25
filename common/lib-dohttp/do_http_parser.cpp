@@ -1,6 +1,6 @@
 #include "do_http_parser.h"
 
-#include <iostream>
+// #include <iostream>
 #include <regex>
 #include <gsl/gsl_util>
 
@@ -13,24 +13,28 @@ namespace details
 
 HttpParser::HttpParser()
 {
-    // Request/response is always small in size
-    _incomingDataBuf.reserve(2048);
+    Reset();
 }
 
-int HttpParser::OnData(const char* pData, size_t cb)
+void HttpParser::OnData(const char* pData, size_t cb)
 {
     if ((_incomingDataBuf.size() + cb) > _incomingDataBuf.capacity())
     {
-        // ThrowException(microsoft::deliveryoptimization::errc::unexpected); TODO
-        return -1;
+        throw std::length_error("HttpParser receiving too much data");
     }
     _incomingDataBuf.insert(_incomingDataBuf.end(), pData, pData + cb);
 
     while (_ParseBuf())
     {
     }
+}
 
-    return 0;
+void HttpParser::Reset()
+{
+    _incomingDataBuf.clear();
+    _incomingDataBuf.reserve(2048); // Request/response is always small in size
+    _state = ParserState::FirstLine;
+    _parsedData = std::make_shared<HttpPacket>();
 }
 
 // Returns true if more processing can be done, false if processing is done or cannot continue until more data is received.
@@ -45,27 +49,26 @@ bool HttpParser::_ParseBuf()
         if (itCR != _incomingDataBuf.end())
         {
             std::string firstLine{_incomingDataBuf.begin(), itCR};
-            std::cout << "Request/Status line: " << firstLine << std::endl;
+            // std::cout << "Request/Status line: " << firstLine << std::endl;
 
-            static const std::regex rxRequestLine{"([a-zA-Z]+) ([a-zA-Z0-9\\-_\\.!~\\*'\\(\\)%:@&=\\+$,]+) [hHtTpP/1\\.]+"};
+            static const std::regex rxRequestLine{"([a-zA-Z]+) ([a-zA-Z0-9\\-_\\.!~\\*'\\(\\)%:@&=\\+$,/?]+) [hHtTpP/1\\.]+"};
             static const std::regex rxStatusLine{"[hHtTpP/1\\.]+ (\\d+) [a-zA-Z0-9 ]+"};
             std::cmatch matches;
             if (std::regex_match(firstLine.data(), matches, rxStatusLine))
             {
-                _statusCode = static_cast<unsigned int>(std::strtoul(matches[1].str().data(), nullptr, 10));
-                // std::cout << "Result: " << _statusCode << std::endl;
+                _parsedData->statusCode = static_cast<unsigned int>(std::strtoul(matches[1].str().data(), nullptr, 10));
+                // std::cout << "Result: " << _parsedData->statusCode << std::endl;
             }
             else if (std::regex_match(firstLine.data(), matches, rxRequestLine))
             {
-                _method = matches[1].str();
-                _path = matches[2].str();
-                std::cout << "Method: " << _method << std::endl;
-                std::cout << "Path: " << _path << std::endl;
+                _parsedData->method = matches[1].str();
+                _parsedData->url = matches[2].str();
+                // std::cout << "Method: " << _parsedData->method << std::endl;
+                // std::cout << "Path: " << _parsedData->url << std::endl;
             }
             else
             {
-                // ThrowException(microsoft::deliveryoptimization::errc::unexpected); TODO
-                throw std::exception();
+                throw std::invalid_argument("HttpParser received malformed first line");
             }
 
             _state = ParserState::Fields;
@@ -84,7 +87,7 @@ bool HttpParser::_ParseBuf()
 
     case ParserState::Body:
     {
-        if (_contentLength == 0)
+        if (_parsedData->contentLength == 0)
         {
             _state = ParserState::Complete;
         }
@@ -92,10 +95,10 @@ bool HttpParser::_ParseBuf()
         {
             const auto availableBodySize = gsl::narrow<size_t>(std::distance(_itParseFrom, _incomingDataBuf.end()));
             // Agent response is a JSON body, couple hundred bytes at max. Read everything at once.
-            if (availableBodySize == _contentLength)
+            if (availableBodySize == _parsedData->contentLength)
             {
-                _body.write(&(*_itParseFrom), _contentLength);
-                // std::cout << "Body: " << _body.str() << std::endl;
+                _parsedData->body.write(&(*_itParseFrom), _parsedData->contentLength);
+                // std::cout << "Body: " << _parsedData->body.str() << std::endl;
                 _state = ParserState::Complete;
                 _itParseFrom = _incomingDataBuf.end();
             }
@@ -135,12 +138,11 @@ bool HttpParser::_ParseNextField()
         std::cmatch matches;
         if (!std::regex_match(field.data(), matches, rxContentLength))
         {
-            // ThrowException(microsoft::deliveryoptimization::errc::unexpected); TODO
-            throw std::exception();
+            throw std::invalid_argument("HttpParser received malformed Content-Length");
         }
 
-        _contentLength = static_cast<size_t>(std::strtoul(matches[1].str().data(), nullptr, 10));
-        // std::cout << "Body size: " << _contentLength << std::endl;
+        _parsedData->contentLength = static_cast<size_t>(std::strtoul(matches[1].str().data(), nullptr, 10));
+        // std::cout << "Body size: " << _parsedData->contentLength << std::endl;
     }
     // else, field not interesting
     _itParseFrom = itCR + 2;
@@ -156,8 +158,7 @@ std::vector<char>::iterator HttpParser::_FindCRLF(std::vector<char>::iterator it
     }
     if (*(itCR + 1) != '\n')
     {
-        // ThrowException(microsoft::deliveryoptimization::errc::unexpected);
-        throw std::exception();
+        throw std::invalid_argument("HttpParser received malformed message (CRLF)");
     }
     return itCR;
 }

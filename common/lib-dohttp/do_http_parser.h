@@ -1,8 +1,10 @@
 #pragma once
 
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
+#include "do_http_packet.h"
 
 namespace microsoft
 {
@@ -18,17 +20,19 @@ class HttpParser
 public:
     HttpParser();
 
-    int OnData(const char* pData, size_t cb);
+    void OnData(const char* pData, size_t cb);
+    void Reset();
 
     bool Done() const noexcept
     {
         return (_state == ParserState::Complete);
     }
 
-    const std::string& Method() const { return _method; }
-    const std::string& Path() const { return _path; }
-    unsigned int StatusCode() const { return _statusCode; }
-    std::stringstream& Body() { return _body; }
+    const std::string& Method() const { return _parsedData->method; }
+    const std::string& Url() const { return _parsedData->url; }
+    unsigned int StatusCode() const { return _parsedData->statusCode; }
+    std::stringstream& Body() { return _parsedData->body; }
+    const std::shared_ptr<HttpPacket>& ParsedData() const { return _parsedData; }
 
 private:
     bool _ParseBuf();
@@ -48,11 +52,7 @@ private:
     std::vector<char> _incomingDataBuf;
     std::vector<char>::iterator _itParseFrom;
 
-    std::string _method;                // request
-    std::string _path;                  // request or response
-    unsigned int _statusCode { 0 };     // response
-    size_t _contentLength { 0 };        // request or response
-    std::stringstream _body;            // request or response
+    std::shared_ptr<HttpPacket> _parsedData;
 };
 
 } // namespace details
