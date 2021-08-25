@@ -1,0 +1,3 @@
+
+add_library(dohttp STATIC do_http_parser.cpp)
+target_include_directories(dohttp INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
