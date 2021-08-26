@@ -65,7 +65,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
         DO_PLUGIN_APT_BIN_NAME="${DO_PLUGIN_APT_BIN_NAME}"
     )
     target_link_libraries(${DO_SDK_LIB_NAME}
-        PRIVATE doversion
+        PRIVATE doversion dohttp
         PUBLIC ${Boost_LIBRARIES}
     )
     strip_symbols(${DO_SDK_LIB_NAME})

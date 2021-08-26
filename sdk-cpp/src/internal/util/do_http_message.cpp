@@ -3,7 +3,6 @@
 #include <iostream>
 #include <boost/asio/write.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include "do_http_parser.h"
 
 namespace net = boost::asio;        // from <boost/asio.hpp>
 
@@ -36,23 +35,22 @@ void HttpRequest::Serialize(boost::asio::ip::tcp::socket& socket) const
 
 void HttpResponse::Deserialize(boost::asio::ip::tcp::socket& socket)
 {
-    HttpResponseParser parser{_statusCode, _contentLength, _body};
     std::vector<char> readBuf(1024);
     do
     {
         auto bytesRead = socket.read_some(net::buffer(readBuf.data(), readBuf.size()));
-        parser.OnData(readBuf.data(), bytesRead);
-    } while (!parser.Done());
+        _parser.OnData(readBuf.data(), bytesRead);
+    } while (!_parser.Done());
 }
 
 boost::property_tree::ptree HttpResponse::ExtractJsonBody()
 {
     boost::property_tree::ptree responseBodyJson;
-    if (_body.rdbuf()->in_avail() > 0)
+    if (_parser.Body().rdbuf()->in_avail() > 0)
     {
         try
         {
-            boost::property_tree::read_json(_body, responseBodyJson);
+            boost::property_tree::read_json(_parser.Body(), responseBodyJson);
         }
         catch (...)
         {

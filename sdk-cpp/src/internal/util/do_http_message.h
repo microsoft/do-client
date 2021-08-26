@@ -4,6 +4,7 @@
 #include <vector>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include "do_http_parser.h"
 
 namespace microsoft
 {
@@ -35,13 +36,11 @@ class HttpResponse
 public:
     void Deserialize(boost::asio::ip::tcp::socket& socket);
 
-    unsigned int StatusCode() const { return _statusCode; }
+    unsigned int StatusCode() const { return _parser.StatusCode(); }
     boost::property_tree::ptree ExtractJsonBody();
 
 private:
-    unsigned int _statusCode { 0 };
-    size_t _contentLength { 0 };
-    std::stringstream _body;
+    HttpParser _parser;
 };
 
 } // namespace details

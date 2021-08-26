@@ -1,8 +1,10 @@
 #pragma once
 
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
+#include "do_http_packet.h"
 
 namespace microsoft
 {
@@ -11,19 +13,26 @@ namespace deliveryoptimization
 namespace details
 {
 
-// Very limited parsing abilities, just enough to support the Agent's responses.
+// Very limited parsing abilities, just enough to support the SDK/Agent's requests and responses.
 // Credit: Code takes a little inspiration from Boost.Beast. Too bad it is not available on Ubuntu 18.04.
-class HttpResponseParser
+class HttpParser
 {
 public:
-    HttpResponseParser(unsigned int& statusCodeBuf, size_t& contentLenBuf, std::stringstream& bodyBuf);
+    HttpParser();
 
     void OnData(const char* pData, size_t cb);
+    void Reset();
 
     bool Done() const noexcept
     {
         return (_state == ParserState::Complete);
     }
+
+    const std::string& Method() const { return _parsedData->method; }
+    const std::string& Url() const { return _parsedData->url; }
+    unsigned int StatusCode() const { return _parsedData->statusCode; }
+    std::stringstream& Body() { return _parsedData->body; }
+    const std::shared_ptr<HttpPacket>& ParsedData() const { return _parsedData; }
 
 private:
     bool _ParseBuf();
@@ -33,19 +42,17 @@ private:
     // Parsing info
     enum class ParserState
     {
-        StatusLine,
+        FirstLine,
         Fields,
         Body,
         Complete
     };
 
-    ParserState _state { ParserState::StatusLine };
-    std::vector<char> _responseBuf;
+    ParserState _state { ParserState::FirstLine };
+    std::vector<char> _incomingDataBuf;
     std::vector<char>::iterator _itParseFrom;
 
-    unsigned int& _statusCode;
-    size_t& _contentLength;
-    std::stringstream& _body;
+    std::shared_ptr<HttpPacket> _parsedData;
 };
 
 } // namespace details
