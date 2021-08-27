@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _DELIVERY_OPTIMIZATION_DO_HTTP_PACKET_H
+#define _DELIVERY_OPTIMIZATION_DO_HTTP_PACKET_H
 
 #include <sstream>
 #include <string>
@@ -22,3 +23,5 @@ struct HttpPacket
 } // namespace details
 } // namespace deliveryoptimization
 } // namespace microsoft
+
+#endif // _DELIVERY_OPTIMIZATION_DO_HTTP_PACKET_H

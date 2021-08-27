@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _DELIVERY_OPTIMIZATION_DO_HTTP_PARSER_H
+#define _DELIVERY_OPTIMIZATION_DO_HTTP_PARSER_H
 
 #include <memory>
 #include <sstream>
@@ -58,3 +59,5 @@ private:
 } // namespace details
 } // namespace deliveryoptimization
 } // namespace microsoft
+
+#endif // _DELIVERY_OPTIMIZATION_DO_HTTP_PARSER_H
