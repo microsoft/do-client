@@ -21,12 +21,7 @@ static std::string GetDownloadFilePath(RestApiParser& parser)
 
 static std::string GetDownloadId(RestApiParser& parser)
 {
-    const std::string* str = parser.QueryStringParam(RestApiParameters::Id);
-    if (str != nullptr)
-    {
-        return *str;
-    }
-    return {};
+    return parser.GetStringParam(RestApiParameters::Id);
 }
 
 static PCSTR DownloadStateToString(DownloadState state)
@@ -179,31 +174,12 @@ HRESULT RestApiSetPropertyRequest::ParseAndProcess(DownloadManager& downloadMana
     auto downloadId = GetDownloadId(parser);
 
     std::vector<std::pair<DownloadProperty, std::string>> propertiesToSet;
-    const auto& requestBody = parser.Body();
-    for (const auto& item : requestBody)
+    const auto& requestQueryParams = parser.Query();
+    for (const auto& item : requestQueryParams)
     {
         const RestApiParam* param = item.first;
         RETURN_HR_IF(DO_E_UNKNOWN_PROPERTY_ID, param->IsUnknownDownloadPropertyId());
-
-        const web::json::value& propVal = item.second;
-
-        std::string propValue;
-        switch (param->type)
-        {
-        case RestApiParamTypes::UInt:
-            RETURN_HR_IF(E_INVALIDARG, !propVal.as_number().is_uint32());
-            propValue = std::to_string(propVal.as_number().to_uint32());
-            break;
-        case RestApiParamTypes::String:
-            propValue = propVal.as_string();
-            break;
-        default:
-            DO_ASSERT(false);
-            break;
-        }
-
-        DO_ASSERT(!propValue.empty());
-        propertiesToSet.emplace_back(param->downloadPropertyId, std::move(propValue));
+        propertiesToSet.emplace_back(param->downloadPropertyId, item.second);
     }
 
     for (const auto& prop : propertiesToSet)

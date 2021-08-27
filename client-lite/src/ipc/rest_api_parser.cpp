@@ -62,46 +62,12 @@ const std::string* RestApiParser::QueryStringParam(RestApiParameters param)
     return nullptr;
 }
 
-const web::json::value* RestApiParser::BodyParam(RestApiParameters param)
-{
-    auto& bodyData = _Body();
-    auto it = bodyData.find(&RestApiParam::Lookup(param));
-    if (it != bodyData.end())
-    {
-        return &(it->second);
-    }
-    return nullptr;
-}
-
 std::string RestApiParser::GetStringParam(RestApiParameters param)
 {
     const std::string* str = QueryStringParam(param);
     if (str != nullptr)
     {
         return *str;
-    }
-
-    const web::json::value* val = BodyParam(param);
-    if (val != nullptr)
-    {
-        return val->as_string();
-    }
-
-    return {};
-}
-
-web::uri RestApiParser::GetUriParam(RestApiParameters param)
-{
-    const std::string* str = QueryStringParam(param);
-    if (str != nullptr)
-    {
-        return web::uri(*str);
-    }
-
-    const web::json::value* val = BodyParam(param);
-    if (val != nullptr)
-    {
-        return web::uri(val->as_string());
     }
 
     return {};
@@ -126,28 +92,6 @@ void RestApiParser::_ParseQueryString()
     _queryData = std::move(decodedQueryData);
 }
 
-void RestApiParser::_ParseJsonBody(const web::json::value& body)
-{
-    THROW_HR_IF(E_INVALIDARG, !(body.is_null() || body.is_object()));
-    if (body.is_null())
-    {
-        _bodyData.clear();
-        return;
-    }
-
-    // Search for and store only known parameters.
-    // Loop required because json::object does not offer case-insensitive finds.
-    // Use std::lower_bound if this loop becomes a bottleneck.
-    body_data_t bodyData;
-    for (const auto& val : body.as_object())
-    {
-        const RestApiParam* param = RestApiParam::Lookup(val.first.data());
-        THROW_HR_IF(E_INVALIDARG, param == nullptr);
-        bodyData[param] = val.second;
-    }
-    _bodyData = std::move(bodyData);
-}
-
 const RestApiParser::query_data_t& RestApiParser::_QueryParams()
 {
     if (!_queryDataInitialized)
@@ -156,15 +100,4 @@ const RestApiParser::query_data_t& RestApiParser::_QueryParams()
         _queryDataInitialized = true;
     }
     return _queryData;
-}
-
-const RestApiParser::body_data_t& RestApiParser::_Body()
-{
-    if (!_bodyDataInitialized)
-    {
-        auto jsonValue = _request.extract_json().get();
-        _ParseJsonBody(jsonValue);
-        _bodyDataInitialized = true;
-    }
-    return _bodyData;
 }
