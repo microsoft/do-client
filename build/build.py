@@ -48,7 +48,7 @@ def parse_args():
     )
     parser.add_argument(
         '--config', dest='config', type=str,
-        help='The target configuration. e.g. debug or release'
+        help='The target configuration. e.g. debug/devdebug/release/relwithdebinfo/minsizerel'
     )
     parser.add_argument(
         '--cmaketarget', dest='cmaketarget', type=str,
@@ -143,8 +143,9 @@ class BuildRunnerBase(object):
         else:
             self.config = 'debug'
 
-        if self.config not in ['debug', 'release', 'relwithdebinfo', 'minsizerel']:
+        if self.config not in ['debug', 'devdebug', 'release', 'relwithdebinfo', 'minsizerel']:
             raise ValueError('Building configuration for {self.platform} is not supported.'.format(self.config, self.platform))
+
         if self.script_args.generator:
             self.generator = self.script_args.generator
         else:
@@ -299,6 +300,9 @@ class BuildRunnerBase(object):
 
         if self.config == "debug":
             generate_options.extend(["-DCMAKE_BUILD_TYPE=Debug"])
+        elif self.config == "devdebug":
+            generate_options.extend(["-DCMAKE_BUILD_TYPE=Debug"])
+            generate_options.extend(["-DDO_DEV_DEBUG=1"])
         elif self.config == "relwithdebinfo":
             generate_options.extend(["-DCMAKE_BUILD_TYPE=RelWithDebInfo"])
         elif self.config == "minsizerel":

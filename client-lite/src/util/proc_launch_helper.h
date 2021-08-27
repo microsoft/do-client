@@ -76,11 +76,11 @@ inline void InitializeDOPaths()
 inline void DropPermissions()
 {
     uid_t userid = GetUserIdByName("do");
-    gid_t groupid = GetGroupIdByName("do");
 
     // process is running as root, drop privileges
     if (getuid() == 0)
     {
+        gid_t groupid = GetGroupIdByName("do");
         if (initgroups("do", groupid) != 0)
         {
             THROW_HR_MSG(E_FAIL, "initgroups: Unable to initialize supplementary group access list: errno: %d", errno);
@@ -96,6 +96,9 @@ inline void DropPermissions()
     }
     else
     {
+#ifndef DO_DEV_DEBUG
+        // Unexpected to be running as non-root when not in devdebug mode
         THROW_HR_MSG(E_FAIL, "Attempting to drop permissions while not Root, uid: %u", getuid());
+#endif
     }
 }
