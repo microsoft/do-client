@@ -64,6 +64,9 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
         DOSVC_BIN_NAME="${DOSVC_BIN_NAME}"
         DO_PLUGIN_APT_BIN_NAME="${DO_PLUGIN_APT_BIN_NAME}"
     )
+    if (DO_DEV_DEBUG)
+        target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE DO_DEV_DEBUG)
+    endif ()
     target_link_libraries(${DO_SDK_LIB_NAME}
         PRIVATE doversion dohttp
         PUBLIC ${Boost_LIBRARIES}

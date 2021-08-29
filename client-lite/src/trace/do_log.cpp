@@ -253,7 +253,7 @@ private:
         _logFile.open(filePath, std::fstream::out | std::fstream::app);
         if (_logFile.fail())
         {
-            fprintf(stderr, "Failed to create log file at %s", filePath);
+            fprintf(stderr, "Failed to create log file at %s\n", filePath);
         }
         else
         {

@@ -6,7 +6,9 @@
 #include "do_common.h"
 
 #include <signal.h>
-
+#ifdef DO_DEV_DEBUG
+#include <iostream>
+#endif
 #include <chrono>
 #include "do_event.h"
 #include "do_persistence.h"
@@ -37,6 +39,19 @@ public:
 
     void WaitForShutdown(const std::function<bool()>& fnIsIdle)
     {
+#ifdef DO_DEV_DEBUG
+        // Workaround for vscode debugger not forwarding ctrl+c to debuggee.
+        // Note: When run as a daemon, shutdown is signaled immediately because there is no TTY attached.
+        std::thread([this]()
+            {
+                printf("Type 'quit' and press enter to exit:\n");
+                std::string line;
+                while (std::getline(std::cin, line) && (line != "quit"));
+
+                DoLogInfo("Received key press {%s}. Initiating shutdown.", line.c_str());
+                _shutdownEvent.SetEvent();
+            }).detach();
+#endif
         constexpr auto idleTimeout = 60s;
         while (true)
         {
