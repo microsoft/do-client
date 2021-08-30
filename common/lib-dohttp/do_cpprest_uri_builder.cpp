@@ -9,9 +9,9 @@ namespace details
 namespace cpprest_web
 {
 
-static const utility::string_t oneSlash = _XPLATSTR("/");
+static const cpprest_utils::string_t oneSlash = _XPLATSTR("/");
 
-uri_builder& uri_builder::append_path(const utility::string_t& toAppend, bool do_encode)
+uri_builder& uri_builder::append_path(const cpprest_utils::string_t& toAppend, bool do_encode)
 {
     if (!toAppend.empty() && toAppend != oneSlash)
     {
@@ -56,7 +56,7 @@ uri_builder& uri_builder::append_path(const utility::string_t& toAppend, bool do
     return *this;
 }
 
-uri_builder& uri_builder::append_path_raw(const utility::string_t& toAppend, bool do_encode)
+uri_builder& uri_builder::append_path_raw(const cpprest_utils::string_t& toAppend, bool do_encode)
 {
     if (!toAppend.empty())
     {
@@ -85,7 +85,7 @@ uri_builder& uri_builder::append_path_raw(const utility::string_t& toAppend, boo
     return *this;
 }
 
-uri_builder& uri_builder::append_query(const utility::string_t& toAppend, bool do_encode)
+uri_builder& uri_builder::append_query(const cpprest_utils::string_t& toAppend, bool do_encode)
 {
     if (!toAppend.empty())
     {
@@ -126,9 +126,9 @@ uri_builder& uri_builder::append_query(const utility::string_t& toAppend, bool d
     return *this;
 }
 
-uri_builder& uri_builder::set_port(const utility::string_t& port)
+uri_builder& uri_builder::set_port(const cpprest_utils::string_t& port)
 {
-    utility::istringstream_t portStream(port);
+    cpprest_utils::istringstream_t portStream(port);
     portStream.imbue(std::locale::classic());
     int port_tmp;
     portStream >> port_tmp;
@@ -140,7 +140,7 @@ uri_builder& uri_builder::set_port(const utility::string_t& port)
     return *this;
 }
 
-uri_builder& uri_builder::append(const http::uri& relative_uri)
+uri_builder& uri_builder::append(const uri& relative_uri)
 {
     append_path(relative_uri.path());
     append_query(relative_uri.query());
@@ -148,15 +148,15 @@ uri_builder& uri_builder::append(const http::uri& relative_uri)
     return *this;
 }
 
-utility::string_t uri_builder::to_string() const { return to_uri().to_string(); }
+cpprest_utils::string_t uri_builder::to_string() const { return to_uri().to_string(); }
 
 uri uri_builder::to_uri() const { return uri(m_uri); }
 
 bool uri_builder::is_valid() { return uri::validate(m_uri.join()); }
 
-void uri_builder::append_query_encode_impl(const utility::string_t& name, const utf8string& value)
+void uri_builder::append_query_encode_impl(const cpprest_utils::string_t& name, const cpprest_utils::utf8string& value)
 {
-    utility::string_t encodedQuery = uri::encode_query_impl(utility::conversions::to_utf8string(name));
+    cpprest_utils::string_t encodedQuery = uri::encode_query_impl(cpprest_utils::to_utf8string(name));
     encodedQuery.push_back(_XPLATSTR('='));
     encodedQuery.append(uri::encode_query_impl(value));
 
@@ -164,7 +164,7 @@ void uri_builder::append_query_encode_impl(const utility::string_t& name, const 
     append_query(encodedQuery, false);
 }
 
-void uri_builder::append_query_no_encode_impl(const utility::string_t& name, const utility::string_t& value)
+void uri_builder::append_query_no_encode_impl(const cpprest_utils::string_t& name, const cpprest_utils::string_t& value)
 {
     append_query(name + _XPLATSTR("=") + value, false);
 }

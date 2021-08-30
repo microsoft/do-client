@@ -185,7 +185,7 @@ public:
     /// does not contain a valid URI. Use uri::validate if processing user-input.
     /// </summary>
     /// <param name="uri_string">A pointer to an encoded string to create the URI instance.</param>
-    _ASYNCRTIMP uri(const utility::char_t* uri_string);
+    _ASYNCRTIMP uri(const cpprest_utils::char_t* uri_string);
 
     /// <summary>
     /// Creates a URI from the given encoded string. This will throw an exception if the string
@@ -370,13 +370,13 @@ private:
     /// Creates a URI from the given URI components.
     /// </summary>
     /// <param name="components">A URI components object to create the URI instance.</param>
-    _ASYNCRTIMP uri(const details::uri_components& components);
+    _ASYNCRTIMP uri(const uri_components& components);
 
     // Used by uri_builder
-    static cpprest_utils::string_t __cdecl encode_query_impl(const utf8string& raw);
+    static cpprest_utils::string_t __cdecl encode_query_impl(const cpprest_utils::utf8string& raw);
 
     cpprest_utils::string_t m_uri;
-    details::uri_components m_components;
+    uri_components m_components;
 };
 
 } // namespace cpprest_web

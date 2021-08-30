@@ -1,5 +1,6 @@
 #include "do_cpprest_uri.h"
 
+#include <functional> // std::reference_wrapper
 #include <sstream>
 
 namespace microsoft
@@ -25,7 +26,7 @@ namespace
 /// </summary>
 inline bool is_unreserved(int c)
 {
-    return ::utility::details::is_alnum((char)c) || c == '-' || c == '.' || c == '_' || c == '~';
+    return cpprest_utils::is_alnum((char)c) || c == '-' || c == '.' || c == '_' || c == '~';
 }
 
 /// <summary>
@@ -80,7 +81,7 @@ inline bool is_reserved(int c) { return is_gen_delim(c) || is_sub_delim(c); }
 /// </summary>
 inline bool is_scheme_character(int c)
 {
-    return ::utility::details::is_alnum((char)c) || c == '+' || c == '-' || c == '.';
+    return cpprest_utils::is_alnum((char)c) || c == '+' || c == '-' || c == '.';
 }
 
 /// <summary>
@@ -138,27 +139,27 @@ inline bool is_fragment_character(int c)
 
 struct inner_parse_out
 {
-    const utility::char_t* scheme_begin = nullptr;
-    const utility::char_t* scheme_end = nullptr;
-    const utility::char_t* uinfo_begin = nullptr;
-    const utility::char_t* uinfo_end = nullptr;
-    const utility::char_t* host_begin = nullptr;
-    const utility::char_t* host_end = nullptr;
+    const cpprest_utils::char_t* scheme_begin = nullptr;
+    const cpprest_utils::char_t* scheme_end = nullptr;
+    const cpprest_utils::char_t* uinfo_begin = nullptr;
+    const cpprest_utils::char_t* uinfo_end = nullptr;
+    const cpprest_utils::char_t* host_begin = nullptr;
+    const cpprest_utils::char_t* host_end = nullptr;
     int port = 0;
-    const utility::char_t* path_begin = nullptr;
-    const utility::char_t* path_end = nullptr;
-    const utility::char_t* query_begin = nullptr;
-    const utility::char_t* query_end = nullptr;
-    const utility::char_t* fragment_begin = nullptr;
-    const utility::char_t* fragment_end = nullptr;
+    const cpprest_utils::char_t* path_begin = nullptr;
+    const cpprest_utils::char_t* path_end = nullptr;
+    const cpprest_utils::char_t* query_begin = nullptr;
+    const cpprest_utils::char_t* query_end = nullptr;
+    const cpprest_utils::char_t* fragment_begin = nullptr;
+    const cpprest_utils::char_t* fragment_end = nullptr;
 
     /// <summary>
     /// Parses the uri, setting the given pointers to locations inside the given buffer.
     /// 'encoded' is expected to point to an encoded zero-terminated string containing a uri
     /// </summary>
-    bool parse_from(const utility::char_t* encoded)
+    bool parse_from(const cpprest_utils::char_t* encoded)
     {
-        const utility::char_t* p = encoded;
+        const cpprest_utils::char_t* p = encoded;
 
         // IMPORTANT -- A uri may either be an absolute uri, or an relative-reference
         // Absolute: 'http://host.com'
@@ -166,7 +167,7 @@ struct inner_parse_out
         // A Relative-Reference can be disambiguated by parsing for a ':' before the first slash
 
         bool is_relative_reference = true;
-        const utility::char_t* p2 = p;
+        const cpprest_utils::char_t* p2 = p;
         for (; *p2 != _XPLATSTR('/') && *p2 != _XPLATSTR('\0'); p2++)
         {
             if (*p2 == _XPLATSTR(':'))
@@ -202,8 +203,8 @@ struct inner_parse_out
 
         // if we see two slashes next, then we're going to parse the authority portion
         // later on we'll break up the authority into the port and host
-        const utility::char_t* authority_begin = nullptr;
-        const utility::char_t* authority_end = nullptr;
+        const cpprest_utils::char_t* authority_begin = nullptr;
+        const cpprest_utils::char_t* authority_end = nullptr;
         if (*p == _XPLATSTR('/') && p[1] == _XPLATSTR('/'))
         {
             // skip over the slashes
@@ -227,7 +228,7 @@ struct inner_parse_out
             if (authority_begin != authority_end)
             {
                 // the port is made up of all digits
-                const utility::char_t* port_begin = authority_end - 1;
+                const cpprest_utils::char_t* port_begin = authority_end - 1;
                 for (; isdigit(*port_begin) && port_begin != authority_begin; port_begin--)
                 {
                 }
@@ -241,8 +242,7 @@ struct inner_parse_out
                     // skip the colon
                     port_begin++;
 
-                    port =
-                        utility::conversions::details::scan_string<int>(utility::string_t(port_begin, authority_end));
+                    port = cpprest_utils::scan_string<int>(cpprest_utils::string_t(port_begin, authority_end));
                 }
                 else
                 {
@@ -252,7 +252,7 @@ struct inner_parse_out
                 }
 
                 // look for a user_info component
-                const utility::char_t* u_end = host_begin;
+                const cpprest_utils::char_t* u_end = host_begin;
                 for (; is_user_info_character(*u_end) && u_end != host_end; u_end++)
                 {
                 }
@@ -327,7 +327,7 @@ struct inner_parse_out
         if (scheme_begin)
         {
             components.m_scheme.assign(scheme_begin, scheme_end);
-            utility::details::inplace_tolower(components.m_scheme);
+            cpprest_utils::inplace_tolower(components.m_scheme);
         }
         else
         {
@@ -342,7 +342,7 @@ struct inner_parse_out
         if (host_begin)
         {
             components.m_host.assign(host_begin, host_end);
-            utility::details::inplace_tolower(components.m_host);
+            cpprest_utils::inplace_tolower(components.m_host);
         }
         else
         {
@@ -383,10 +383,10 @@ struct inner_parse_out
 
 // Encodes all characters not in given set determined by given function.
 template<class F>
-utility::string_t encode_impl(const utf8string& raw, F should_encode)
+cpprest_utils::string_t encode_impl(const cpprest_utils::utf8string& raw, F should_encode)
 {
-    const utility::char_t* const hex = _XPLATSTR("0123456789ABCDEF");
-    utility::string_t encoded;
+    const cpprest_utils::char_t* const hex = _XPLATSTR("0123456789ABCDEF");
+    cpprest_utils::string_t encoded;
     for (auto iter = raw.begin(); iter != raw.end(); ++iter)
     {
         // for utf8 encoded string, char ASCII can be greater than 127.
@@ -401,17 +401,17 @@ utility::string_t encode_impl(const utf8string& raw, F should_encode)
         else
         {
             // ASCII don't need to be encoded, which should be same on both utf8 and utf16.
-            encoded.push_back((utility::char_t)ch);
+            encoded.push_back((cpprest_utils::char_t)ch);
         }
     }
     return encoded;
 }
 
 // 5.2.3. Merge Paths https://tools.ietf.org/html/rfc3986#section-5.2.3
-utility::string_t mergePaths(const utility::string_t& base, const utility::string_t& relative)
+cpprest_utils::string_t mergePaths(const cpprest_utils::string_t& base, const cpprest_utils::string_t& relative)
 {
     const auto lastSlash = base.rfind(_XPLATSTR('/'));
-    if (lastSlash == utility::string_t::npos)
+    if (lastSlash == cpprest_utils::string_t::npos)
     {
         return base + _XPLATSTR('/') + relative;
     }
@@ -426,28 +426,28 @@ utility::string_t mergePaths(const utility::string_t& base, const utility::strin
 // 5.2.4. Remove Dot Segments https://tools.ietf.org/html/rfc3986#section-5.2.4
 void removeDotSegments(uri_builder& builder)
 {
-    const ::utility::string_t dotSegment = _XPLATSTR(".");
-    const ::utility::string_t dotDotSegment = _XPLATSTR("..");
+    const cpprest_utils::string_t dotSegment = _XPLATSTR(".");
+    const cpprest_utils::string_t dotDotSegment = _XPLATSTR("..");
 
-    if (builder.path().find(_XPLATSTR('.')) == utility::string_t::npos) return;
+    if (builder.path().find(_XPLATSTR('.')) == cpprest_utils::string_t::npos) return;
 
     const auto segments = uri::split_path(builder.path());
-    std::vector<std::reference_wrapper<const utility::string_t>> result;
+    std::vector<std::reference_wrapper<const cpprest_utils::string_t>> result;
     for (auto& segment : segments)
     {
         if (segment == dotSegment)
             continue;
         else if (segment != dotDotSegment)
-            result.push_back(segment);
+            result.emplace_back(segment);
         else if (!result.empty())
             result.pop_back();
     }
     if (result.empty())
     {
-        builder.set_path(utility::string_t());
+        builder.set_path(cpprest_utils::string_t());
         return;
     }
-    utility::string_t path = result.front().get();
+    cpprest_utils::string_t path = result.front().get();
     for (size_t i = 1; i != result.size(); ++i)
     {
         path += _XPLATSTR('/');
@@ -462,14 +462,14 @@ void removeDotSegments(uri_builder& builder)
 }
 } // namespace
 
-utility::string_t uri_components::join()
+cpprest_utils::string_t uri_components::join()
 {
     // canonicalize components first
 
     // convert scheme to lowercase
-    utility::details::inplace_tolower(m_scheme);
+    cpprest_utils::inplace_tolower(m_scheme);
     // convert host to lowercase
-    utility::details::inplace_tolower(m_host);
+    cpprest_utils::inplace_tolower(m_host);
 
     // canonicalize the path to have a leading slash if it's a full uri
     if (!m_host.empty() && m_path.empty())
@@ -481,7 +481,7 @@ utility::string_t uri_components::join()
         m_path.insert(m_path.begin(), 1, _XPLATSTR('/'));
     }
 
-    utility::string_t ret;
+    cpprest_utils::string_t ret;
 
     if (!m_scheme.empty())
     {
@@ -502,7 +502,7 @@ utility::string_t uri_components::join()
 
         if (m_port > 0)
         {
-            ret.append({_XPLATSTR(':')}).append(utility::conversions::details::to_string_t(m_port));
+            ret.append({_XPLATSTR(':')}).append(cpprest_utils::to_string_t(m_port));
         }
     }
 
@@ -532,34 +532,34 @@ utility::string_t uri_components::join()
     return ret;
 }
 
-uri::uri(const details::uri_components& components) : m_components(components)
+uri::uri(const uri_components& components) : m_components(components)
 {
     m_uri = m_components.join();
 
     if (!uri::validate(m_uri.c_str()))
     {
-        throw uri_exception("provided uri is invalid: " + utility::conversions::to_utf8string(m_uri));
+        throw uri_exception("provided uri is invalid: " + cpprest_utils::to_utf8string(m_uri));
     }
 }
 
-uri::uri(const utility::string_t& uri_string) : uri(uri_string.c_str()) {}
+uri::uri(const cpprest_utils::string_t& uri_string) : uri(uri_string.c_str()) {}
 
-uri::uri(const utility::char_t* uri_string)
+uri::uri(const cpprest_utils::char_t* uri_string)
 {
-    details::inner_parse_out out;
+    inner_parse_out out;
 
     if (!out.parse_from(uri_string))
     {
-        throw uri_exception("provided uri is invalid: " + utility::conversions::to_utf8string(uri_string));
+        throw uri_exception("provided uri is invalid: " + cpprest_utils::to_utf8string(uri_string));
     }
 
     out.write_to(m_components);
     m_uri = m_components.join();
 }
 
-utility::string_t uri::encode_query_impl(const utf8string& raw)
+cpprest_utils::string_t uri::encode_query_impl(const cpprest_utils::utf8string& raw)
 {
-    return details::encode_impl(raw, [](int ch) -> bool {
+    return encode_impl(raw, [](int ch) -> bool {
         switch (ch)
         {
                 // Encode '&', ';', and '=' since they are used
@@ -569,7 +569,7 @@ utility::string_t uri::encode_query_impl(const utf8string& raw)
             case '=':
             case '%':
             case '+': return true;
-            default: return !details::is_query_character(ch);
+            default: return !is_query_character(ch);
         }
     });
 }
@@ -578,16 +578,16 @@ utility::string_t uri::encode_query_impl(const utf8string& raw)
 /// Encodes a string by converting all characters except for RFC 3986 unreserved characters to their
 /// hexadecimal representation.
 /// </summary>
-utility::string_t uri::encode_data_string(const utility::string_t& data)
+cpprest_utils::string_t uri::encode_data_string(const cpprest_utils::string_t& data)
 {
-    auto&& raw = utility::conversions::to_utf8string(data);
+    auto&& raw = cpprest_utils::to_utf8string(data);
 
-    return details::encode_impl(raw, [](int ch) -> bool { return !details::is_unreserved(ch); });
+    return encode_impl(raw, [](int ch) -> bool { return !is_unreserved(ch); });
 }
 
-utility::string_t uri::encode_uri(const utility::string_t& raw, uri::components::component component)
+cpprest_utils::string_t uri::encode_uri(const cpprest_utils::string_t& raw, uri::components::component component)
 {
-    auto&& raw_utf8 = utility::conversions::to_utf8string(raw);
+    auto&& raw_utf8 = cpprest_utils::to_utf8string(raw);
 
     // Note: we also encode the '+' character because some non-standard implementations
     // encode the space character as a '+' instead of %20. To better interoperate we encode
@@ -595,27 +595,27 @@ utility::string_t uri::encode_uri(const utility::string_t& raw, uri::components:
     switch (component)
     {
         case components::user_info:
-            return details::encode_impl(raw_utf8, [](int ch) -> bool {
-                return !details::is_user_info_character(ch) || ch == '%' || ch == '+';
+            return encode_impl(raw_utf8, [](int ch) -> bool {
+                return !is_user_info_character(ch) || ch == '%' || ch == '+';
             });
         case components::host:
-            return details::encode_impl(raw_utf8, [](int ch) -> bool {
+            return encode_impl(raw_utf8, [](int ch) -> bool {
                 // No encoding of ASCII characters in host name (RFC 3986 3.2.2)
                 return ch > 127;
             });
         case components::path:
-            return details::encode_impl(
-                raw_utf8, [](int ch) -> bool { return !details::is_path_character(ch) || ch == '%' || ch == '+'; });
+            return encode_impl(
+                raw_utf8, [](int ch) -> bool { return !is_path_character(ch) || ch == '%' || ch == '+'; });
         case components::query:
-            return details::encode_impl(
-                raw_utf8, [](int ch) -> bool { return !details::is_query_character(ch) || ch == '%' || ch == '+'; });
+            return encode_impl(
+                raw_utf8, [](int ch) -> bool { return !is_query_character(ch) || ch == '%' || ch == '+'; });
         case components::fragment:
-            return details::encode_impl(
-                raw_utf8, [](int ch) -> bool { return !details::is_fragment_character(ch) || ch == '%' || ch == '+'; });
+            return encode_impl(
+                raw_utf8, [](int ch) -> bool { return !is_fragment_character(ch) || ch == '%' || ch == '+'; });
         case components::full_uri:
         default:
-            return details::encode_impl(
-                raw_utf8, [](int ch) -> bool { return !details::is_unreserved(ch) && !details::is_reserved(ch); });
+            return encode_impl(
+                raw_utf8, [](int ch) -> bool { return !is_unreserved(ch) && !is_reserved(ch); });
     };
 }
 
@@ -679,14 +679,17 @@ static std::string decode_template(const String& encoded)
     return raw;
 }
 
-utility::string_t uri::decode(const utility::string_t& encoded) { return to_string_t(decode_template(encoded)); }
-
-std::vector<utility::string_t> uri::split_path(const utility::string_t& path)
+cpprest_utils::string_t uri::decode(const cpprest_utils::string_t& encoded)
 {
-    std::vector<utility::string_t> results;
-    utility::istringstream_t iss(path);
+    return cpprest_utils::to_string_t(decode_template(encoded));
+}
+
+std::vector<cpprest_utils::string_t> uri::split_path(const cpprest_utils::string_t& path)
+{
+    std::vector<cpprest_utils::string_t> results;
+    cpprest_utils::istringstream_t iss(path);
     iss.imbue(std::locale::classic());
-    utility::string_t s;
+    cpprest_utils::string_t s;
 
     while (std::getline(iss, s, _XPLATSTR('/')))
     {
@@ -699,36 +702,36 @@ std::vector<utility::string_t> uri::split_path(const utility::string_t& path)
     return results;
 }
 
-std::map<utility::string_t, utility::string_t> uri::split_query(const utility::string_t& query)
+std::map<cpprest_utils::string_t, cpprest_utils::string_t> uri::split_query(const cpprest_utils::string_t& query)
 {
-    std::map<utility::string_t, utility::string_t> results;
+    std::map<cpprest_utils::string_t, cpprest_utils::string_t> results;
 
     // Split into key value pairs separated by '&'.
     size_t prev_amp_index = 0;
-    while (prev_amp_index != utility::string_t::npos)
+    while (prev_amp_index != cpprest_utils::string_t::npos)
     {
         size_t amp_index = query.find_first_of(_XPLATSTR('&'), prev_amp_index);
-        if (amp_index == utility::string_t::npos) amp_index = query.find_first_of(_XPLATSTR(';'), prev_amp_index);
+        if (amp_index == cpprest_utils::string_t::npos) amp_index = query.find_first_of(_XPLATSTR(';'), prev_amp_index);
 
-        utility::string_t key_value_pair = query.substr(
+        cpprest_utils::string_t key_value_pair = query.substr(
             prev_amp_index,
-            amp_index == utility::string_t::npos ? query.size() - prev_amp_index : amp_index - prev_amp_index);
-        prev_amp_index = amp_index == utility::string_t::npos ? utility::string_t::npos : amp_index + 1;
+            amp_index == cpprest_utils::string_t::npos ? query.size() - prev_amp_index : amp_index - prev_amp_index);
+        prev_amp_index = amp_index == cpprest_utils::string_t::npos ? cpprest_utils::string_t::npos : amp_index + 1;
 
         size_t equals_index = key_value_pair.find_first_of(_XPLATSTR('='));
-        if (equals_index == utility::string_t::npos)
+        if (equals_index == cpprest_utils::string_t::npos)
         {
             continue;
         }
         else if (equals_index == 0)
         {
-            utility::string_t value(key_value_pair.begin() + equals_index + 1, key_value_pair.end());
-            results[utility::string_t {}] = value;
+            cpprest_utils::string_t value(key_value_pair.begin() + equals_index + 1, key_value_pair.end());
+            results[cpprest_utils::string_t {}] = value;
         }
         else
         {
-            utility::string_t key(key_value_pair.begin(), key_value_pair.begin() + equals_index);
-            utility::string_t value(key_value_pair.begin() + equals_index + 1, key_value_pair.end());
+            cpprest_utils::string_t key(key_value_pair.begin(), key_value_pair.begin() + equals_index);
+            cpprest_utils::string_t value(key_value_pair.begin() + equals_index + 1, key_value_pair.end());
             results[key] = value;
         }
     }
@@ -736,9 +739,9 @@ std::map<utility::string_t, utility::string_t> uri::split_query(const utility::s
     return results;
 }
 
-bool uri::validate(const utility::string_t& uri_string)
+bool uri::validate(const cpprest_utils::string_t& uri_string)
 {
-    details::inner_parse_out out;
+    inner_parse_out out;
     return out.parse_from(uri_string.c_str());
 }
 
@@ -805,7 +808,7 @@ bool uri::operator==(const uri& other) const
 }
 
 // resolving URI according to RFC3986, Section 5 https://tools.ietf.org/html/rfc3986#section-5
-utility::string_t uri::resolve_uri(const utility::string_t& relativeUri) const
+cpprest_utils::string_t uri::resolve_uri(const cpprest_utils::string_t& relativeUri) const
 {
     if (relativeUri.empty())
     {
@@ -822,7 +825,7 @@ utility::string_t uri::resolve_uri(const utility::string_t& relativeUri) const
         // otherwise relative to root
         auto builder = uri_builder(this->authority());
         builder.append(relativeUri);
-        details::removeDotSegments(builder);
+        removeDotSegments(builder);
         return builder.to_string();
     }
 
@@ -845,8 +848,8 @@ utility::string_t uri::resolve_uri(const utility::string_t& relativeUri) const
     }
     else if (!this->path().empty())
     {
-        builder.set_path(details::mergePaths(this->path(), url.path()));
-        details::removeDotSegments(builder);
+        builder.set_path(mergePaths(this->path(), url.path()));
+        removeDotSegments(builder);
         builder.set_query(url.query());
     }
 
