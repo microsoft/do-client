@@ -3,6 +3,7 @@
 
 #include <sstream>
 #include <string>
+#include "do_cpprest_uri.h"
 
 namespace microsoft
 {
@@ -14,7 +15,7 @@ namespace details
 struct HttpPacket
 {
     std::string method;             // request
-    std::string url;                // request or response
+    cpprest_web::uri url;           // request or response
     unsigned int statusCode { 0 };  // response
     size_t contentLength { 0 };     // request or response
     std::stringstream body;         // request or response

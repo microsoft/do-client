@@ -30,7 +30,7 @@ public:
     }
 
     const std::string& Method() const { return _parsedData->method; }
-    const std::string& Url() const { return _parsedData->url; }
+    const cpprest_web::uri& Url() const { return _parsedData->url; }
     unsigned int StatusCode() const { return _parsedData->statusCode; }
     std::stringstream& Body() { return _parsedData->body; }
     const std::shared_ptr<HttpPacket>& ParsedData() const { return _parsedData; }

@@ -16,8 +16,13 @@ namespace details
 namespace cpprest_utils
 {
 
+#ifndef __cdecl
 #define __cdecl
+#endif
+
+#ifndef _ASYNCRTIMP
 #define _ASYNCRTIMP
+#endif
 
 #ifndef CPPREST_NOEXCEPT
 #define CPPREST_NOEXCEPT noexcept
@@ -25,11 +30,16 @@ namespace cpprest_utils
 #endif // !CPPREST_NOEXCEPT
 
 #ifndef _XPLATSTR
+#define _XPLATSTR(x) x
+#define ucout std::cout
+#define ucin std::cin
+#define ucerr std::cerr
+#endif
+
 // All strings are narrow for DO
 typedef char char_t;
 typedef std::string string_t;
 typedef std::string utf8string;
-#define _XPLATSTR(x) x
 typedef std::ostringstream ostringstream_t;
 typedef std::ofstream ofstream_t;
 typedef std::ostream ostream_t;
@@ -37,10 +47,6 @@ typedef std::istream istream_t;
 typedef std::ifstream ifstream_t;
 typedef std::istringstream istringstream_t;
 typedef std::stringstream stringstream_t;
-#define ucout std::cout
-#define ucin std::cin
-#define ucerr std::cerr
-#endif // !_XPLATSTR
 
 /// <summary>
 /// Convert a string to lowercase in place.
