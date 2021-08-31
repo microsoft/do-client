@@ -7,12 +7,9 @@
 
 #include <signal.h>
 #ifdef DO_DEV_DEBUG
-#include <iostream>
-#endif
-#include <chrono>
-#ifdef DEBUG
 #include <iostream> // std::cin
 #endif
+#include <chrono>
 #include <boost/asio.hpp>
 #include "do_event.h"
 #include "do_persistence.h"
