@@ -1,6 +1,8 @@
 #include "do_http_parser.h"
 
-// #include <iostream>
+#ifdef DO_DEBUG_REST_INTERFACE
+#include <iostream>
+#endif
 #include <regex>
 #include <gsl/gsl_util>
 
@@ -49,22 +51,27 @@ bool HttpParser::_ParseBuf()
         if (itCR != _incomingDataBuf.end())
         {
             std::string firstLine{_incomingDataBuf.begin(), itCR};
-            // std::cout << "Request/Status line: " << firstLine << std::endl;
-
+#ifdef DO_DEBUG_REST_INTERFACE
+            std::cout << "Request/Status line: " << firstLine << std::endl;
+#endif
             static const std::regex rxRequestLine{"([a-zA-Z]+) ([a-zA-Z0-9\\-_\\.!~\\*'\\(\\)%:@&=\\+$,/?]+) [hHtTpP/1\\.]+"};
             static const std::regex rxStatusLine{"[hHtTpP/1\\.]+ (\\d+) [a-zA-Z0-9 ]+"};
             std::cmatch matches;
             if (std::regex_match(firstLine.data(), matches, rxStatusLine))
             {
                 _parsedData->statusCode = static_cast<unsigned int>(std::strtoul(matches[1].str().data(), nullptr, 10));
-                // std::cout << "Result: " << _parsedData->statusCode << std::endl;
+#ifdef DO_DEBUG_REST_INTERFACE
+                std::cout << "Result: " << _parsedData->statusCode << std::endl;
+#endif
             }
             else if (std::regex_match(firstLine.data(), matches, rxRequestLine))
             {
                 _parsedData->method = matches[1].str();
                 _parsedData->url = matches[2].str();
-                // std::cout << "Method: " << _parsedData->method << std::endl;
-                // std::cout << "Path: " << _parsedData->url << std::endl;
+#ifdef DO_DEBUG_REST_INTERFACE
+                std::cout << "Method: " << _parsedData->method << std::endl;
+                std::cout << "Url: " << _parsedData->url.to_string() << std::endl;
+#endif
             }
             else
             {
@@ -98,7 +105,9 @@ bool HttpParser::_ParseBuf()
             if (availableBodySize == _parsedData->contentLength)
             {
                 _parsedData->body.write(&(*_itParseFrom), _parsedData->contentLength);
-                // std::cout << "Body: " << _parsedData->body.str() << std::endl;
+#ifdef DO_DEBUG_REST_INTERFACE
+                std::cout << "Body: " << _parsedData->body.str() << std::endl;
+#endif
                 _state = ParserState::Complete;
                 _itParseFrom = _incomingDataBuf.end();
             }
@@ -131,7 +140,9 @@ bool HttpParser::_ParseNextField()
     }
 
     std::string field{_itParseFrom, itCR};
-    // std::cout << "Field: " << field << std::endl;
+#ifdef DO_DEBUG_REST_INTERFACE
+    std::cout << "Field: " << field << std::endl;
+#endif
     if (field.find("Content-Length") != std::string::npos)
     {
         std::regex rxContentLength{".*:[ ]*(\\d+).*"};
@@ -142,7 +153,9 @@ bool HttpParser::_ParseNextField()
         }
 
         _parsedData->contentLength = static_cast<size_t>(std::strtoul(matches[1].str().data(), nullptr, 10));
-        // std::cout << "Body size: " << _parsedData->contentLength << std::endl;
+#ifdef DO_DEBUG_REST_INTERFACE
+        std::cout << "Body size: " << _parsedData->contentLength << std::endl;
+#endif
     }
     // else, field not interesting
     _itParseFrom = itCR + 2;

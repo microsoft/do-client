@@ -1,10 +1,12 @@
 #include "do_common.h"
 #include "mcc_manager.h"
 
-#include <cpprest/uri.h>
 #include "config_defaults.h"
 #include "config_manager.h"
+#include "do_cpprest_uri.h"
 #include "http_agent.h"
+
+namespace msdod = microsoft::deliveryoptimization::details;
 
 static std::string GetHostNameFromIoTConnectionString(const char* connectionString)
 {
@@ -55,7 +57,7 @@ std::string MCCManager::GetHost(const std::string& originalUrl)
         }
     }
 
-    const auto originalHost = web::uri{originalUrl}.host();
+    const auto originalHost = msdod::cpprest_web::uri{originalUrl}.host();
     if (!mccHostName.empty())
     {
         auto it = _mccHostsByOriginalHost.find(originalHost);
@@ -84,7 +86,7 @@ std::string MCCManager::GetHost(const std::string& originalUrl)
 void MCCManager::ReportHostError(HRESULT hr, UINT httpStatusCode, const std::string& mccHost, const std::string& originalUrl)
 {
     const bool isFatalError = HttpAgent::IsClientError(httpStatusCode);
-    const auto originalHost = web::uri{originalUrl}.host();
+    const auto originalHost = msdod::cpprest_web::uri{originalUrl}.host();
     DoLogWarningHr(hr, "ACK error from MCC host: [%s], original host: [%s], fatal error? %d",
         mccHost.data(), originalHost.data(), isFatalError);
     if (isFatalError)
@@ -99,7 +101,7 @@ void MCCManager::ReportHostError(HRESULT hr, UINT httpStatusCode, const std::str
 
 bool MCCManager::IsBanned(const std::string& mccHost, const std::string& originalUrl) const
 {
-    const auto originalHost = web::uri{originalUrl}.host();
+    const auto originalHost = msdod::cpprest_web::uri{originalUrl}.host();
     auto it = _mccHostsByOriginalHost.find(originalHost);
     if (it != _mccHostsByOriginalHost.end() && (it->second.Address() == mccHost))
     {
