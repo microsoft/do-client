@@ -47,8 +47,8 @@ static PCSTR DownloadStateToString(DownloadState state)
 // Entry point for request parsing. The only parsing that is done here is to determine the request method type.
 // Other parsing, like the query string and request JSON body is done when the Process() method is invoked.
 // Process() is called asynchronously to unblock the HTTP listener thread.
-RestApiRequestBase::RestApiRequestBase(web::http::http_request clientRequest) :
-    _parser(std::move(clientRequest))
+RestApiRequestBase::RestApiRequestBase(const std::shared_ptr<microsoft::deliveryoptimization::details::HttpPacket>& clientRequest) :
+    _parser(clientRequest)
 {
     switch (_parser.Method())
     {
@@ -72,22 +72,22 @@ RestApiRequestBase::RestApiRequestBase(web::http::http_request clientRequest) :
     }
 }
 
-HRESULT RestApiRequestBase::Process(DownloadManager& downloadManager, web::json::value& responseBody) try
+HRESULT RestApiRequestBase::Process(DownloadManager& downloadManager, boost::property_tree::ptree& responseBody) try
 {
     return _apiRequest->ParseAndProcess(downloadManager, _parser, responseBody);
 } CATCH_RETURN()
 
-HRESULT RestApiCreateRequest::ParseAndProcess(DownloadManager& downloadManager, RestApiParser& parser, web::json::value& responseBody)
+HRESULT RestApiCreateRequest::ParseAndProcess(DownloadManager& downloadManager, RestApiParser& parser, boost::property_tree::ptree& responseBody)
 {
     std::string uri = GetUri(parser);
     std::string filePath = GetDownloadFilePath(parser);
     auto downloadId = downloadManager.CreateDownload(uri, filePath);
-    responseBody[RestApiParser::ParamToString(RestApiParameters::Id)] = web::json::value(downloadId);
+    responseBody.put(RestApiParser::ParamToString(RestApiParameters::Id), downloadId);
     return S_OK;
 }
 
 HRESULT RestApiEnumerateRequest::ParseAndProcess(DownloadManager& downloadManager, RestApiParser& parser,
-    web::json::value& responseBody)
+    boost::property_tree::ptree& responseBody)
 {
     std::string filePath = GetDownloadFilePath(parser);
     std::string uri = GetUri(parser);
@@ -96,7 +96,7 @@ HRESULT RestApiEnumerateRequest::ParseAndProcess(DownloadManager& downloadManage
 }
 
 HRESULT RestApiDownloadStateChangeRequest::ParseAndProcess(DownloadManager& downloadManager, RestApiParser& parser,
-    web::json::value& responseBody)
+    boost::property_tree::ptree& responseBody)
 {
     DoLogInfo("Download state change: %d", static_cast<int>(parser.Method()));
 
@@ -127,19 +127,19 @@ HRESULT RestApiDownloadStateChangeRequest::ParseAndProcess(DownloadManager& down
 }
 
 HRESULT RestApiGetStatusRequest::ParseAndProcess(DownloadManager& downloadManager, RestApiParser& parser,
-    web::json::value& responseBody)
+    boost::property_tree::ptree& responseBody)
 {
     auto status = downloadManager.GetDownloadStatus(GetDownloadId(parser));
-    responseBody["Status"] = web::json::value::string(DownloadStateToString(status.State));
-    responseBody["BytesTotal"] = static_cast<uint64_t>(status.BytesTotal);
-    responseBody["BytesTransferred"] = static_cast<uint64_t>(status.BytesTransferred);
-    responseBody["ErrorCode"] = static_cast<int32_t>(status.Error);
-    responseBody["ExtendedErrorCode"] = static_cast<int32_t>(status.ExtendedError);
+    responseBody.put("Status", DownloadStateToString(status.State));
+    responseBody.put("BytesTotal", std::to_string(status.BytesTotal));
+    responseBody.put("BytesTransferred", std::to_string(status.BytesTransferred));
+    responseBody.put("ErrorCode", std::to_string(status.Error));
+    responseBody.put("ExtendedErrorCode", std::to_string(status.ExtendedError));
     return S_OK;
 }
 
 HRESULT RestApiGetPropertyRequest::ParseAndProcess(DownloadManager& downloadManager, RestApiParser& parser,
-    web::json::value& responseBody)
+    boost::property_tree::ptree& responseBody)
 {
     const std::string* propKey = parser.QueryStringParam(RestApiParameters::PropertyKey);
     RETURN_HR_IF_EXPECTED(E_INVALIDARG, (propKey == nullptr) || (propKey->empty()));
@@ -149,27 +149,12 @@ HRESULT RestApiGetPropertyRequest::ParseAndProcess(DownloadManager& downloadMana
 
     const auto downloadId = GetDownloadId(parser);
     std::string val = downloadManager.GetDownloadProperty(downloadId, param->downloadPropertyId);
-
-    web::json::value propVal;
-    switch (param->type)
-    {
-    case RestApiParamTypes::UInt:
-        propVal = web::json::value(strconv::ToUInt(val));
-        break;
-    case RestApiParamTypes::String:
-        propVal = web::json::value(val);
-        break;
-    default:
-        DO_ASSERT(false);
-        break;
-    }
-
-    responseBody[*propKey] = std::move(propVal);
+    responseBody.put(*propKey, std::move(val));
     return S_OK;
 }
 
 HRESULT RestApiSetPropertyRequest::ParseAndProcess(DownloadManager& downloadManager, RestApiParser& parser,
-    web::json::value& responseBody)
+    boost::property_tree::ptree& responseBody)
 {
     auto downloadId = GetDownloadId(parser);
 

@@ -2,10 +2,12 @@
 #include "rest_http_controller.h"
 
 #include <boost/asio/ip/address.hpp>
-#include <cpprest/json.h>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 #include <pplx/pplxtasks.h>
 
 #include "config_manager.h"
+#include "do_http_packet.h"
 #include "download_manager.h"
 #include "rest_api_request.h"
 
@@ -49,8 +51,15 @@ void RestHttpController::_Handler(web::http::http_request request)
             return;
         }
 
+        auto httpPacket = std::make_shared<microsoft::deliveryoptimization::details::HttpPacket>();
+        // httpPacket->body = request.extract_json().get(); // not required at present
+        // httpPacket->contentLength // not required
+        httpPacket->method = request.method();
+        // httpPacket->statusCode // not required
+        httpPacket->url = request.request_uri().to_string();
+
         // shared_ptr because the lambda below needs to be copyable
-        auto apiRequest = std::make_shared<RestApiRequestBase>(request);
+        auto apiRequest = std::make_shared<RestApiRequestBase>(httpPacket);
 
         // Handle the request asynchronously and then reply to the client request
         // Note: the tracker is moved to only the last task-based lambda because it
@@ -59,9 +68,12 @@ void RestHttpController::_Handler(web::http::http_request request)
         auto tracker = _callTracker.Enter();
         pplx::create_task([this, request, apiRequest]()
             {
-                auto response = web::json::value::object();
-                THROW_IF_FAILED(apiRequest->Process(*_downloadManager, response));
-                (void)request.reply(web::http::status_codes::OK, response);
+                boost::property_tree::ptree responseBody;
+                THROW_IF_FAILED(apiRequest->Process(*_downloadManager, responseBody));
+
+                std::stringstream responseBodyStream;
+                boost::property_tree::write_json(responseBodyStream, responseBody, false);
+                (void)request.reply(web::http::status_codes::OK, responseBodyStream.str());
             }).then([request, tracker = std::move(tracker)](pplx::task<void> t)
             {
                 HRESULT hr = S_OK;
@@ -116,9 +128,9 @@ bool RestHttpController::_IsValidRemoteAddress(const std::string& addr)
 
 void RestHttpController::_OnFailure(const web::http::http_request& clientRequest, HRESULT hr) try
 {
-    auto response = web::json::value::object();
-    response["ErrorCode"] = web::json::value::number(hr);
-    (void)clientRequest.reply(_HttpStatusFromHRESULT(hr), response);
+    std::stringstream responseBody;
+    responseBody << "{ \"ErrorCode\": " << hr << " }";
+    (void)clientRequest.reply(_HttpStatusFromHRESULT(hr), responseBody.str());
 } CATCH_LOG()
 
 web::http::status_code RestHttpController::_HttpStatusFromHRESULT(HRESULT hr)
