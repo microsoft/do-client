@@ -13,6 +13,13 @@ namespace details
 namespace cpprest_web
 {
 
+/*
+    Code borrowed from cpprestsdk project: https://github.com/microsoft/cpprestsdk/
+    libcurl includes APIs to work with URLs starting from v7.62.0.
+    Ubuntu 18.04 ships with libcurl v7.58.0 only so we cannot use the URL API.
+    TODO(shishirb): Once cpprestsdk usage is removed completely, revisit here and remove unused code.
+ */
+
 /// <summary>
 /// Builder for constructing URIs incrementally.
 /// </summary>
