@@ -3,6 +3,7 @@
 #include <iostream>
 #include <boost/asio/write.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include "do_http_defines.h"
 
 namespace net = boost::asio;        // from <boost/asio.hpp>
 
@@ -22,7 +23,7 @@ HttpRequest::HttpRequest(Method method, const std::string& url) :
 void HttpRequest::Serialize(boost::asio::ip::tcp::socket& socket) const
 {
     std::stringstream request;
-    const char* pVerb = (_method == Method::GET) ? "GET" : "POST";
+    const char* pVerb = (_method == Method::GET) ? http_methods::GET : http_methods::POST;
     request << pVerb << ' ' << _url << ' ' << "HTTP/1.1\r\n";
     request << "Host: 127.0.0.1\r\n";
     request << "User-Agent: DO-SDK-CPP\r\n";

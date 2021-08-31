@@ -3,10 +3,10 @@
 #include <map>
 #include <thread>
 
+#include "do_cpprest_uri_builder.h"
 #include "do_exceptions_internal.h"
 #include "do_exceptions.h"
 #include "do_http_client.h"
-#include "do_url_encode.h"
 
 namespace msdo = microsoft::deliveryoptimization;
 using namespace std::chrono_literals; // NOLINT(build/namespaces)
@@ -24,15 +24,16 @@ namespace details
 
 CDownloadRest::CDownloadRest(const std::string& uri, const std::string& downloadFilePath)
 {
-    std::stringstream url;
-    url << g_downloadUriPart << "/create" << "?Uri=" << Url::EncodeDataString(uri) << "&DownloadFilePath="
-        << Url::EncodeDataString(downloadFilePath);
+    cpprest_web::uri_builder builder(g_downloadUriPart);
+    builder.append_path("create");
+    builder.append_query("Uri", uri);
+    builder.append_query("DownloadFilePath", downloadFilePath);
 
     for (int retryAttempts = 0; retryAttempts < g_maxNumRetryAttempts; retryAttempts++)
     {
         try
         {
-            const auto respBody = CHttpClient::GetInstance().SendRequest(HttpRequest::POST, url.str());
+            const auto respBody = CHttpClient::GetInstance().SendRequest(HttpRequest::POST, builder.to_string());
             _id = respBody.get<std::string>("Id");
             return;
         }
@@ -81,10 +82,11 @@ void CDownloadRest::Abort()
 
 msdo::download_status CDownloadRest::GetStatus()
 {
-    std::stringstream url;
-    url << g_downloadUriPart << "/getstatus" << "?Id=" << _id;
+    cpprest_web::uri_builder builder(g_downloadUriPart);
+    builder.append_path("getstatus");
+    builder.append_query("Id", _id);
 
-    const auto respBody = CHttpClient::GetInstance().SendRequest(HttpRequest::GET, url.str());
+    const auto respBody = CHttpClient::GetInstance().SendRequest(HttpRequest::GET, builder.to_string());
 
     uint64_t bytesTotal = respBody.get<uint64_t>("BytesTotal");
     uint64_t bytesTransferred = respBody.get<uint64_t>("BytesTransferred");
@@ -116,9 +118,10 @@ msdo::download_status CDownloadRest::GetStatus()
 
 void CDownloadRest::_DownloadOperationCall(const std::string& type)
 {
-    std::stringstream url;
-    url << g_downloadUriPart << '/' << type << "?Id=" << _id;
-    (void)CHttpClient::GetInstance().SendRequest(HttpRequest::POST, url.str());
+    cpprest_web::uri_builder builder(g_downloadUriPart);
+    builder.append_path(type);
+    builder.append_query("Id", _id);
+    (void)CHttpClient::GetInstance().SendRequest(HttpRequest::POST, builder.to_string());
 }
 
 } // namespace details

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _DELIVERY_OPTIMIZATION_DO_HTTP_PARSER_H
+#define _DELIVERY_OPTIMIZATION_DO_HTTP_PARSER_H
 
 #include <memory>
 #include <sstream>
@@ -29,7 +30,7 @@ public:
     }
 
     const std::string& Method() const { return _parsedData->method; }
-    const std::string& Url() const { return _parsedData->url; }
+    const cpprest_web::uri& Url() const { return _parsedData->url; }
     unsigned int StatusCode() const { return _parsedData->statusCode; }
     std::stringstream& Body() { return _parsedData->body; }
     const std::shared_ptr<HttpPacket>& ParsedData() const { return _parsedData; }
@@ -58,3 +59,5 @@ private:
 } // namespace details
 } // namespace deliveryoptimization
 } // namespace microsoft
+
+#endif // _DELIVERY_OPTIMIZATION_DO_HTTP_PARSER_H
