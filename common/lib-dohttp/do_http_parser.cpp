@@ -64,7 +64,7 @@ bool HttpParser::_ParseBuf()
                 _parsedData->method = matches[1].str();
                 _parsedData->url = matches[2].str();
                 std::cout << "Method: " << _parsedData->method << std::endl;
-                std::cout << "Url: " << _parsedData->url << std::endl;
+                std::cout << "Url: " << _parsedData->url.to_string() << std::endl;
             }
             else
             {

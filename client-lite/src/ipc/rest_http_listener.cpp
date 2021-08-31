@@ -1,7 +1,10 @@
 #include "do_common.h"
 #include "rest_http_listener.h"
 
+#include "do_http_defines.h"
+
 using boost_tcp_t = boost::asio::ip::tcp;
+namespace msdod = microsoft::deliveryoptimization::details;
 
 void RestHttpListener::AddHandler(const http_listener_callback_t& handler)
 {
@@ -125,10 +128,27 @@ void HttpListenerConnection::Reply(unsigned int statusCode)
     Reply(statusCode, std::string{});
 }
 
+static const char* g_HttpStatusToString(unsigned int statusCode)
+{
+#define RETURN_HTTP_STATUSCODE_STR(code) \
+    case msdod::http_status_codes::code: return #code;
+
+    switch (statusCode)
+    {
+        RETURN_HTTP_STATUSCODE_STR(OK);
+        RETURN_HTTP_STATUSCODE_STR(BadRequest);
+        RETURN_HTTP_STATUSCODE_STR(NotFound);
+        RETURN_HTTP_STATUSCODE_STR(InternalError);
+        RETURN_HTTP_STATUSCODE_STR(ServiceUnavailable);
+        default: return "StatusDescription";
+    }
+    return "StatusDescription";
+}
+
 void HttpListenerConnection::Reply(unsigned int statusCode, const std::string& body)
 {
     std::stringstream ss;
-    ss << statusCode << ' ' << "Description" << "\r\n"; // caller doesn't care about description
+    ss << "HTTP/1.1 " << statusCode << ' ' << g_HttpStatusToString(statusCode) << "\r\n"; // caller doesn't care about description
     if (!body.empty())
     {
         ss << "Content-Length: " << body.size() << "\r\n";
