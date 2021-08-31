@@ -77,7 +77,7 @@ void RestHttpController::_HttpListenerCallback(const std::shared_ptr<microsoft::
 
     if (SUCCEEDED(hr))
     {
-        conn.Reply(200, responseBodyStream.str());
+        conn.Reply(msdod::http_status_codes::OK, responseBodyStream.str());
     }
     else
     {

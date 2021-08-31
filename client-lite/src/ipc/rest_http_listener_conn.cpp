@@ -66,7 +66,7 @@ static const char* g_HttpStatusToString(unsigned int statusCode)
 void HttpListenerConnection::Reply(unsigned int statusCode, const std::string& body)
 {
     std::stringstream ss;
-    ss << "HTTP/1.1 " << statusCode << ' ' << g_HttpStatusToString(statusCode) << "\r\n"; // caller doesn't care about description
+    ss << "HTTP/1.1 " << statusCode << ' ' << g_HttpStatusToString(statusCode) << "\r\n";
     if (!body.empty())
     {
         ss << "Content-Length: " << body.size() << "\r\n";
