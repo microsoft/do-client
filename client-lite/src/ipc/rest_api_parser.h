@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cpprest/http_msg.h>
-#include <cpprest/json.h>
+#include <map>
+#include "do_http_packet.h"
 #include "rest_api_params.h"
 
 enum class RestApiMethods
@@ -24,7 +24,7 @@ public:
 
     static std::string ParamToString(RestApiParameters param);
 
-    RestApiParser(web::http::http_request request);
+    RestApiParser(const std::shared_ptr<microsoft::deliveryoptimization::details::HttpPacket>& request);
 
     RestApiMethods Method();
     const std::string* QueryStringParam(RestApiParameters param);
@@ -37,7 +37,7 @@ private:
     const query_data_t& _QueryParams();
 
 private:
-    web::http::http_request _request;
+    std::shared_ptr<microsoft::deliveryoptimization::details::HttpPacket> _request;
 
     // All further data members are lazy-init
     RestApiMethods _method;

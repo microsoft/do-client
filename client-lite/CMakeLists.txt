@@ -101,6 +101,7 @@ if (DO_DEV_DEBUG)
     target_compile_definitions(docs_common PUBLIC DO_DEV_DEBUG)
 endif ()
 add_platform_interface_definitions(docs_common)
+target_link_libraries(docs_common PUBLIC dohttp)
 target_include_directories(docs_common PUBLIC ${docs_common_includes})
 
 if (DO_PROXY_SUPPORT)
