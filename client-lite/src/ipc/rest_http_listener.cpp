@@ -2,6 +2,7 @@
 #include "rest_http_listener.h"
 
 #include "do_http_defines.h"
+#include "do_version.h"
 
 using boost_tcp_t = boost::asio::ip::tcp;
 namespace msdod = microsoft::deliveryoptimization::details;
@@ -53,6 +54,7 @@ void RestHttpListener::Stop()
         _listener->close();
         _listener.reset();
     }
+    DoLogInfo("RestHttpListener: connections recvd: %u", _numConnections.load());
 }
 
 std::string RestHttpListener::Endpoint() const
@@ -83,6 +85,7 @@ void RestHttpListener::_BeginAccept()
             {
                 auto request = HttpListenerConnection::Make(*_io, acceptSocket);
                 request->Receive(_handler);
+                ++_numConnections;
             } CATCH_LOG()
 
             _BeginAccept(); // accept the next connection
@@ -153,7 +156,7 @@ void HttpListenerConnection::Reply(unsigned int statusCode, const std::string& b
     {
         ss << "Content-Length: " << body.size() << "\r\n";
     }
-    ss << "Server: DO-Agent" << "\r\n";
+    ss << "Server: Delivery-Optimization-Agent/" << microsoft::deliveryoptimization::util::details::SimpleVersion() << "\r\n";
     ss << "\r\n";
     if (!body.empty())
     {
@@ -215,9 +218,7 @@ void HttpListenerConnection::_OnData(const boost::system::error_code& ec, size_t
             });
         _httpParser.Reset(); // get ready for the next message
     }
-    else
-    {
-        // read more data
-        Receive(callback);
-    }
+
+    // read more data or next message
+    Receive(callback);
 }

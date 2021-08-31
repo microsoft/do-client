@@ -49,4 +49,6 @@ private:
     std::unique_ptr<boost::asio::ip::tcp::acceptor> _listener;
     http_listener_callback_t _handler;
     boost::asio::io_service* _io { nullptr };
+
+    std::atomic<unsigned int> _numConnections { 0 };
 };
