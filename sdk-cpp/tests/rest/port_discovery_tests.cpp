@@ -6,6 +6,8 @@
 
 #include "do_persistence.h"
 #include "do_port_finder.h"
+#include "test_data.h"
+#include "test_helpers.h"
 
 namespace msdod = microsoft::deliveryoptimization::details;
 
@@ -30,10 +32,8 @@ private:
 
 void PortDiscoveryTests::SetUp()
 {
-    if (boost::filesystem::exists(_testFilePath))
-    {
-        boost::filesystem::remove(_testFilePath);
-    }
+    TestHelpers::StopService(g_docsSvcName); // ensure agent does not write to port file
+    TestHelpers::DeleteRestPortFiles();
     if (!boost::filesystem::exists(msdod::GetRuntimeDirectory()))
     {
         boost::filesystem::create_directories(msdod::GetRuntimeDirectory());
@@ -49,10 +49,11 @@ void PortDiscoveryTests::TearDown()
     {
         boost::filesystem::remove(_testFilePath);
     }
+    TestHelpers::StartService(g_docsSvcName);
 }
 
 TEST_F(PortDiscoveryTests, DiscoverPortTest)
 {
-    std::string url = msdod::CPortFinder::GetDOPort(false);
-    ASSERT_EQ(url, samplePortNumber);
+    std::string foundPort = msdod::CPortFinder::GetDOPort(false);
+    ASSERT_EQ(foundPort, samplePortNumber);
 }
