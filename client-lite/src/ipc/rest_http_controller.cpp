@@ -6,9 +6,12 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #include "config_manager.h"
+#include "do_http_defines.h"
 #include "do_http_packet.h"
 #include "download_manager.h"
 #include "rest_api_request.h"
+
+namespace msdod = microsoft::deliveryoptimization::details;
 
 RestHttpController::RestHttpController(ConfigManager& config, std::shared_ptr<DownloadManager> downloadManager) :
     _config(config),
@@ -95,19 +98,19 @@ UINT RestHttpController::_HttpStatusFromHRESULT(HRESULT hr)
     {
     case S_OK:
     case S_FALSE:
-        status = 200;
+        status = msdod::http_status_codes::OK;
         break;
     case E_NOT_SET:
-        status = 404;
+        status = msdod::http_status_codes::NotFound;
         break;
     case E_OUTOFMEMORY:
-        status = 503;
+        status = msdod::http_status_codes::ServiceUnavailable;
         break;
     case HRESULT_FROM_WIN32(ERROR_UNHANDLED_EXCEPTION):
-        status = 500;
+        status = msdod::http_status_codes::InternalError;
         break;
     default:
-        status = 400;
+        status = msdod::http_status_codes::BadRequest;
         break;
     }
     return status;
