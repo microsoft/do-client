@@ -65,10 +65,10 @@ void VerifyRestInterfaceWithLocalEndpoint(const btcp_t::endpoint& localEndpoint,
     ASSERT_FALSE(ec) << "Expect no send failure but got: " << ec.message();
 
     std::vector<char> incoming(8192);
-    sock.receive(boost::asio::buffer(incoming, incoming.size()), 0, ec);
-    std::cout << "Error? " << bool{ec} << ", msg: " << ec.message() << std::endl;
+    auto cbRead = sock.read_some(boost::asio::buffer(incoming, incoming.size()), ec);
+    std::cout << "Error? " << bool{ec} << ", msg: " << ec.message() << ", cbRead: " << cbRead << std::endl;
 
-    std::string responseStr(incoming.data(), incoming.data() + 100);
+    std::string responseStr(incoming.data(), incoming.data() + cbRead);
     std::cout << "Response: " << responseStr.data() << std::endl;
 
     ASSERT_NE(responseStr.find(expectedReponseSubString), std::string::npos) << "Expected substr in response: " << expectedReponseSubString;
@@ -84,7 +84,7 @@ TEST_F(RestInterfaceTests, RestInterfaceUseLocalHostForLocalSocket)
     ASSERT_TRUE(spLocalEp) << "Found at least one address for the local hostname query";
 
     // Hostname can resolve to either a loopback address or private address depending on machine/network config
-    const auto expectedStr = spLocalEp->address().is_loopback() ? "200 OK" : "400 Bad Request";
+    const auto expectedStr = spLocalEp->address().is_loopback() ? "200 OK" : "400 BadRequest";
     VerifyRestInterfaceWithLocalEndpoint(*spLocalEp, expectedStr, asioService);
 }
 
@@ -106,7 +106,7 @@ TEST_F(RestInterfaceTests, RestInterfaceUsePrivateIPForLocalSocket)
     auto privateIpAddr = boost::asio::ip::address::from_string(TestHelpers::GetLocalIPv4Address());
     ASSERT_TRUE(!privateIpAddr.is_loopback());
     auto privateEp = btcp_t::endpoint(privateIpAddr, 0);
-    VerifyRestInterfaceWithLocalEndpoint(privateEp, "400 Bad Request", asioService);
+    VerifyRestInterfaceWithLocalEndpoint(privateEp, "400 BadRequest", asioService);
 
     // With the validation turned off, verify that request succeeds
     std::ofstream writer;

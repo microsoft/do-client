@@ -1,7 +1,7 @@
 #include "do_common.h"
 #include "download.h"
 
-#include <cpprest/uri.h>
+#include "do_cpprest_uri.h"
 #include "do_error.h"
 #include "event_data.h"
 #include "mcc_manager.h"
@@ -10,6 +10,8 @@
 #include "string_ops.h"
 #include "task_thread.h"
 #include "telemetry_logger.h"
+
+namespace msdod = microsoft::deliveryoptimization::details;
 
 const std::chrono::seconds Download::_unsetTimeout = std::chrono::seconds(0);
 
@@ -711,8 +713,8 @@ HRESULT Download::OnComplete(HRESULT hResult, UINT64 httpContext, UINT64)
 std::string SwapUrlHostNameForMCC(const std::string& url, const std::string& newHostname, UINT16 port)
 {
     // Switch the hostname and add the original hostname as a query param
-    web::uri inputUri(url);
-    web::uri_builder outputUri(inputUri);
+    msdod::cpprest_web::uri inputUri(url);
+    msdod::cpprest_web::uri_builder outputUri(inputUri);
     outputUri.set_host(newHostname);
     if (port != INTERNET_DEFAULT_PORT)
     {
