@@ -27,8 +27,7 @@ RestHttpController::~RestHttpController()
 
 void RestHttpController::Start(boost::asio::io_service& ioService)
 {
-    _listener.Start(ioService);
-    _listener.AddHandler(std::bind(&RestHttpController::_Handler, this, std::placeholders::_1, std::placeholders::_2));
+    _listener.Start(ioService, std::bind(&RestHttpController::_HttpListenerCallback, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 std::string RestHttpController::ServerEndpoint() const
@@ -41,9 +40,11 @@ uint16_t RestHttpController::Port() const
     return _listener.Port();
 }
 
-void RestHttpController::_Handler(const std::shared_ptr<microsoft::deliveryoptimization::details::HttpPacket>& packet,
+void RestHttpController::_HttpListenerCallback(const std::shared_ptr<microsoft::deliveryoptimization::details::HttpPacket>& packet,
     HttpListenerConnection& conn)
 {
+    auto tracker = _callTracker.Enter();
+
     HRESULT hr = S_OK;
     std::stringstream responseBodyStream;
     try

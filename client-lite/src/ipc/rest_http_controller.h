@@ -21,7 +21,8 @@ public:
     uint16_t Port() const;
 
 private:
-    void _Handler(const std::shared_ptr<microsoft::deliveryoptimization::details::HttpPacket>& packet, HttpListenerConnection& conn);
+    void _HttpListenerCallback(const std::shared_ptr<microsoft::deliveryoptimization::details::HttpPacket>& packet,
+        HttpListenerConnection& conn);
     static void _OnFailure(HttpListenerConnection& conn, HRESULT hr);
     static UINT _HttpStatusFromHRESULT(HRESULT hr);
 
