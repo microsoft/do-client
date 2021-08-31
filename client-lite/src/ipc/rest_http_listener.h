@@ -1,18 +1,24 @@
 #pragma once
 
 #include <memory>
-#include <cpprest/http_listener.h>
-#include <cpprest/http_msg.h>
+#include <boost/asio.hpp>
+#include "rest_http_listener_conn.h"
 
 class RestHttpListener
 {
 public:
-    void AddHandler(const web::http::method& method, const std::function<void(web::http::http_request)>& handler);
-    void Start(const std::string& listenUrl);
+    void Start(boost::asio::io_service& ioService, const http_listener_callback_t& requestHandler);
     void Stop();
     std::string Endpoint() const;
     uint16_t Port() const;
 
 private:
-    std::unique_ptr<web::http::experimental::listener::http_listener> _listener;
+    void _BeginAccept();
+    void _ProcessConnection(const std::shared_ptr<boost::asio::ip::tcp::socket>& socket);
+
+    std::unique_ptr<boost::asio::ip::tcp::acceptor> _listener;
+    http_listener_callback_t _requestHandler;
+    boost::asio::io_service* _io { nullptr };
+
+    std::atomic<unsigned int> _numConnections { 0 };
 };

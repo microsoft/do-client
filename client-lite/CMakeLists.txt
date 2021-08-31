@@ -90,6 +90,8 @@ else ()
     set(docs_svc_run_dir_path "/var/run/${DOSVC_BIN_NAME}")
 endif ()
 
+add_do_version_lib(${PROJECT_NAME} ${PROJECT_VERSION})
+
 # Build product files into a lib for use by other targets
 add_library(docs_common STATIC ${files_docs_common})
 target_compile_definitions(docs_common
@@ -101,9 +103,8 @@ if (DO_DEV_DEBUG)
     target_compile_definitions(docs_common PUBLIC DO_DEV_DEBUG)
 endif ()
 add_platform_interface_definitions(docs_common)
-target_link_libraries(docs_common PUBLIC dohttp)
+target_link_libraries(docs_common PUBLIC dohttp doversion)
 target_include_directories(docs_common PUBLIC ${docs_common_includes})
-
 if (DO_PROXY_SUPPORT)
     target_compile_definitions(docs_common PRIVATE DO_PROXY_SUPPORT)
     target_link_libraries(docs_common PUBLIC libproxy::proxy)
@@ -116,14 +117,11 @@ file (GLOB files_docs_exe
     src/exe/*.cpp
 )
 
-add_do_version_lib(${PROJECT_NAME} ${PROJECT_VERSION})
-
 # Add the executable
 add_executable(${DOSVC_BIN_NAME} ${files_docs_exe})
 add_platform_interface_definitions(${DOSVC_BIN_NAME})
 target_include_directories(${DOSVC_BIN_NAME} PRIVATE ${docs_common_includes})
 target_link_libraries(${DOSVC_BIN_NAME}
-    doversion
     docs_common
     cpprestsdk::cpprest
     ${Boost_LIBRARIES})

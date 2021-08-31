@@ -1,6 +1,8 @@
 #include "do_http_message.h"
 
+#ifdef DO_DEBUG_REST_INTERFACE
 #include <iostream>
+#endif
 #include <boost/asio/write.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include "do_http_defines.h"
@@ -30,7 +32,9 @@ void HttpRequest::Serialize(boost::asio::ip::tcp::socket& socket) const
     request << "\r\n";
 
     const auto req = request.str();
-    // std::cout << "Sending request:\n" << req << std::endl; // uncomment for debugging
+#ifdef DO_DEBUG_REST_INTERFACE
+    std::cout << "Sending request:\n" << req << std::endl;
+#endif
     net::write(socket, net::buffer(req.data(), req.size()));
 }
 
