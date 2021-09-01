@@ -1,21 +1,12 @@
 #pragma once
 
 #include <memory>
-#include <cpprest/http_msg.h>
-#include <cpprest/rawptrstream.h>
-#include <pplx/pplxtasks.h>
-#include "do_event.h"
+#include <mutex>
+#include <unordered_map>
+#include <curl/curl.h>
 #include "http_agent_interface.h"
-#include "waitable_counter.h"
 
-#define DO_HTTP_REQ_BUF_SIZE            (128 * 1024)    // default request buffer size per request
 #define DO_HTTP_RANGEREQUEST_STR_LEN    48              // two 64bit numbers plus a '-' character (20 digits in UINT64)
-
-namespace web::http::client
-{
-class http_client;
-class http_client_config;
-}
 
 class HttpAgent : public IHttpAgent
 {
@@ -29,8 +20,7 @@ public:
 
     // IHttpAgent
 
-    HRESULT SendRequest(PCSTR szUrl = nullptr, PCSTR szProxyUrl = nullptr, PCSTR szPostData = nullptr, PCSTR szRange = nullptr,
-        UINT64 callerContext = 0) override;
+    HRESULT SendRequest(PCSTR szUrl = nullptr, PCSTR szProxyUrl = nullptr, PCSTR szRange = nullptr, UINT64 callerContext = 0) override;
     void Close() override;
 
     // The Query* functions are supposed to be called only from within the IHttpAgentEvents callbacks
@@ -42,31 +32,54 @@ public:
     HRESULT QueryHeadersByType(UINT64 httpContext, HttpAgentHeaders type, std::string& headers) noexcept override;
 
 private:
-    struct ReadDataBuffer
-    {
-        std::vector<BYTE> storage {};
-        Concurrency::streams::rawptr_buffer<BYTE> streambuf;
-
-        ReadDataBuffer() :
-            storage(DO_HTTP_REQ_BUF_SIZE),
-            streambuf(storage.data(), storage.size())
-        {
-        }
-    };
-
-    std::unique_ptr<web::http::client::http_client> _client;
-    pplx::cancellation_token_source _cts;
     mutable std::recursive_mutex _requestLock;
 
     IHttpAgentEvents& _callback;
-    WaitableCounter _callTracker;
+    UINT64 _callbackContext { 0 };
+
+    // Current usage pattern is to create only one request at a time.
+    // Holding a single request context is sufficient.
+    struct RequestContext
+    {
+        CURL* curlHandle;
+        struct curl_slist* requestHeaders;
+
+        unsigned int responseStatusCode;
+        std::unordered_map<std::string, std::string> responseHeaders;
+        bool responseOnHeadersAvailableInvoked;
+
+        ~RequestContext()
+        {
+            curl_slist_free_all(requestHeaders);
+        }
+    };
+
+    RequestContext _requestContext {};
 
 private:
     HRESULT _CreateClient(PCSTR szUrl = nullptr, PCSTR szProxyUrl = nullptr);
-    static web::http::http_request _CreateRequest(PCSTR szPostData, PCSTR szRange);
-    pplx::task<void> _SubmitRequestTask(const web::http::http_request& request, UINT64 callerContext);
-    pplx::task<void> _DoReadBodyData(Concurrency::streams::istream bodyStream, const std::shared_ptr<ReadDataBuffer>& bodyStorage,
-        pplx::cancellation_token cancellationToken, const std::shared_ptr<web::http::http_response>& response, UINT64 callerContext);
-    static HRESULT _ResultFromStatusCode(web::http::status_code code);
-    static void _SetWebProxyFromProxyUrl(web::http::client::http_client_config& config, _In_opt_ PCSTR szProxyUrl);
+    static HRESULT _ResultFromStatusCode(unsigned int code);
+    void _SetWebProxyFromProxyUrl(_In_opt_ PCSTR szProxyUrl);
+
+    size_t _HeaderCallback(char* pBuffer, size_t size, size_t nItems);
+    size_t _WriteCallback(char* pBuffer, size_t size, size_t nMemb);
+    void _CompleteCallback(int curlResult);
+    void _TrySetStatusCodeAndInvokeOnHeadersAvailable();
+
+    // libcurl callbacks
+    static size_t s_HeaderCallback(char* pBuffer, size_t size, size_t nItems, void* pUserData)
+    {
+        return reinterpret_cast<HttpAgent*>(pUserData)->_HeaderCallback(pBuffer, size, nItems);
+    }
+
+    static size_t s_WriteCallback(char* pBuffer, size_t size, size_t nMemb, void* pUserData)
+    {
+        return reinterpret_cast<HttpAgent*>(pUserData)->_WriteCallback(pBuffer, size, nMemb);
+    }
+
+    // CurlMultiOperation callback
+    static void s_CompleteCallback(int curlResult, void* pUserData)
+    {
+        return reinterpret_cast<HttpAgent*>(pUserData)->_CompleteCallback(curlResult);
+    }
 };

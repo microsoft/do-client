@@ -1,6 +1,7 @@
 #include "do_common.h"
 #include "download.h"
 
+#include <cmath>
 #include "do_cpprest_uri.h"
 #include "do_error.h"
 #include "event_data.h"
@@ -393,7 +394,7 @@ void Download::_SendHttpRequest(bool retryAfterFailure)
 
         auto range = HttpAgent::MakeRange(_status.BytesTransferred, (_status.BytesTotal - _status.BytesTransferred));
         DoLogInfo("%s, requesting range: %s from %s", GuidToString(_id).data(), range.data(), url.data());
-        THROW_IF_FAILED(_httpAgent->SendRequest(url.data(), szProxyUrl, nullptr, range.data()));
+        THROW_IF_FAILED(_httpAgent->SendRequest(url.data(), szProxyUrl, range.data()));
     }
 
     _timer.Start();

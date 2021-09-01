@@ -44,6 +44,8 @@ find_package(Boost COMPONENTS filesystem REQUIRED)
 # Since we are statically linking to v2.10.16 we no longer need to worry about the above as cpprest is patched to provide the proper package configuration metadata
 find_package(cpprestsdk CONFIG REQUIRED)
 
+find_package(CURL REQUIRED)
+
 if (DO_PROXY_SUPPORT)
     message (STATUS "Proxy support requested. Will look for libproxy.")
     find_package(libproxy REQUIRED)
@@ -102,7 +104,7 @@ target_compile_definitions(docs_common
 if (DO_DEV_DEBUG)
     target_compile_definitions(docs_common PUBLIC DO_DEV_DEBUG)
 endif ()
-target_link_libraries(docs_common PUBLIC dohttp doversion)
+target_link_libraries(docs_common PUBLIC dohttp doversion ${CURL_LIBRARIES})
 target_include_directories(docs_common PUBLIC ${docs_common_includes})
 if (DO_PROXY_SUPPORT)
     target_compile_definitions(docs_common PRIVATE DO_PROXY_SUPPORT)
