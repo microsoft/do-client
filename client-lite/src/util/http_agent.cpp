@@ -336,9 +336,14 @@ size_t HttpAgent::_HeaderCallback(char* pBuffer, size_t size, size_t nItems)
         if (pColon > pBuffer)
         {
             auto pBufferPastEnd = pBuffer + cbBuffer;
-            _requestContext.responseHeaders.emplace(std::piecewise_construct,
+            auto result = _requestContext.responseHeaders.emplace(std::piecewise_construct,
                 std::forward_as_tuple(pBuffer, pColon),
                 std::forward_as_tuple(pColon + 1, pBufferPastEnd));
+            if (!result.second)
+            {
+                // Duplicate header (likely following redirects), take the new one
+                result.first->second.assign(pColon + 1, pBufferPastEnd);
+            }
         }
     }
     catch (const std::exception& e)
