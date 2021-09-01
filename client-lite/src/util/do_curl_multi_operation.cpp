@@ -51,7 +51,6 @@ void CurlMultiOperation::RemoveHandle(CURL* easyHandle)
         std::unique_lock<std::mutex> lock{_mutex};
 
         _RemoveHandle(easyHandle, _handlesToAdd);
-        _RemoveHandle(easyHandle, _handlesToRemove);
 
         auto pExistingWrappedHandle = _activeHandles.Get(easyHandle);
         if (pExistingWrappedHandle == nullptr)
