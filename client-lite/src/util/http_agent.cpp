@@ -369,10 +369,18 @@ void HttpAgent::_CompleteCallback(int curlResult)
     }
     _requestContext.responseOnCompleteInvoked = true;
 
-    _TrySetStatusCodeAndInvokeOnHeadersAvailable();
+    if (curlResult == CURLE_OK)
+    {
+        _TrySetStatusCodeAndInvokeOnHeadersAvailable();
 
-    _requestContext.hrTranslatedStatusCode = _ResultFromStatusCode(_requestContext.responseStatusCode);
-    (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode, 0, _callbackContext);
+        _requestContext.hrTranslatedStatusCode = _ResultFromStatusCode(_requestContext.responseStatusCode);
+        (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode, 0, _callbackContext);
+    }
+    else
+    {
+        _requestContext.hrTranslatedStatusCode = HRESULT_FROM_XPLAT_SYSERR(curlResult);
+        (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode, 0, _callbackContext);
+    }
 }
 
 void HttpAgent::_TrySetStatusCodeAndInvokeOnHeadersAvailable()
