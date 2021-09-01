@@ -48,8 +48,10 @@ private:
         struct curl_slist* requestHeaders;
 
         unsigned int responseStatusCode;
+        HRESULT hrTranslatedStatusCode;
         std::unordered_map<std::string, std::string> responseHeaders;
         bool responseOnHeadersAvailableInvoked;
+        bool responseOnCompleteInvoked;
 
         ~RequestContext()
         {

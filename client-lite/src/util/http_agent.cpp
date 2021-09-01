@@ -83,7 +83,9 @@ HRESULT HttpAgent::SendRequest(PCSTR szUrl, PCSTR szProxyUrl, PCSTR szRange, UIN
 
     _requestContext.responseHeaders.clear();
     _requestContext.responseStatusCode = 0;
+    _requestContext.hrTranslatedStatusCode = S_OK;
     _requestContext.responseOnHeadersAvailableInvoked = false;
+    _requestContext.responseOnCompleteInvoked = false;
     _callbackContext = callerContext;
     _curlOps.AddHandle(_requestContext.curlHandle, s_CompleteCallback, this);
     return S_OK;
@@ -351,16 +353,26 @@ size_t HttpAgent::_WriteCallback(char* pBuffer, size_t size, size_t nMemb)
     _TrySetStatusCodeAndInvokeOnHeadersAvailable();
 
     const auto cbBuffer = nMemb * size;
-    (void)_callback.OnData(reinterpret_cast<BYTE*>(pBuffer), cbBuffer, 0, _callbackContext);
+    // Forward body only for success response
+    if (SUCCEEDED(_requestContext.hrTranslatedStatusCode))
+    {
+        (void)_callback.OnData(reinterpret_cast<BYTE*>(pBuffer), cbBuffer, 0, _callbackContext);
+    }
     return cbBuffer;
 }
 
 void HttpAgent::_CompleteCallback(int curlResult)
 {
+    if (_requestContext.responseOnCompleteInvoked)
+    {
+        return;
+    }
+    _requestContext.responseOnCompleteInvoked = true;
+
     _TrySetStatusCodeAndInvokeOnHeadersAvailable();
 
-    const HRESULT hrResult = _ResultFromStatusCode(_requestContext.responseStatusCode);
-    (void)_callback.OnComplete(hrResult, 0, _callbackContext);
+    _requestContext.hrTranslatedStatusCode = _ResultFromStatusCode(_requestContext.responseStatusCode);
+    (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode, 0, _callbackContext);
 }
 
 void HttpAgent::_TrySetStatusCodeAndInvokeOnHeadersAvailable()
@@ -369,7 +381,6 @@ void HttpAgent::_TrySetStatusCodeAndInvokeOnHeadersAvailable()
     {
         return;
     }
-
     _requestContext.responseOnHeadersAvailableInvoked = true;
 
     long responseCode;
@@ -380,4 +391,12 @@ void HttpAgent::_TrySetStatusCodeAndInvokeOnHeadersAvailable()
     }
 
     (void)_callback.OnHeadersAvailable(0, _callbackContext);
+
+    _requestContext.hrTranslatedStatusCode = _ResultFromStatusCode(_requestContext.responseStatusCode);
+    if (FAILED(_requestContext.hrTranslatedStatusCode))
+    {
+        // Not interested in receiving body for failure response. Notify completion immediately.
+        _requestContext.responseOnCompleteInvoked = true;
+        (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode, 0, _callbackContext);
+    }
 }
