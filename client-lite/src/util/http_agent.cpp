@@ -2,6 +2,7 @@
 #include "http_agent.h"
 
 #include <sstream>
+#include <boost/algorithm/string.hpp>
 #include "do_cpprest_uri_builder.h"
 #include "do_cpprest_uri.h"
 #include "do_curl_multi_operation.h"
@@ -144,7 +145,11 @@ HRESULT HttpAgent::QueryHeaders(UINT64, PCSTR pszName, std::string& headers) con
         {
             for (const auto& item : reponseHeaders)
             {
-                ss << item.first << ':' << item.second << "\r\n";
+                ss << item.first << ':' << item.second;
+                if (!boost::algorithm::ends_with(item.second, "\r\n"))
+                {
+                    ss << "\r\n";
+                }
             }
             ss << "\r\n";
         }
