@@ -25,7 +25,6 @@ CurlMultiOperation::~CurlMultiOperation()
     _multiPerformThread.join();
 
     {
-        std::unique_lock<std::mutex> lock{_mutex};
         _activeHandles.RemoveAll(_multiHandle);
         _handlesToAdd.clear();
         _handlesToRemove.clear();
@@ -101,6 +100,7 @@ void CurlMultiOperation::_WorkerThread()
         }
         else
         {
+            lock.unlock();
             _PeformOperations();
         }
     }
@@ -154,9 +154,13 @@ void CurlMultiOperation::_PeformOperations()
             default:
             {
                 mc = curl_multi_perform(_multiHandle, &numRunningHandles);
-                if ((mc == CURLM_OK) && (numRunningHandles < static_cast<int>(_activeHandles.Size())))
+                if (mc == CURLM_OK)
                 {
-                    _CheckAndHandleCompletedOperations();
+                    std::unique_lock<std::mutex> lock(_mutex);
+                    if (numRunningHandles < static_cast<int>(_activeHandles.Size()))
+                    {
+                        _CheckAndHandleCompletedOperationsUnderLock();
+                    }
                 }
             }
         }
@@ -167,7 +171,7 @@ void CurlMultiOperation::_PeformOperations()
     } while ((numRunningHandles > 0) && (elapsed < std::chrono::seconds(2)));
 }
 
-void CurlMultiOperation::_CheckAndHandleCompletedOperations()
+void CurlMultiOperation::_CheckAndHandleCompletedOperationsUnderLock()
 {
     struct CURLMsg* msg;
     do
@@ -190,11 +194,11 @@ void CurlMultiOperation::_RemoveHandle(CURL* easyHandle, std::vector<T>& contain
 
 void CurlMultiOperation::ActiveHandles::Add(const HandleData& inHandle, CURLM* multiHandle)
 {
-    if (_Find(inHandle.easyHandle) == _activeHandles.end())
+    if (_Find(inHandle.easyHandle) == _handles.end())
     {
         auto wrappedData = std::make_shared<WrappedHandleData>();
         wrappedData->d = inHandle;
-        _activeHandles.emplace_back(std::move(wrappedData));
+        _handles.emplace_back(std::move(wrappedData));
         curl_multi_add_handle(multiHandle, inHandle.easyHandle);
     }
 }
@@ -202,7 +206,7 @@ void CurlMultiOperation::ActiveHandles::Add(const HandleData& inHandle, CURLM* m
 void CurlMultiOperation::ActiveHandles::Remove(CURL* easyHandle, CURLM* multiHandle)
 {
     auto itActiveHandle = _Find(easyHandle);
-    if (itActiveHandle != _activeHandles.end())
+    if (itActiveHandle != _handles.end())
     {
         _Remove(itActiveHandle, multiHandle);
     }
@@ -211,18 +215,18 @@ void CurlMultiOperation::ActiveHandles::Remove(CURL* easyHandle, CURLM* multiHan
 void CurlMultiOperation::ActiveHandles::RemoveAll(CURLM* multiHandle)
 {
     // The easy handles are not owned here, so no need to call curl_easy_cleanup
-    for (const auto& h : _activeHandles)
+    for (const auto& h : _handles)
     {
         (void)curl_multi_remove_handle(multiHandle, h->d.easyHandle);
         h->inactiveSignal.SetEvent();
     }
-    _activeHandles.clear();
+    _handles.clear();
 }
 
 void CurlMultiOperation::ActiveHandles::Complete(CURL* easyHandle, CURLcode result, CURLM* multiHandle)
 {
     auto itActiveHandle = _Find(easyHandle);
-    DO_ASSERT(itActiveHandle != _activeHandles.end());
+    DO_ASSERT(itActiveHandle != _handles.end());
     WrappedHandleData& handleData = **itActiveHandle;
     handleData.d.pCallback(result, handleData.d.pCallbackUserData);
     _Remove(itActiveHandle, multiHandle);
@@ -231,7 +235,7 @@ void CurlMultiOperation::ActiveHandles::Complete(CURL* easyHandle, CURLcode resu
 const std::shared_ptr<CurlMultiOperation::WrappedHandleData>* CurlMultiOperation::ActiveHandles::Get(CURL* eh) const noexcept
 {
     auto it = _Find(eh);
-    return (it != _activeHandles.end()) ? &(*it) : nullptr;
+    return (it != _handles.end()) ? &(*it) : nullptr;
 }
 
 void CurlMultiOperation::ActiveHandles::_Remove(std::vector<std::shared_ptr<WrappedHandleData>>::const_iterator where, CURLM* mh)
@@ -239,5 +243,5 @@ void CurlMultiOperation::ActiveHandles::_Remove(std::vector<std::shared_ptr<Wrap
     auto& h = **where;
     (void)curl_multi_remove_handle(mh, h.d.easyHandle);
     h.inactiveSignal.SetEvent();
-    _activeHandles.erase(where);
+    _handles.erase(where);
 }

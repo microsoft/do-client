@@ -39,13 +39,13 @@ private:
     class ActiveHandles
     {
     private:
-        std::vector<std::shared_ptr<WrappedHandleData>> _activeHandles;
+        std::vector<std::shared_ptr<WrappedHandleData>> _handles;
 
         void _Remove(std::vector<std::shared_ptr<WrappedHandleData>>::const_iterator where, CURLM* mh);
 
         auto _Find(CURL* eh) const noexcept
         {
-            return std::find_if(std::begin(_activeHandles), std::end(_activeHandles), [eh](const auto& ah)
+            return std::find_if(std::begin(_handles), std::end(_handles), [eh](const auto& ah)
                 {
                     return *ah == eh;
                 });
@@ -58,13 +58,13 @@ private:
         void Complete(CURL* easyHandle, CURLcode result, CURLM* multiHandle);
 
         const std::shared_ptr<WrappedHandleData>* Get(CURL* eh) const noexcept;
-        auto Empty() const noexcept { return _activeHandles.empty(); }
-        auto Size() const noexcept { return _activeHandles.size(); }
+        auto Empty() const noexcept { return _handles.empty(); }
+        auto Size() const noexcept { return _handles.size(); }
     };
 
     void _WorkerThread();
     void _PeformOperations();
-    void _CheckAndHandleCompletedOperations();
+    void _CheckAndHandleCompletedOperationsUnderLock();
 
     template <typename T>
     void _RemoveHandle(CURL* easyHandle, std::vector<T>& container);
