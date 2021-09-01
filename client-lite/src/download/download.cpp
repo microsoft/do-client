@@ -600,7 +600,7 @@ HRESULT Download::OnHeadersAvailable(UINT64 httpContext, UINT64) try
     LOG_IF_FAILED(_httpAgent->QueryHeaders(httpContext, nullptr, responseHeaders));
 
     // bytesTotal is required for resume after a pause/error
-    UINT64 bytesTotal = 0;
+    UINT64 bytesTotal;
     if (httpStatusCode == HTTP_STATUS_OK)
     {
         RETURN_IF_FAILED(_httpAgent->QueryContentLength(httpContext, &bytesTotal));
