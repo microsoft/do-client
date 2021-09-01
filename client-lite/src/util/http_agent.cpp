@@ -390,10 +390,12 @@ void HttpAgent::_TrySetStatusCodeAndInvokeOnHeadersAvailable()
         _requestContext.responseStatusCode = static_cast<unsigned int>(responseCode);
     }
 
-    (void)_callback.OnHeadersAvailable(0, _callbackContext);
-
     _requestContext.hrTranslatedStatusCode = _ResultFromStatusCode(_requestContext.responseStatusCode);
-    if (FAILED(_requestContext.hrTranslatedStatusCode))
+    if (SUCCEEDED(_requestContext.hrTranslatedStatusCode))
+    {
+        (void)_callback.OnHeadersAvailable(0, _callbackContext);
+    }
+    else
     {
         // Not interested in receiving body for failure response. Notify completion immediately.
         _requestContext.responseOnCompleteInvoked = true;
