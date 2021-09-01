@@ -11,6 +11,7 @@
 
 #include "config_defaults.h"
 #include "config_manager.h"
+#include "do_curl_multi_operation.h"
 #include "do_error.h"
 #include "do_test_helpers.h"
 #include "download_manager.h"
@@ -127,7 +128,8 @@ TEST_F(MCCManagerTests, DISABLED_Download404WithFallback)
     SetFallbackDelayConfig(fallbackDelay);
 
     ConfigManager configs(g_adminConfigFilePath.string(), g_sdkConfigFilePath.string());
-    DownloadManager manager(configs);
+    CurlMultiOperation curlOps;
+    DownloadManager manager(configs, curlOps);
     const std::string destFile = g_testTempDir / "prodfile.test";
     const std::string id = manager.CreateDownload(g_404Url, destFile); // start with 404 url
     manager.StartDownload(id);
@@ -158,7 +160,8 @@ TEST_F(MCCManagerTests, DISABLED_Download404NoFallback)
     SetFallbackDelayConfig(g_cacheHostFallbackDelayNoFallback);
 
     ConfigManager configs(g_adminConfigFilePath.string(), g_sdkConfigFilePath.string());
-    DownloadManager manager(configs);
+    CurlMultiOperation curlOps;
+    DownloadManager manager(configs, curlOps);
     const std::string destFile = g_testTempDir / "prodfile.test";
     const std::string id = manager.CreateDownload(g_404Url, destFile); // start with 404 url
     manager.StartDownload(id);
@@ -176,7 +179,8 @@ TEST_F(MCCManagerTests, NoFallbackDownload)
     SetFallbackDelayConfig(g_cacheHostFallbackDelayNoFallback);
 
     ConfigManager configs(g_adminConfigFilePath.string(), g_sdkConfigFilePath.string());
-    DownloadManager manager(configs);
+    CurlMultiOperation curlOps;
+    DownloadManager manager(configs, curlOps);
     const std::string destFile = g_testTempDir / "prodfile.test";
     const std::string id = manager.CreateDownload(g_prodFileUrl, destFile);
     manager.StartDownload(id);
@@ -207,7 +211,8 @@ TEST_F(MCCManagerTests, FallbackWithDelayDownload)
     SetFallbackDelayConfig(fallbackDelay);
 
     ConfigManager configs(g_adminConfigFilePath.string(), g_sdkConfigFilePath.string());
-    DownloadManager manager(configs);
+    CurlMultiOperation curlOps;
+    DownloadManager manager(configs, curlOps);
     const std::string destFile = g_testTempDir / "prodfile.test";
     const std::string id = manager.CreateDownload(g_prodFileUrl, destFile);
     manager.StartDownload(id);

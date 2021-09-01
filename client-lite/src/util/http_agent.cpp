@@ -4,6 +4,7 @@
 #include <sstream>
 #include "do_cpprest_uri_builder.h"
 #include "do_cpprest_uri.h"
+#include "do_curl_multi_operation.h"
 #include "do_http_defines.h"
 #include "safe_int.h"
 
@@ -12,7 +13,8 @@
 
 namespace msdod = microsoft::deliveryoptimization::details;
 
-HttpAgent::HttpAgent(IHttpAgentEvents& callback) :
+HttpAgent::HttpAgent(CurlMultiOperation& curlOps, IHttpAgentEvents& callback) :
+    _curlOps(curlOps),
     _callback(callback)
 {
 }
@@ -20,6 +22,7 @@ HttpAgent::HttpAgent(IHttpAgentEvents& callback) :
 HttpAgent::~HttpAgent()
 {
     Close();
+    curl_easy_cleanup(_requestContext.curlHandle);
 }
 
 // Determine if the status code is a 4xx code
@@ -81,25 +84,17 @@ HRESULT HttpAgent::SendRequest(PCSTR szUrl, PCSTR szProxyUrl, PCSTR szRange, UIN
     _requestContext.responseStatusCode = 0;
     _requestContext.responseOnHeadersAvailableInvoked = false;
     _callbackContext = callerContext;
-    // add to CurlMultiOperation
-    // (void)_SubmitRequestTask(_CreateRequest(szRange), callerContext);
+    _curlOps.AddHandle(_requestContext.curlHandle, s_CompleteCallback, this);
     return S_OK;
 } CATCH_RETURN()
 
 void HttpAgent::Close()
 {
-    // // Cancelling the token notifies any pending/running pplx tasks.
-    // // Call tracker will then wait for the tasks acknowledge the cancel and/or complete.
-    // // Too bad the task_group concept from PPL isn't supported in the cpprestsdk's version.
-    // _cts.cancel();
-    // _callTracker.Wait();
-
-    // // Clients may now make new requests if they choose
-    // std::unique_lock<std::recursive_mutex> lock(_requestLock);
-    // _client.reset();
-    // _cts = pplx::cancellation_token_source();
-
-    // remove from CurlMultiOperation
+    if (_requestContext.curlHandle)
+    {
+        _curlOps.RemoveHandle(_requestContext.curlHandle);
+    }
+    // Clients may now make new requests if they choose
 }
 
 // The Query* functions are supposed to be called only from within the IHttpAgentEvents callbacks

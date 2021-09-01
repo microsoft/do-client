@@ -7,6 +7,7 @@
 
 enum class DownloadProperty;
 class Download;
+class CurlMultiOperation;
 struct DownloadStatus;
 
 class DownloadManager
@@ -14,7 +15,7 @@ class DownloadManager
     friend std::shared_ptr<Download> DownloadForId(const DownloadManager& manager, const std::string& id);
 
 public:
-    DownloadManager(ConfigManager& config);
+    DownloadManager(ConfigManager& config, CurlMultiOperation& curlOps);
 
     std::string CreateDownload(std::string url = {}, std::string destFilePath = {});
 
@@ -36,6 +37,7 @@ private:
     mutable std::shared_timed_mutex _downloadsMtx;
 
     ConfigManager& _config;
+    CurlMultiOperation& _curlOps;
     MCCManager _mccManager;
 
 private:
