@@ -98,7 +98,7 @@ void CurlMultiOperation::_WorkerThread()
 
         if (_activeHandles.Empty())
         {
-            _cv.wait(lock, [this](){ return !_fKeepRunning || !_activeHandles.Empty(); });
+            _cv.wait(lock, [this](){ return !_fKeepRunning || !_handlesToAdd.empty(); });
         }
         else
         {
