@@ -129,7 +129,7 @@ TEST_F(DownloadManagerTests, FileDownloadFatal404)
 
     // Expect immediate failure upon starting
     manager.StartDownload(id);
-    std::this_thread::sleep_for(2s);
+    ASSERT_EQ(StartAndWaitUntilNotTransferring(manager, id, 5min), S_OK);
     const auto status = manager.GetDownloadStatus(id);
     ASSERT_EQ(status.BytesTransferred, 0);
     ASSERT_EQ(status.BytesTotal, 0);
