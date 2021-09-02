@@ -207,8 +207,6 @@ TEST_F(DownloadManagerTests, PauseResumeDownload)
     VerifyFileSize(destFile, 536870440);
 }
 
-// Test fails when using cpprestsdk built without this change (automatic follow of redirects)
-// made on Mar 31, 2020 - https://github.com/microsoft/cpprestsdk/pull/1328
 TEST_F(DownloadManagerTests, DownloadUrlWithRedirects)
 {
     const std::string destFile = g_testTempDir / "redirect.test";

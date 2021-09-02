@@ -201,8 +201,8 @@ TEST_F(MCCManagerTests, NoFallbackDownload)
 
 // Set invalid MCC host and fallback config. Expect download to complete only after the fallback delay.
 // Note: This test fails on WSL (Ubuntu 18.04) because the bad host name seems to be sticking at the DNS query layer leading
-// to the new valid host name not being picked up even after we switch to it. Cpprestsdk uses Boost's resolver
-// and the issue on WSL can be reproduced with the BoostResolver* tests below. Test works fine on Ubuntu 18.04 VM.
+// to the new valid host name not being picked up even after we switch to it (can be reproduced with the BoostResolver* tests below).
+// Test works fine on Ubuntu 18.04 VM.
 TEST_F(MCCManagerTests, FallbackWithDelayDownload)
 {
     SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=ahdkhkasdhaksd");
