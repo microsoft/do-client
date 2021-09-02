@@ -70,7 +70,7 @@ function installBuildDependencies
 
     if [[ "$PLATFORM" == "debian9" ]];
     then
-        # Install gsl from source, also not available on Debian9
+        # libmsgsl-dev package not available on Debian9. Install from source.
         cd /tmp/
         git clone https://github.com/Microsoft/GSL.git
         cd GSL/
@@ -82,8 +82,6 @@ function installBuildDependencies
         apt-get -y install cmake libmsgsl-dev
     fi
 
-    # Open-source library dependencies
-    # Boost libs
     apt-get install -y libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
     apt-get install -y libproxy-dev libssl-dev uuid-dev libcurl4-openssl-dev
 
