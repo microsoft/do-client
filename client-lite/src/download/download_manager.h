@@ -2,12 +2,12 @@
 
 #include <shared_mutex>
 #include <unordered_map>
+#include "do_curl_multi_operation.h"
 #include "mcc_manager.h"
 #include "task_thread.h"
 
 enum class DownloadProperty;
 class Download;
-class CurlMultiOperation;
 struct DownloadStatus;
 
 class DownloadManager
@@ -15,7 +15,7 @@ class DownloadManager
     friend std::shared_ptr<Download> DownloadForId(const DownloadManager& manager, const std::string& id);
 
 public:
-    DownloadManager(ConfigManager& config, CurlMultiOperation& curlOps);
+    DownloadManager(ConfigManager& config);
 
     std::string CreateDownload(std::string url = {}, std::string destFilePath = {});
 
@@ -37,7 +37,7 @@ private:
     mutable std::shared_timed_mutex _downloadsMtx;
 
     ConfigManager& _config;
-    CurlMultiOperation& _curlOps;
+    CurlMultiOperation _curlOps;
     MCCManager _mccManager;
 
 private:

@@ -12,7 +12,6 @@
 #include <chrono>
 #include <boost/asio.hpp>
 #include <curl/curl.h>
-#include "do_curl_multi_operation.h"
 #include "do_event.h"
 #include "do_persistence.h"
 
@@ -143,8 +142,7 @@ HRESULT Run() try
     BoostAsioService asioService;
 
     ConfigManager clientConfigs;
-    CurlMultiOperation curlOperations;
-    auto downloadManager = std::make_shared<DownloadManager>(clientConfigs, curlOperations);
+    auto downloadManager = std::make_shared<DownloadManager>(clientConfigs);
     RestHttpController controller(clientConfigs, downloadManager);
 
     controller.Start(asioService.IoService());

@@ -5,9 +5,8 @@
 #include "do_error.h"
 #include "download.h"
 
-DownloadManager::DownloadManager(ConfigManager& config, CurlMultiOperation& curlOps) :
+DownloadManager::DownloadManager(ConfigManager& config) :
     _config(config),
-    _curlOps(curlOps),
     _mccManager(config)
 {
 }

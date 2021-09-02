@@ -1,7 +1,6 @@
 #include "test_common.h"
 
 #include "config_manager.h"
-#include "do_curl_multi_operation.h"
 #include "do_error.h"
 #include "download.h"
 #include "download_manager.h"
@@ -41,8 +40,7 @@ public:
 
 protected:
     ConfigManager configs;
-    CurlMultiOperation curlOps;
-    DownloadManager manager { configs, curlOps };
+    DownloadManager manager { configs };
 };
 
 TEST_F(DownloadManagerTests, EmptyDownload)
