@@ -11,7 +11,7 @@ CurlMultiOperation::CurlMultiOperation()
     _fKeepRunning = true;
     _multiPerformThread = std::thread{[this]()
         {
-            _WorkerThread();
+            _DoWork();
         }};
 }
 
@@ -72,7 +72,7 @@ void CurlMultiOperation::RemoveHandle(CURL* easyHandle)
     }
 }
 
-void CurlMultiOperation::_WorkerThread()
+void CurlMultiOperation::_DoWork()
 {
     while (true)
     {
@@ -133,7 +133,8 @@ void CurlMultiOperation::_PeformOperations()
         CURLMcode mc = curl_multi_fdset(_multiHandle, &fdsRead, &fdsWrite, &fdsException, &maxfd);
         if (maxfd == -1)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100)); // no relevant handles to poll, short sleep
+            // no relevant handles to poll, short sleep
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
             selectResult = 0;
         }
         else
@@ -146,11 +147,17 @@ void CurlMultiOperation::_PeformOperations()
 
         switch (selectResult)
         {
+            // TODO(shishirb) Should we do anything other than retry?
             case -1:
-                DO_ASSERT(false); // TODO(shishirb) how to handle?
+                DO_ASSERT(false);
                 break;
 
+            // select() timed out or we did the short sleep above.
+            // Fallthrough and call curl_multi_perform even if in this case to let
+            // libcurl perform internal retries and timeouts.
             case 0:
+
+            // Default case is select() indicating there are one or more sockets ready for reading/writing
             default:
             {
                 mc = curl_multi_perform(_multiHandle, &numRunningHandles);

@@ -62,7 +62,7 @@ private:
         auto Size() const noexcept { return _handles.size(); }
     };
 
-    void _WorkerThread();
+    void _DoWork();
     void _PeformOperations();
     void _CheckAndHandleCompletedOperationsUnderLock();
 
