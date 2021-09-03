@@ -148,7 +148,7 @@ private:
     bool _ShouldFailFastPerConnectionType() const;
 
     // IHttpAgentEvents
-    HRESULT OnHeadersAvailable(UINT64 httpContext, UINT64) override;
-    HRESULT OnData(_In_reads_bytes_(cbData) BYTE* pData, UINT cbData, UINT64, UINT64) override;
-    HRESULT OnComplete(HRESULT hResult, UINT64 httpContext, UINT64) override;
+    HRESULT OnHeadersAvailable() override;
+    HRESULT OnData(_In_reads_bytes_(cbData) BYTE* pData, UINT cbData) override;
+    HRESULT OnComplete(HRESULT hResult) override;
 };

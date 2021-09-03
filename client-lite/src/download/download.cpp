@@ -591,23 +591,23 @@ bool Download::_ShouldFailFastPerConnectionType() const
 
 // IHttpAgentEvents
 
-HRESULT Download::OnHeadersAvailable(UINT64 httpContext, UINT64) try
+HRESULT Download::OnHeadersAvailable() try
 {
     // Capture relevant data and update internal members asynchronously
     UINT httpStatusCode;
     std::string responseHeaders;
-    LOG_IF_FAILED(_httpAgent->QueryStatusCode(httpContext, &httpStatusCode));
-    LOG_IF_FAILED(_httpAgent->QueryHeaders(httpContext, nullptr, responseHeaders));
+    LOG_IF_FAILED(_httpAgent->QueryStatusCode(&httpStatusCode));
+    LOG_IF_FAILED(_httpAgent->QueryHeaders(nullptr, responseHeaders));
 
     // bytesTotal is required for resume after a pause/error
     UINT64 bytesTotal;
     if (httpStatusCode == HTTP_STATUS_OK)
     {
-        RETURN_IF_FAILED(_httpAgent->QueryContentLength(httpContext, &bytesTotal));
+        RETURN_IF_FAILED(_httpAgent->QueryContentLength(&bytesTotal));
     }
     else if (httpStatusCode == HTTP_STATUS_PARTIAL_CONTENT)
     {
-        RETURN_IF_FAILED(_httpAgent->QueryContentLengthFromRange(httpContext, &bytesTotal));
+        RETURN_IF_FAILED(_httpAgent->QueryContentLengthFromRange(&bytesTotal));
     }
 
     DoLogInfo("%s, http_status: %d, content_length: %llu, headers:\n%s",
@@ -623,7 +623,7 @@ HRESULT Download::OnHeadersAvailable(UINT64 httpContext, UINT64) try
     return S_OK;
 } CATCH_RETURN()
 
-HRESULT Download::OnData(_In_reads_bytes_(cbData) BYTE* pData, UINT cbData, UINT64, UINT64) try
+HRESULT Download::OnData(_In_reads_bytes_(cbData) BYTE* pData, UINT cbData) try
 {
     _fileStream.Append(pData, cbData);
     _taskThread.Sched([this, cbData]()
@@ -633,7 +633,7 @@ HRESULT Download::OnData(_In_reads_bytes_(cbData) BYTE* pData, UINT cbData, UINT
     return S_OK;
 } CATCH_RETURN()
 
-HRESULT Download::OnComplete(HRESULT hResult, UINT64 httpContext, UINT64)
+HRESULT Download::OnComplete(HRESULT hResult)
 {
     try
     {
@@ -652,8 +652,8 @@ HRESULT Download::OnComplete(HRESULT hResult, UINT64 httpContext, UINT64)
             // when the failure occurred - upon connecting, or while reading response data.
             UINT httpStatusCode;
             std::string responseHeaders;
-            LOG_IF_FAILED(_httpAgent->QueryStatusCode(httpContext, &httpStatusCode));
-            LOG_IF_FAILED(_httpAgent->QueryHeaders(httpContext, nullptr, responseHeaders));
+            LOG_IF_FAILED(_httpAgent->QueryStatusCode(&httpStatusCode));
+            LOG_IF_FAILED(_httpAgent->QueryHeaders(nullptr, responseHeaders));
 
             _taskThread.Sched([this, hResult, httpStatusCode, responseHeaders = std::move(responseHeaders)]()
             {

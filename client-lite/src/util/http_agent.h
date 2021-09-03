@@ -22,16 +22,16 @@ public:
 
     // IHttpAgent
 
-    HRESULT SendRequest(PCSTR szUrl = nullptr, PCSTR szProxyUrl = nullptr, PCSTR szRange = nullptr, UINT64 callerContext = 0) override;
+    HRESULT SendRequest(PCSTR szUrl = nullptr, PCSTR szProxyUrl = nullptr, PCSTR szRange = nullptr) override;
     void Close() override;
 
     // The Query* functions are supposed to be called only from within the IHttpAgentEvents callbacks
     // function because the httpContext (which is the request handle) must be valid.
-    HRESULT QueryStatusCode(UINT64 httpContext, _Out_ UINT* pStatusCode) const override;
-    HRESULT QueryContentLength(UINT64 httpContext, _Out_ UINT64* pContentLength) override;
-    HRESULT QueryContentLengthFromRange(UINT64 httpContext, _Out_ UINT64* pContentLength) override;
-    HRESULT QueryHeaders(UINT64 httpContext, _In_opt_z_ PCSTR pszName, std::string& headers) const noexcept override;
-    HRESULT QueryHeadersByType(UINT64 httpContext, HttpAgentHeaders type, std::string& headers) noexcept override;
+    HRESULT QueryStatusCode(_Out_ UINT* pStatusCode) const override;
+    HRESULT QueryContentLength(_Out_ UINT64* pContentLength) override;
+    HRESULT QueryContentLengthFromRange(_Out_ UINT64* pContentLength) override;
+    HRESULT QueryHeaders(_In_opt_z_ PCSTR pszName, std::string& headers) const noexcept override;
+    HRESULT QueryHeadersByType(HttpAgentHeaders type, std::string& headers) noexcept override;
 
 private:
     mutable std::recursive_mutex _requestLock;
