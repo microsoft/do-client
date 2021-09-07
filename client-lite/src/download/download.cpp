@@ -1,6 +1,7 @@
 #include "do_common.h"
 #include "download.h"
 
+#include <cmath>
 #include "do_cpprest_uri.h"
 #include "do_error.h"
 #include "event_data.h"
@@ -17,7 +18,9 @@ const std::chrono::seconds Download::_unsetTimeout = std::chrono::seconds(0);
 
 static std::string SwapUrlHostNameForMCC(const std::string& url, const std::string& newHostname, UINT16 port = INTERNET_DEFAULT_PORT);
 
-Download::Download(MCCManager& mccManager, TaskThread& taskThread, std::string url, std::string destFilePath) :
+Download::Download(MCCManager& mccManager, TaskThread& taskThread, CurlMultiOperation& curlOps,
+        std::string url, std::string destFilePath) :
+    _curlOps(curlOps),
     _mccManager(mccManager),
     _taskThread(taskThread),
     _url(std::move(url)),
@@ -256,7 +259,7 @@ void Download::_Start()
 
     _fileStream = DOFile::Create(_destFilePath);
     _fDestFileCreated = true;
-    _httpAgent = std::make_unique<HttpAgent>(*this);
+    _httpAgent = std::make_unique<HttpAgent>(_curlOps, *this);
     _proxyList.Refresh(_url);
 
     const auto mccFallbackDelay = _mccManager.FallbackDelay();
@@ -393,7 +396,7 @@ void Download::_SendHttpRequest(bool retryAfterFailure)
 
         auto range = HttpAgent::MakeRange(_status.BytesTransferred, (_status.BytesTotal - _status.BytesTransferred));
         DoLogInfo("%s, requesting range: %s from %s", GuidToString(_id).data(), range.data(), url.data());
-        THROW_IF_FAILED(_httpAgent->SendRequest(url.data(), szProxyUrl, nullptr, range.data()));
+        THROW_IF_FAILED(_httpAgent->SendRequest(url.data(), szProxyUrl, range.data()));
     }
 
     _timer.Start();

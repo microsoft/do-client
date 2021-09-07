@@ -2,9 +2,6 @@
 #include "error_macros.h"
 
 #include <boost/system/system_error.hpp>
-#include <cpprest/http_msg.h>   // web::http::http_exception
-#include <cpprest/json.h>       // web::json::json_exception
-#include <pplx/pplxtasks.h>
 #include "string_ops.h"
 
 static docli::logging_callback_type g_pfnLoggingCallback = nullptr;
@@ -131,32 +128,6 @@ namespace docli
         {
             MaybeGetExceptionString(exception, debugString, debugStringChars);
             return exception.GetErrorCode();
-        }
-        catch (const pplx::task_canceled&)
-        {
-            // Either the request failed and we already reported it
-            // or the caller did not want to continue with the request.
-            return E_ABORT;
-        }
-        catch (const web::http::http_exception& httpEx)
-        {
-            if (debugString)
-            {
-                StringPrintf(debugString, debugStringChars, "http_exception: %s", httpEx.what());
-            }
-            if (httpEx.error_code() == std::errc::operation_canceled)
-            {
-                return E_ABORT;
-            }
-            return HRESULT_FROM_STDCPP(httpEx.error_code());
-        }
-        catch (const web::json::json_exception& jsonEx)
-        {
-            if (debugString)
-            {
-                StringPrintf(debugString, debugStringChars, "json_exception: %s", jsonEx.what());
-            }
-            return E_INVALIDARG; // json_exception doesn't have an error code
         }
         catch (const boost::system::system_error& sysEx)
         {

@@ -2,16 +2,6 @@
   "Registrations": [
     {
       "Component": {
-        "Type": "git",
-        "git": {
-          "RepositoryUrl": "https://github.com/Microsoft/cpprestsdk",
-          "CommitHash": "18212a2a7967e12d740bfb957e500892b3463c88"
-        }
-      },
-      "DevelopmentDependency": false
-    },
-    {
-      "Component": {
         "Type": "linux",
         "linux": {
           "Name": "boost",

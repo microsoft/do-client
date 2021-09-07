@@ -70,17 +70,7 @@ function installBuildDependencies
 
     if [[ "$PLATFORM" == "debian9" ]];
     then
-        # Cpprestsdk below requires min cmake version of 3.9, while 3.7 is the latest available on Debian9
-        # So build & install cmake from source
-        cd /tmp
-        wget https://cmake.org/files/v3.10/cmake-3.10.2.tar.gz
-        tar xzf cmake-3.10.2.tar.gz
-        cd /tmp/cmake-3.10.2
-        ./bootstrap
-        make
-        make install
-
-        # Install gsl from source, also not available on Debian9
+        # libmsgsl-dev package not available on Debian9. Install from source.
         cd /tmp/
         git clone https://github.com/Microsoft/GSL.git
         cd GSL/
@@ -92,30 +82,8 @@ function installBuildDependencies
         apt-get -y install cmake libmsgsl-dev
     fi
 
-    # Open-source library dependencies
-    # Boost libs for DO
     apt-get install -y libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
-    # Additional Boost libs for cpprestsdk
-    apt-get install -y libboost-random-dev libboost-regex-dev
-    apt-get install -y libproxy-dev libssl-dev uuid-dev
-
-    # Install cpprest dependencies
-    # libssl-dev also required but installed above because plugin uses libssl-dev directly
-    apt-get install -y zlib1g-dev
-
-    # Most target platforms do not natively have a version of cpprest that supports url-redirection
-    # Build and install v2.10.16 as it's the earliest version which supports url-redirection
-    rm -rf /tmp/cpprestsdk
-    mkdir /tmp/cpprestsdk
-    cd /tmp/cpprestsdk
-    git clone https://github.com/microsoft/cpprestsdk.git .
-    git checkout tags/v2.10.16
-    git submodule update --init
-    mkdir /tmp/cpprestsdk/build
-    cd /tmp/cpprestsdk/build
-    cmake -G Ninja -DCMAKE_BUILD_TYPE=minsizerel -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DBUILD_SAMPLES=OFF -Wno-dev -DWERROR=OFF ..
-    ninja
-    ninja install
+    apt-get install -y libproxy-dev libssl-dev uuid-dev libcurl4-openssl-dev
 
     rm -rf /tmp/gtest
     mkdir /tmp/gtest

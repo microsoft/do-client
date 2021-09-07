@@ -9,8 +9,7 @@ class IHttpAgent
 {
 public:
     virtual ~IHttpAgent() = default;
-    virtual HRESULT SendRequest(PCSTR url, PCSTR proxyUrl = nullptr, PCSTR postData = nullptr, PCSTR range = nullptr,
-        UINT64 callerContext = 0) = 0;
+    virtual HRESULT SendRequest(PCSTR url, PCSTR proxyUrl = nullptr, PCSTR range = nullptr, UINT64 callerContext = 0) = 0;
     virtual void Close() = 0;
     virtual HRESULT QueryStatusCode(UINT64 httpContext, _Out_ UINT *statusCode) const = 0;
     virtual HRESULT QueryContentLength(UINT64 httpContext, _Out_ UINT64 *contentLength) = 0;

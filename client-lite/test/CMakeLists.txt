@@ -12,7 +12,6 @@ target_link_libraries(deliveryoptimization-agent-tests
     docs_common
     dotestutil
     stdc++fs
-    cpprestsdk::cpprest
     ${Boost_LIBRARIES}
     GTest::GTest
 )
