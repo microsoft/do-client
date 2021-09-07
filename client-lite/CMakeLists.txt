@@ -33,16 +33,8 @@ endfunction ()
 
 # Include external libraries here:
 find_package(Boost COMPONENTS filesystem REQUIRED)
-
-# Cpprest Issues:
-# 1. v2.10.10 min version (see required PR link below). cpprestsdk does not seem to support specifying this through cmake.
-# https://github.com/microsoft/cpprestsdk/pull/1019/files
-#
-# 2. Installing libcpprest-dev via apt installs cpprest's cmake config files to a non-default cmake search path before v2.10.9
-# See: https://github.com/microsoft/cpprestsdk/issues/686
-# This issue has been patched but has not made its way to the stable branch for Ubuntu
-# Since we are statically linking to v2.10.16 we no longer need to worry about the above as cpprest is patched to provide the proper package configuration metadata
-find_package(cpprestsdk CONFIG REQUIRED)
+find_package(CURL REQUIRED)
+find_package(Threads REQUIRED)
 
 if (DO_PROXY_SUPPORT)
     message (STATUS "Proxy support requested. Will look for libproxy.")
@@ -103,7 +95,7 @@ if (DO_DEV_DEBUG)
     target_compile_definitions(docs_common PUBLIC DO_DEV_DEBUG)
 endif ()
 add_platform_interface_definitions(docs_common)
-target_link_libraries(docs_common PUBLIC dohttp doversion)
+target_link_libraries(docs_common PUBLIC dohttp doversion ${CURL_LIBRARIES})
 target_include_directories(docs_common PUBLIC ${docs_common_includes})
 if (DO_PROXY_SUPPORT)
     target_compile_definitions(docs_common PRIVATE DO_PROXY_SUPPORT)
@@ -123,8 +115,9 @@ add_platform_interface_definitions(${DOSVC_BIN_NAME})
 target_include_directories(${DOSVC_BIN_NAME} PRIVATE ${docs_common_includes})
 target_link_libraries(${DOSVC_BIN_NAME}
     docs_common
-    cpprestsdk::cpprest
-    ${Boost_LIBRARIES})
+    ${Boost_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
+)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     strip_symbols(${DOSVC_BIN_NAME})
