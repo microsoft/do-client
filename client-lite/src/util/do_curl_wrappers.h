@@ -7,6 +7,26 @@
 #include <curl/curl.h>
 #include "do_event.h"
 
+class CurlGlobalInit
+{
+public:
+    CurlGlobalInit()
+    {
+        auto result = curl_global_init(CURL_GLOBAL_ALL);
+        THROW_HR_IF(E_OUTOFMEMORY, result != CURLE_OK);
+    }
+
+    ~CurlGlobalInit()
+    {
+        curl_global_cleanup();
+    }
+
+    CurlGlobalInit(const CurlGlobalInit&) = delete;
+    CurlGlobalInit& operator=(const CurlGlobalInit&) = delete;
+    CurlGlobalInit(CurlGlobalInit&&) noexcept = delete;
+    CurlGlobalInit& operator=(CurlGlobalInit&&) noexcept = delete;
+};
+
 class CurlRequests
 {
 public:

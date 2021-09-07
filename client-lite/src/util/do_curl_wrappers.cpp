@@ -1,5 +1,5 @@
 #include "do_common.h"
-#include "do_curl_multi_operation.h"
+#include "do_curl_wrappers.h"
 
 #include <algorithm>
 

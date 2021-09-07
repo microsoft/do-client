@@ -5,7 +5,7 @@
 #include <boost/algorithm/string.hpp>
 #include "do_cpprest_uri_builder.h"
 #include "do_cpprest_uri.h"
-#include "do_curl_multi_operation.h"
+#include "do_curl_wrappers.h"
 #include "do_http_defines.h"
 #include "safe_int.h"
 

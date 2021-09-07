@@ -19,6 +19,7 @@
 namespace msdoutil = microsoft::deliveryoptimization::util::details;
 
 #include "config_manager.h"
+#include "do_curl_wrappers.h"
 #include "download_manager.h"
 #include "proc_launch_helper.h"
 #include "rest_http_controller.h"
@@ -119,26 +120,11 @@ private:
     std::thread _workerThread;
 };
 
-class CurlGlobalInitCall
-{
-public:
-    CurlGlobalInitCall()
-    {
-        auto result = curl_global_init(CURL_GLOBAL_ALL);
-        THROW_HR_IF(E_OUTOFMEMORY, result != CURLE_OK);
-    }
-
-    ~CurlGlobalInitCall()
-    {
-        curl_global_cleanup();
-    }
-};
-
 HRESULT Run() try
 {
     InitializeDOPaths();
 
-    CurlGlobalInitCall curlGlobalInit;
+    CurlGlobalInit curlGlobalInit;
     BoostAsioService asioService;
 
     ConfigManager clientConfigs;
