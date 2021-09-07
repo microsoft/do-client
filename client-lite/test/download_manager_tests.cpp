@@ -127,7 +127,7 @@ TEST_F(DownloadManagerTests, FileDownloadFatal404)
 
     // Expect immediate failure upon starting
     manager.StartDownload(id);
-    std::this_thread::sleep_for(2s);
+    ASSERT_EQ(StartAndWaitUntilNotTransferring(manager, id, 5min), S_OK);
     const auto status = manager.GetDownloadStatus(id);
     ASSERT_EQ(status.BytesTransferred, 0);
     ASSERT_EQ(status.BytesTotal, 0);
@@ -205,8 +205,6 @@ TEST_F(DownloadManagerTests, PauseResumeDownload)
     VerifyFileSize(destFile, 536870440);
 }
 
-// Test fails when using cpprestsdk built without this change (automatic follow of redirects)
-// made on Mar 31, 2020 - https://github.com/microsoft/cpprestsdk/pull/1328
 TEST_F(DownloadManagerTests, DownloadUrlWithRedirects)
 {
     const std::string destFile = g_testTempDir / "redirect.test";

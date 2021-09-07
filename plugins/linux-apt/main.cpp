@@ -256,7 +256,7 @@ void WorkUriAcquire(const std::string& url, const std::string& filePath)
 
 void WorkLoop()
 {
-    // Pipeline:true indicates to apt that we support HTTP/1.1 (via cpprestsdk).
+    // Pipeline:true indicates to apt that we support HTTP/1.1 (via libcurl).
     // Single-Instance:false allows apt to invoke multiple copies of us in parallel, thus speeding up operations.
     SendAPTMessage(APTMsgCodes::Capabilities,
         { "Version", msdoutil::SimpleVersion(), "Single-Instance", "false", "Send-Config", "false", "Pipeline", "true" });

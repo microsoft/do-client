@@ -11,6 +11,7 @@
 #endif
 #include <chrono>
 #include <boost/asio.hpp>
+#include <curl/curl.h>
 #include "do_event.h"
 #include "do_persistence.h"
 
@@ -118,10 +119,26 @@ private:
     std::thread _workerThread;
 };
 
+class CurlGlobalInitCall
+{
+public:
+    CurlGlobalInitCall()
+    {
+        auto result = curl_global_init(CURL_GLOBAL_ALL);
+        THROW_HR_IF(E_OUTOFMEMORY, result != CURLE_OK);
+    }
+
+    ~CurlGlobalInitCall()
+    {
+        curl_global_cleanup();
+    }
+};
+
 HRESULT Run() try
 {
     InitializeDOPaths();
 
+    CurlGlobalInitCall curlGlobalInit;
     BoostAsioService asioService;
 
     ConfigManager clientConfigs;

@@ -2,18 +2,20 @@
 #include "http_agent.h"
 
 #include <sstream>
-
-#include <cpprest/http_client.h>
-#include <cpprest/http_msg.h>
-#include <cpprest/uri.h>
-
-#include <gsl/gsl_util>
+#include <boost/algorithm/string.hpp>
+#include "do_cpprest_uri_builder.h"
+#include "do_cpprest_uri.h"
+#include "do_curl_multi_operation.h"
+#include "do_http_defines.h"
 #include "safe_int.h"
 
 // TBD version
 #define DO_USER_AGENT_STR   "Microsoft-Delivery-Optimization-Lite/10.0.0.1"
 
-HttpAgent::HttpAgent(IHttpAgentEvents& callback) :
+namespace msdod = microsoft::deliveryoptimization::details;
+
+HttpAgent::HttpAgent(CurlMultiOperation& curlOps, IHttpAgentEvents& callback) :
+    _curlOps(curlOps),
     _callback(callback)
 {
 }
@@ -21,6 +23,7 @@ HttpAgent::HttpAgent(IHttpAgentEvents& callback) :
 HttpAgent::~HttpAgent()
 {
     Close();
+    curl_easy_cleanup(_requestContext.curlHandle);
 }
 
 // Determine if the status code is a 4xx code
@@ -39,12 +42,12 @@ std::array<char, DO_HTTP_RANGEREQUEST_STR_LEN> HttpAgent::MakeRange(UINT64 start
 
 bool HttpAgent::ValidateUrl(const std::string& url)
 {
-    if (!web::uri::validate(url))
+    if (!msdod::cpprest_web::uri::validate(url))
     {
         return false;
     }
 
-    web::uri uri{url};
+    msdod::cpprest_web::uri uri{url};
     if ((StringCompareCaseInsensitive(uri.scheme().data(), "http") != 0)
         && (StringCompareCaseInsensitive(uri.scheme().data(), "https") != 0))
     {
@@ -59,40 +62,61 @@ bool HttpAgent::ValidateUrl(const std::string& url)
 }
 
 // IHttpAgent
-HRESULT HttpAgent::SendRequest(PCSTR szUrl, PCSTR szProxyUrl, PCSTR szPostData, PCSTR szRange, UINT64 callerContext) try
+HRESULT HttpAgent::SendRequest(PCSTR szUrl, PCSTR szProxyUrl, PCSTR szRange, UINT64 callerContext) try
 {
     RETURN_IF_FAILED(_CreateClient(szUrl, szProxyUrl));
-    (void)_SubmitRequestTask(_CreateRequest(szPostData, szRange), callerContext);
+    DO_ASSERT(_requestContext.curlHandle);
+    if (szRange == nullptr)
+    {
+        curl_slist_free_all(_requestContext.requestHeaders);
+        curl_easy_setopt(_requestContext.curlHandle, CURLOPT_HTTPHEADER, nullptr);
+    }
+    else
+    {
+        std::string rangeHeader("Range: bytes=");
+        rangeHeader += szRange;
+        auto tempList = curl_slist_append(_requestContext.requestHeaders, rangeHeader.c_str());
+        RETURN_HR_IF(E_OUTOFMEMORY, tempList == nullptr);
+        _requestContext.requestHeaders = tempList;
+        curl_easy_setopt(_requestContext.curlHandle, CURLOPT_HTTPHEADER, _requestContext.requestHeaders);
+    }
+
+    _requestContext.responseHeaders.clear();
+    _requestContext.responseStatusCode = 0;
+    _requestContext.hrTranslatedStatusCode = S_OK;
+    _requestContext.responseOnHeadersAvailableInvoked = false;
+    _requestContext.responseOnCompleteInvoked = false;
+    _callbackContext = callerContext;
+    _curlOps.AddHandle(_requestContext.curlHandle, s_CompleteCallback, this);
     return S_OK;
 } CATCH_RETURN()
 
 void HttpAgent::Close()
 {
-    // Cancelling the token notifies any pending/running pplx tasks.
-    // Call tracker will then wait for the tasks acknowledge the cancel and/or complete.
-    // Too bad the task_group concept from PPL isn't supported in the cpprestsdk's version.
-    _cts.cancel();
-    _callTracker.Wait();
-
+    if (_requestContext.curlHandle)
+    {
+        _curlOps.RemoveHandle(_requestContext.curlHandle);
+    }
     // Clients may now make new requests if they choose
-    std::unique_lock<std::recursive_mutex> lock(_requestLock);
-    _client.reset();
-    _cts = pplx::cancellation_token_source();
 }
 
 // The Query* functions are supposed to be called only from within the IHttpAgentEvents callbacks
-// function because the httpContext (which is the request handle) must be valid.
-HRESULT HttpAgent::QueryStatusCode(UINT64 httpContext, _Out_ UINT* pStatusCode) const
+// function to get back valid data.
+HRESULT HttpAgent::QueryStatusCode(UINT64, _Out_ UINT* pStatusCode) const
 {
-    auto pResponse = reinterpret_cast<web::http::http_response*>(httpContext);
-    *pStatusCode = pResponse->status_code();
+    *pStatusCode = static_cast<UINT>(_requestContext.responseStatusCode);
     return S_OK;
 }
 
-HRESULT HttpAgent::QueryContentLength(UINT64 httpContext, _Out_ UINT64* pContentLength)
+HRESULT HttpAgent::QueryContentLength(UINT64, _Out_ UINT64* pContentLength)
 {
-    auto pResponse = reinterpret_cast<web::http::http_response*>(httpContext);
-    *pContentLength = pResponse->headers().content_length();
+    *pContentLength = 0;
+
+    std::string lengthHeader;
+    if (SUCCEEDED(QueryHeaders(0, "Content-Length", lengthHeader)))
+    {
+        *pContentLength = std::stoull(lengthHeader);
+    }
     return S_OK;
 }
 
@@ -111,11 +135,10 @@ HRESULT HttpAgent::QueryContentLengthFromRange(UINT64 httpContext, _Out_ UINT64*
     return S_OK;
 } CATCH_RETURN()
 
-HRESULT HttpAgent::QueryHeaders(UINT64 httpContext, PCSTR pszName, std::string& headers) const noexcept
+HRESULT HttpAgent::QueryHeaders(UINT64, PCSTR pszName, std::string& headers) const noexcept
 {
     headers.clear();
-    auto pResponse = reinterpret_cast<web::http::http_response*>(httpContext);
-    const auto& reponseHeaders = pResponse->headers();
+    const auto& reponseHeaders = _requestContext.responseHeaders;
     if (pszName == nullptr)
     {
         // Accumulate all headers into the output string
@@ -124,7 +147,11 @@ HRESULT HttpAgent::QueryHeaders(UINT64 httpContext, PCSTR pszName, std::string& 
         {
             for (const auto& item : reponseHeaders)
             {
-                ss << item.first << ':' << item.second << "\r\n";
+                ss << item.first << ':' << item.second;
+                if (!boost::algorithm::ends_with(item.second, "\r\n"))
+                {
+                    ss << "\r\n";
+                }
             }
             ss << "\r\n";
         }
@@ -157,144 +184,50 @@ HRESULT HttpAgent::_CreateClient(PCSTR szUrl, PCSTR szProxyUrl) try
 {
     std::unique_lock<std::recursive_mutex> lock(_requestLock);
 
-    // We must recreate the client if either the url or the proxy url has changed
-    if ((szUrl != nullptr) && _client)
+    if (!_requestContext.curlHandle)
     {
-        const std::string currentUrl = _client->base_uri().to_string();
-        if (StringCompareCaseInsensitive(currentUrl.data(), szUrl) != 0)
-        {
-            _client.reset();
-        }
-    }
-    else if ((szProxyUrl != nullptr) && _client)
-    {
-        const std::string currentProxy = _client->client_config().proxy().address().to_string();
-        if (StringCompareCaseInsensitive(currentProxy.data(), szProxyUrl) != 0)
-        {
-            _client.reset();
-        }
-    }
-
-    if (!_client)
-    {
-        RETURN_HR_IF(E_INVALIDARG, (szUrl == nullptr));
+        RETURN_HR_IF(E_INVALIDARG, szUrl == nullptr);
 
         std::string url(szUrl);
         RETURN_HR_IF(INET_E_INVALID_URL, !ValidateUrl(url));
 
-        web::http::client::http_client_config clientConfig;
-        _SetWebProxyFromProxyUrl(clientConfig, szProxyUrl);
+        _requestContext.curlHandle = curl_easy_init();
+        RETURN_HR_IF(E_OUTOFMEMORY, _requestContext.curlHandle == nullptr);
+        DoLogVerbose("New http_client for %s", szUrl);
 
-        web::http::uri remoteUri(url);
-        _client = std::make_unique<web::http::client::http_client>(remoteUri, clientConfig);
-        DoLogVerbose("New http_client for %s", remoteUri.to_string().data());
+        // Set options that are generic to all requests
+        curl_easy_setopt(_requestContext.curlHandle, CURLOPT_FOLLOWLOCATION, static_cast<long>(1));
+        curl_easy_setopt(_requestContext.curlHandle, CURLOPT_MAXREDIRS, static_cast<long>(10));
+        curl_easy_setopt(_requestContext.curlHandle, CURLOPT_SUPPRESS_CONNECT_HEADERS, static_cast<long>(1));
+        curl_easy_setopt(_requestContext.curlHandle, CURLOPT_HTTPGET, static_cast<long>(1));
+        curl_easy_setopt(_requestContext.curlHandle, CURLOPT_USERAGENT, DO_USER_AGENT_STR);
+
+        // Timeout request if download speed is less than 4KB/s for 20s (7KB/s or 56kb/s is dial-up modem speed)
+        curl_easy_setopt(_requestContext.curlHandle, CURLOPT_LOW_SPEED_TIME, static_cast<long>(20));
+        curl_easy_setopt(_requestContext.curlHandle, CURLOPT_LOW_SPEED_LIMIT, static_cast<long>(4000));
+
+        // Set up callbacks
+        curl_easy_setopt(_requestContext.curlHandle, CURLOPT_HEADERFUNCTION, s_HeaderCallback);
+        curl_easy_setopt(_requestContext.curlHandle, CURLOPT_HEADERDATA, this);
+        curl_easy_setopt(_requestContext.curlHandle, CURLOPT_WRITEFUNCTION, s_WriteCallback);
+        curl_easy_setopt(_requestContext.curlHandle, CURLOPT_WRITEDATA, this);
     }
+
+    if (szUrl != nullptr)
+    {
+        std::string url(szUrl);
+        RETURN_HR_IF(INET_E_INVALID_URL, !ValidateUrl(url));
+        curl_easy_setopt(_requestContext.curlHandle, CURLOPT_URL, szUrl);
+    }
+
+    _SetWebProxyFromProxyUrl(szProxyUrl);
+
     return S_OK;
 } CATCH_RETURN()
 
-web::http::http_request HttpAgent::_CreateRequest(_In_opt_ PCSTR szPostData, _In_opt_ PCSTR szRange)
+HRESULT HttpAgent::_ResultFromStatusCode(unsigned int code)
 {
-    web::http::http_request request;
-    if  (szPostData != nullptr)
-    {
-        request.set_method(web::http::methods::POST);
-        request.set_body(utf8string(szPostData));
-    }
-
-    web::http::http_headers& headers = request.headers();
-    headers["User-Agent"] = DO_USER_AGENT_STR;
-    if (szRange != nullptr)
-    {
-        std::string rangeHeader("bytes=");
-        rangeHeader += szRange;
-        headers["Range"] = rangeHeader;
-    }
-    return request;
-}
-
-pplx::task<void> HttpAgent::_SubmitRequestTask(const web::http::http_request& request, UINT64 callerContext)
-{
-    // Note: the tracker is moved to only the last task-based lambda because it
-    // will always get executed whereas a value-based lambda can be skipped due
-    // to exceptions or cancellations.
-    auto cancellationToken = _cts.get_token();
-    auto tracker = _callTracker.Enter();
-    auto responseHolder = std::make_shared<web::http::http_response>();
-    return _client->request(request, cancellationToken).then(
-        [this, callerContext, cancellationToken, responseHolder](web::http::http_response response)
-        {
-            *responseHolder = std::move(response);
-
-            HRESULT hrRequest = _ResultFromStatusCode(responseHolder->status_code());
-            if (SUCCEEDED(hrRequest))
-            {
-                hrRequest = _callback.OnHeadersAvailable(reinterpret_cast<uint64_t>(responseHolder.get()), callerContext);
-                if (hrRequest == S_FALSE)
-                {
-                    hrRequest = E_ABORT;
-                }
-            }
-            THROW_IF_FAILED(hrRequest);
-
-            // Start async loop to read incoming data corresponding to the request
-            return _DoReadBodyData(responseHolder->body(), std::make_shared<ReadDataBuffer>(),
-                cancellationToken, responseHolder, callerContext);
-
-        }).then([this, callerContext, responseHolder, tracker = std::move(tracker)](pplx::task<void> previousTask)
-        {
-            HRESULT hr = S_OK;
-            try
-            {
-                previousTask.get(); // check for exceptions
-            }
-            catch (...)
-            {
-                hr = LOG_CAUGHT_EXCEPTION();
-                DoLogWarningHr(hr, "Url: %s, host: %s", _client->base_uri().to_string().data(), _client->base_uri().host().data());
-            }
-
-            // Report success and failure. Ignore cancellations.
-            if (hr != E_ABORT)
-            {
-                (void)_callback.OnComplete(hr, reinterpret_cast<UINT64>(responseHolder.get()), callerContext);
-            }
-        });
-}
-
-pplx::task<void> HttpAgent::_DoReadBodyData(Concurrency::streams::istream bodyStream, const std::shared_ptr<ReadDataBuffer>& bodyStorage,
-    pplx::cancellation_token cancellationToken, const std::shared_ptr<web::http::http_response>& response, UINT64 callerContext)
-{
-    if (cancellationToken.is_canceled())
-    {
-        pplx::cancel_current_task();
-    }
-
-    // Rewind the stream to the beginning for the next read operation
-    // TODO(shishirb) check return value and throw
-    (void)bodyStorage->streambuf.seekoff(0, std::ios_base::beg, std::ios_base::in|std::ios_base::out);
-
-    return bodyStream.read(bodyStorage->streambuf, bodyStorage->storage.size()).then(
-        [this, bodyStream, bodyStorage, cancellationToken, response, callerContext](size_t bytesRead) mutable
-        {
-            if (bytesRead == 0)
-            {
-                return pplx::create_task([](){});
-            }
-
-            HRESULT hr = _callback.OnData(bodyStorage->storage.data(), gsl::narrow<UINT>(bytesRead), reinterpret_cast<UINT64>(response.get()), callerContext);
-            if (hr == S_FALSE)
-            {
-                hr = E_ABORT;
-            }
-            THROW_IF_FAILED(hr);
-
-            return _DoReadBodyData(bodyStream, bodyStorage, cancellationToken, response, callerContext);
-        });
-}
-
-HRESULT HttpAgent::_ResultFromStatusCode(web::http::status_code code)
-{
-    using status = web::http::status_codes;
+    using status = msdod::http_status_codes;
 
     HRESULT hr = HTTP_E_STATUS_UNEXPECTED;
     switch (code)
@@ -373,27 +306,112 @@ HRESULT HttpAgent::_ResultFromStatusCode(web::http::status_code code)
     return hr;
 }
 
-void HttpAgent::_SetWebProxyFromProxyUrl(web::http::client::http_client_config& config, _In_opt_ PCSTR szProxyUrl)
+void HttpAgent::_SetWebProxyFromProxyUrl(_In_opt_ PCSTR szProxyUrl)
 {
     if (szProxyUrl == nullptr)
     {
+        curl_easy_setopt(_requestContext.curlHandle, CURLOPT_PROXY, "");
+    }
+    else
+    {
+        msdod::cpprest_web::uri_builder proxyFullAddress(szProxyUrl);
+        const int port = proxyFullAddress.port();
+        proxyFullAddress.set_port(-1); // easier to specify via CURLOPT_PROXYPORT
+        curl_easy_setopt(_requestContext.curlHandle, CURLOPT_PROXY, proxyFullAddress.to_string().c_str());
+        if (port != -1)
+        {
+            curl_easy_setopt(_requestContext.curlHandle, CURLOPT_PROXYPORT, static_cast<long>(port));
+        }
+        proxyFullAddress.set_user_info(""); // do not log credentials
+        DoLogInfo("Using proxy %s:[%d]", proxyFullAddress.to_string().c_str(), port);
+    }
+}
+
+size_t HttpAgent::_HeaderCallback(char* pBuffer, size_t size, size_t nItems)
+{
+    const auto cbBuffer = nItems * size;
+    try
+    {
+        auto pColon = reinterpret_cast<char*>(memchr(pBuffer, ':', cbBuffer));
+        if (pColon > pBuffer)
+        {
+            auto pBufferPastEnd = pBuffer + cbBuffer;
+            auto result = _requestContext.responseHeaders.emplace(std::piecewise_construct,
+                std::forward_as_tuple(pBuffer, pColon),
+                std::forward_as_tuple(pColon + 1, pBufferPastEnd));
+            if (!result.second)
+            {
+                // Duplicate header (likely following redirects), take the new one
+                result.first->second.assign(pColon + 1, pBufferPastEnd);
+            }
+        }
+    }
+    catch (const std::exception& e)
+    {
+        DoLogWarning("Caught exception: %s", e.what());
+    }
+    return cbBuffer;
+}
+
+size_t HttpAgent::_WriteCallback(char* pBuffer, size_t size, size_t nMemb)
+{
+    _TrySetStatusCodeAndInvokeOnHeadersAvailable();
+
+    const auto cbBuffer = nMemb * size;
+    // Forward body only for success response
+    if (SUCCEEDED(_requestContext.hrTranslatedStatusCode))
+    {
+        (void)_callback.OnData(reinterpret_cast<BYTE*>(pBuffer), cbBuffer, 0, _callbackContext);
+    }
+    return cbBuffer;
+}
+
+void HttpAgent::_CompleteCallback(int curlResult)
+{
+    if (_requestContext.responseOnCompleteInvoked)
+    {
         return;
     }
+    _requestContext.responseOnCompleteInvoked = true;
 
-    web::uri_builder proxyFullAddress(szProxyUrl);
-    web::credentials creds = [&]()
+    if (curlResult == CURLE_OK)
     {
-        // User info will be of the form <user>:<password>.
-        // TODO(jimson): Ensure this works even when running as the 'do' user after DropPermissions() is in play.
-        auto credStrings = StringPartition(proxyFullAddress.user_info(), ':');
-        return (credStrings.size() == 2) ? web::credentials{credStrings[0], credStrings[1]} : web::credentials{};
-    }();
+        _TrySetStatusCodeAndInvokeOnHeadersAvailable();
 
-    // cpprest does not make use of creds embedded in proxy address. Must set it via web_proxy::set_credentials.
-    proxyFullAddress.set_user_info("");
+        _requestContext.hrTranslatedStatusCode = _ResultFromStatusCode(_requestContext.responseStatusCode);
+        (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode, 0, _callbackContext);
+    }
+    else
+    {
+        _requestContext.hrTranslatedStatusCode = HRESULT_FROM_XPLAT_SYSERR(curlResult);
+        (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode, 0, _callbackContext);
+    }
+}
 
-    web::web_proxy proxy(proxyFullAddress.to_uri());
-    proxy.set_credentials(std::move(creds));
-    config.set_proxy(proxy);
-    DoLogInfo("Using proxy %s", config.proxy().address().to_string().data()); // do not log credentials
+void HttpAgent::_TrySetStatusCodeAndInvokeOnHeadersAvailable()
+{
+    if (_requestContext.responseOnHeadersAvailableInvoked)
+    {
+        return;
+    }
+    _requestContext.responseOnHeadersAvailableInvoked = true;
+
+    long responseCode;
+    auto res = curl_easy_getinfo(_requestContext.curlHandle, CURLINFO_RESPONSE_CODE, &responseCode);
+    if (res == CURLE_OK)
+    {
+        _requestContext.responseStatusCode = static_cast<unsigned int>(responseCode);
+    }
+
+    _requestContext.hrTranslatedStatusCode = _ResultFromStatusCode(_requestContext.responseStatusCode);
+    if (SUCCEEDED(_requestContext.hrTranslatedStatusCode))
+    {
+        (void)_callback.OnHeadersAvailable(0, _callbackContext);
+    }
+    else
+    {
+        // Not interested in receiving body for failure response. Notify completion immediately.
+        _requestContext.responseOnCompleteInvoked = true;
+        (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode, 0, _callbackContext);
+    }
 }

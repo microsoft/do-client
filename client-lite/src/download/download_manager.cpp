@@ -13,7 +13,7 @@ DownloadManager::DownloadManager(ConfigManager& config) :
 
 std::string DownloadManager::CreateDownload(std::string url, std::string destFilePath)
 {
-    auto newDownload = std::make_shared<Download>(_mccManager, _taskThread, url, destFilePath);
+    auto newDownload = std::make_shared<Download>(_mccManager, _taskThread, _curlOps, url, destFilePath);
     const std::string downloadId = newDownload->GetProperty(DownloadProperty::Id);
 
     std::unique_lock<std::shared_timed_mutex> lock(_downloadsMtx);
