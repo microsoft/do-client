@@ -7,16 +7,16 @@
 #include <curl/curl.h>
 #include "do_event.h"
 
-class CurlMultiOperation
+class CurlRequests
 {
 public:
     using completion_callback_t = void (*)(int, void*);
 
-    CurlMultiOperation();
-    ~CurlMultiOperation();
+    CurlRequests();
+    ~CurlRequests();
 
-    void AddHandle(CURL* easyHandle, completion_callback_t pCallback, void* pCallbackUserData);
-    void RemoveHandle(CURL* easyHandle);
+    void Add(CURL* easyHandle, completion_callback_t pCallback, void* pCallbackUserData);
+    void Remove(CURL* easyHandle);
 
 private:
     struct HandleData
@@ -63,11 +63,8 @@ private:
     };
 
     void _DoWork();
-    void _PeformOperations();
-    void _CheckAndHandleCompletedOperationsUnderLock();
-
-    template <typename T>
-    void _RemoveHandle(CURL* easyHandle, std::vector<T>& container);
+    void _PerformTransferTasks();
+    void _CheckForAndHandleCompletedRequestsUnderLock();
 
     CURLM* _multiHandle { nullptr };
 

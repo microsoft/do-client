@@ -14,7 +14,7 @@
 
 namespace msdod = microsoft::deliveryoptimization::details;
 
-HttpAgent::HttpAgent(CurlMultiOperation& curlOps, IHttpAgentEvents& callback) :
+HttpAgent::HttpAgent(CurlRequests& curlOps, IHttpAgentEvents& callback) :
     _curlOps(curlOps),
     _callback(callback)
 {
@@ -86,7 +86,7 @@ HRESULT HttpAgent::SendRequest(PCSTR szUrl, PCSTR szProxyUrl, PCSTR szRange) try
     _requestContext.hrTranslatedStatusCode = S_OK;
     _requestContext.responseOnHeadersAvailableInvoked = false;
     _requestContext.responseOnCompleteInvoked = false;
-    _curlOps.AddHandle(_requestContext.curlHandle, s_CompleteCallback, this);
+    _curlOps.Add(_requestContext.curlHandle, s_CompleteCallback, this);
     return S_OK;
 } CATCH_RETURN()
 
@@ -94,7 +94,7 @@ void HttpAgent::Close()
 {
     if (_requestContext.curlHandle)
     {
-        _curlOps.RemoveHandle(_requestContext.curlHandle);
+        _curlOps.Remove(_requestContext.curlHandle);
     }
     // Clients may now make new requests if they choose
 }

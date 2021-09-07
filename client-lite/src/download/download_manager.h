@@ -37,7 +37,7 @@ private:
     mutable std::shared_timed_mutex _downloadsMtx;
 
     ConfigManager& _config;
-    CurlMultiOperation _curlOps;
+    CurlRequests _curlOps;
     MCCManager _mccManager;
 
 private:

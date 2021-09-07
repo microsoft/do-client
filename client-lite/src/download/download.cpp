@@ -18,7 +18,7 @@ const std::chrono::seconds Download::_unsetTimeout = std::chrono::seconds(0);
 
 static std::string SwapUrlHostNameForMCC(const std::string& url, const std::string& newHostname, UINT16 port = INTERNET_DEFAULT_PORT);
 
-Download::Download(MCCManager& mccManager, TaskThread& taskThread, CurlMultiOperation& curlOps,
+Download::Download(MCCManager& mccManager, TaskThread& taskThread, CurlRequests& curlOps,
         std::string url, std::string destFilePath) :
     _curlOps(curlOps),
     _mccManager(mccManager),

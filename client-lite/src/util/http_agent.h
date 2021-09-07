@@ -8,12 +8,12 @@
 
 #define DO_HTTP_RANGEREQUEST_STR_LEN    48              // two 64bit numbers plus a '-' character (20 digits in UINT64)
 
-class CurlMultiOperation;
+class CurlRequests;
 
 class HttpAgent : public IHttpAgent
 {
 public:
-    HttpAgent(CurlMultiOperation& curlOps, IHttpAgentEvents& callback);
+    HttpAgent(CurlRequests& curlOps, IHttpAgentEvents& callback);
     ~HttpAgent();
 
     static bool IsClientError(UINT httpStatusCode);
@@ -36,7 +36,7 @@ public:
 private:
     mutable std::recursive_mutex _requestLock;
 
-    CurlMultiOperation& _curlOps;
+    CurlRequests& _curlOps;
     IHttpAgentEvents& _callback;
     UINT64 _callbackContext { 0 };
 
@@ -82,7 +82,7 @@ private:
         return reinterpret_cast<HttpAgent*>(pUserData)->_WriteCallback(pBuffer, size, nMemb);
     }
 
-    // CurlMultiOperation callback
+    // CurlRequests callback
     static void s_CompleteCallback(int curlResult, void* pUserData)
     {
         return reinterpret_cast<HttpAgent*>(pUserData)->_CompleteCallback(curlResult);

@@ -3,7 +3,7 @@
 
 #include <algorithm>
 
-CurlMultiOperation::CurlMultiOperation()
+CurlRequests::CurlRequests()
 {
     _multiHandle = curl_multi_init();
     THROW_HR_IF(E_OUTOFMEMORY, _multiHandle == nullptr);
@@ -15,7 +15,7 @@ CurlMultiOperation::CurlMultiOperation()
         }};
 }
 
-CurlMultiOperation::~CurlMultiOperation()
+CurlRequests::~CurlRequests()
 {
     {
         std::unique_lock<std::mutex> lock{_mutex};
@@ -33,7 +33,7 @@ CurlMultiOperation::~CurlMultiOperation()
     curl_multi_cleanup(_multiHandle);
 }
 
-void CurlMultiOperation::AddHandle(CURL* easyHandle, completion_callback_t pCallback, void* pCallbackUserData)
+void CurlRequests::Add(CURL* easyHandle, completion_callback_t pCallback, void* pCallbackUserData)
 {
     std::unique_lock<std::mutex> lock{_mutex};
     THROW_HR_IF(E_NOT_VALID_STATE, !_fKeepRunning);
@@ -43,17 +43,18 @@ void CurlMultiOperation::AddHandle(CURL* easyHandle, completion_callback_t pCall
     _cv.notify_one();
 }
 
-void CurlMultiOperation::RemoveHandle(CURL* easyHandle)
+void CurlRequests::Remove(CURL* easyHandle)
 {
     std::shared_ptr<WrappedHandleData> wrappedHandleToBeDeleted;
     {
         std::unique_lock<std::mutex> lock{_mutex};
 
-        _RemoveHandle(easyHandle, _handlesToAdd);
+        _handlesToAdd.erase(std::remove(std::begin(_handlesToAdd), std::end(_handlesToAdd), easyHandle), _handlesToAdd.end());
 
         auto pExistingWrappedHandle = _activeHandles.Get(easyHandle);
         if (pExistingWrappedHandle == nullptr)
         {
+            // Handle not in active list, nothing more to do
             return;
         }
         wrappedHandleToBeDeleted = *pExistingWrappedHandle;
@@ -72,7 +73,7 @@ void CurlMultiOperation::RemoveHandle(CURL* easyHandle)
     }
 }
 
-void CurlMultiOperation::_DoWork()
+void CurlRequests::_DoWork()
 {
     while (true)
     {
@@ -101,13 +102,13 @@ void CurlMultiOperation::_DoWork()
         else
         {
             lock.unlock();
-            _PeformOperations();
+            _PerformTransferTasks();
         }
     }
 }
 
 // Returns when there are no more running handles OR after running for approximately 2s
-void CurlMultiOperation::_PeformOperations()
+void CurlRequests::_PerformTransferTasks()
 {
     int numRunningHandles = 0;
     const auto startTime = std::chrono::steady_clock::now();
@@ -153,7 +154,7 @@ void CurlMultiOperation::_PeformOperations()
                 break;
 
             // select() timed out or we did the short sleep above.
-            // Fallthrough and call curl_multi_perform even if in this case to let
+            // Fallthrough and call curl_multi_perform even in this case to let
             // libcurl perform internal retries and timeouts.
             case 0:
 
@@ -166,7 +167,8 @@ void CurlMultiOperation::_PeformOperations()
                     std::unique_lock<std::mutex> lock(_mutex);
                     if (numRunningHandles < static_cast<int>(_activeHandles.Size()))
                     {
-                        _CheckAndHandleCompletedOperationsUnderLock();
+                        // One or more handles have completed, check and invoke callbacks
+                        _CheckForAndHandleCompletedRequestsUnderLock();
                     }
                 }
             }
@@ -178,7 +180,7 @@ void CurlMultiOperation::_PeformOperations()
     } while ((numRunningHandles > 0) && (elapsed < std::chrono::seconds(2)));
 }
 
-void CurlMultiOperation::_CheckAndHandleCompletedOperationsUnderLock()
+void CurlRequests::_CheckForAndHandleCompletedRequestsUnderLock()
 {
     struct CURLMsg* msg;
     do
@@ -192,14 +194,7 @@ void CurlMultiOperation::_CheckAndHandleCompletedOperationsUnderLock()
     } while (msg != nullptr);
 }
 
-template <typename T>
-void CurlMultiOperation::_RemoveHandle(CURL* easyHandle, std::vector<T>& container)
-{
-    auto itEraseFrom = std::remove(std::begin(container), std::end(container), easyHandle);
-    container.erase(itEraseFrom, container.end());
-}
-
-void CurlMultiOperation::ActiveHandles::Add(const HandleData& inHandle, CURLM* multiHandle)
+void CurlRequests::ActiveHandles::Add(const HandleData& inHandle, CURLM* multiHandle)
 {
     if (_Find(inHandle.easyHandle) == _handles.end())
     {
@@ -210,7 +205,7 @@ void CurlMultiOperation::ActiveHandles::Add(const HandleData& inHandle, CURLM* m
     }
 }
 
-void CurlMultiOperation::ActiveHandles::Remove(CURL* easyHandle, CURLM* multiHandle)
+void CurlRequests::ActiveHandles::Remove(CURL* easyHandle, CURLM* multiHandle)
 {
     auto itActiveHandle = _Find(easyHandle);
     if (itActiveHandle != _handles.end())
@@ -219,7 +214,7 @@ void CurlMultiOperation::ActiveHandles::Remove(CURL* easyHandle, CURLM* multiHan
     }
 }
 
-void CurlMultiOperation::ActiveHandles::RemoveAll(CURLM* multiHandle)
+void CurlRequests::ActiveHandles::RemoveAll(CURLM* multiHandle)
 {
     // The easy handles are not owned here, so no need to call curl_easy_cleanup
     for (const auto& h : _handles)
@@ -230,7 +225,7 @@ void CurlMultiOperation::ActiveHandles::RemoveAll(CURLM* multiHandle)
     _handles.clear();
 }
 
-void CurlMultiOperation::ActiveHandles::Complete(CURL* easyHandle, CURLcode result, CURLM* multiHandle)
+void CurlRequests::ActiveHandles::Complete(CURL* easyHandle, CURLcode result, CURLM* multiHandle)
 {
     auto itActiveHandle = _Find(easyHandle);
     DO_ASSERT(itActiveHandle != _handles.end());
@@ -239,13 +234,13 @@ void CurlMultiOperation::ActiveHandles::Complete(CURL* easyHandle, CURLcode resu
     _Remove(itActiveHandle, multiHandle);
 }
 
-const std::shared_ptr<CurlMultiOperation::WrappedHandleData>* CurlMultiOperation::ActiveHandles::Get(CURL* eh) const noexcept
+const std::shared_ptr<CurlRequests::WrappedHandleData>* CurlRequests::ActiveHandles::Get(CURL* eh) const noexcept
 {
     auto it = _Find(eh);
     return (it != _handles.end()) ? &(*it) : nullptr;
 }
 
-void CurlMultiOperation::ActiveHandles::_Remove(std::vector<std::shared_ptr<WrappedHandleData>>::const_iterator where, CURLM* mh)
+void CurlRequests::ActiveHandles::_Remove(std::vector<std::shared_ptr<WrappedHandleData>>::const_iterator where, CURLM* mh)
 {
     auto& h = **where;
     (void)curl_multi_remove_handle(mh, h.d.easyHandle);
