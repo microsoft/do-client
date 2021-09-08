@@ -20,14 +20,17 @@ jobs:
 - template: templates/do-docker-jobs.yml
   parameters:
     targetOsArch: 'debian10_arm32'
+    version: ${{variables.version}}
     stepsTemplate: 'dosdkcpp-docker-steps.yml'
 
 - template: templates/do-docker-jobs.yml
   parameters:
     targetOsArch: 'debian9_arm32'
+    version: ${{variables.version}}
     stepsTemplate: 'dosdkcpp-docker-steps.yml'
 
 - template: templates/do-docker-jobs.yml
   parameters:
     targetOsArch: 'ubuntu1804_arm64'
+    version: ${{variables.version}}
     stepsTemplate: 'dosdkcpp-docker-steps.yml'
