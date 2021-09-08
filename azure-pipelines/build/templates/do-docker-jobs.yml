@@ -4,6 +4,8 @@
 parameters:
 - name: targetOsArch    # example: debian9_arm32
   type: string
+- name: version
+  type: string
 - name: stepsTemplate   # example: dopapt-docker-steps.yml
   type: string
 
@@ -13,6 +15,7 @@ jobs:
   - template: ${{parameters.stepsTemplate}}
     parameters:
       targetOsArch: ${{parameters.targetOsArch}}
+      version: ${{parameters.version}}
       config: debug
 
 - job: ${{parameters.targetOsArch}}_release
@@ -20,4 +23,5 @@ jobs:
   - template: ${{parameters.stepsTemplate}}
     parameters:
       targetOsArch: ${{parameters.targetOsArch}}
+      version: ${{parameters.version}}
       config: minsizerel
