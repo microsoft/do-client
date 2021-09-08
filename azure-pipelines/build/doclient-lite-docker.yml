@@ -20,7 +20,7 @@ variables:
 
 pool: 
   name: 1es_hosted_pool_ubuntu_1804
-  vmImage: do-adu-build-${{variables.version}}
+  vmImage: do-adu-build-$(variables.version)
 
 jobs:
 - template: templates/do-docker-jobs.yml
