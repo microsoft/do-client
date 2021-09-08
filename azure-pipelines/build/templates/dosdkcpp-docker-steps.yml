@@ -22,7 +22,7 @@ steps:
   inputs:
     command: pull
     containerRegistry: doclientcontainerregistry
-    arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{version}}'
+    arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.version}}'
 
 - task: CmdLine@2
   inputs:
