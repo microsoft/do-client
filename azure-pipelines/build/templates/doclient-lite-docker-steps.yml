@@ -15,7 +15,7 @@ steps:
   inputs:
     command: login
     containerRegistry: doclientcontainerregistry
-    repository: $(parameters.targetOsArch)_$(parameters.version)
+    repository: $(parameters.targetOsArch)
 
 - task: Docker@2
   displayName: Pull latest build image
