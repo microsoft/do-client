@@ -11,7 +11,7 @@
 #include "proxy_finder.h"
 #include "stop_watch.h"
 
-class CurlMultiOperation;
+class CurlRequests;
 class MCCManager;
 class TaskThread;
 
@@ -50,7 +50,7 @@ class Download : public IHttpAgentEvents
 {
 public:
     // Download(TaskThread& taskThread, REFGUID id); TODO implement along with persistence
-    Download(MCCManager& mccManager, TaskThread& taskThread, CurlMultiOperation& curlOps,
+    Download(MCCManager& mccManager, TaskThread& taskThread, CurlRequests& curlOps,
         std::string url = {}, std::string destFilePath = {});
     ~Download();
 
@@ -83,7 +83,7 @@ private:
 
     static const std::chrono::seconds _unsetTimeout;
 
-    CurlMultiOperation& _curlOps;
+    CurlRequests& _curlOps;
     MCCManager& _mccManager;
     TaskThread& _taskThread;
 
@@ -148,7 +148,7 @@ private:
     bool _ShouldFailFastPerConnectionType() const;
 
     // IHttpAgentEvents
-    HRESULT OnHeadersAvailable(UINT64 httpContext, UINT64) override;
-    HRESULT OnData(_In_reads_bytes_(cbData) BYTE* pData, UINT cbData, UINT64, UINT64) override;
-    HRESULT OnComplete(HRESULT hResult, UINT64 httpContext, UINT64) override;
+    HRESULT OnHeadersAvailable() override;
+    HRESULT OnData(_In_reads_bytes_(cbData) BYTE* pData, UINT cbData) override;
+    HRESULT OnComplete(HRESULT hResult) override;
 };

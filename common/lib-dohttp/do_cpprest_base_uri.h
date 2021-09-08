@@ -20,42 +20,11 @@ namespace cpprest_web
     Code borrowed from cpprestsdk project: https://github.com/microsoft/cpprestsdk/
     libcurl includes APIs to work with URLs starting from v7.62.0.
     Ubuntu 18.04 ships with libcurl v7.58.0 only so we cannot use the URL API.
-    TODO(shishirb): Once cpprestsdk usage is removed completely, revisit here and remove unused code.
  */
 
 struct uri_components
 {
     uri_components() : m_path(_XPLATSTR("/")), m_port(-1) {}
-
-    uri_components(const uri_components&) = default;
-    uri_components& operator=(const uri_components&) = default;
-
-    // This is for VS2013 compatibility -- replace with '= default' when VS2013 is completely dropped.
-    uri_components(uri_components&& other) CPPREST_NOEXCEPT : m_scheme(std::move(other.m_scheme)),
-                                                              m_host(std::move(other.m_host)),
-                                                              m_user_info(std::move(other.m_user_info)),
-                                                              m_path(std::move(other.m_path)),
-                                                              m_query(std::move(other.m_query)),
-                                                              m_fragment(std::move(other.m_fragment)),
-                                                              m_port(other.m_port)
-    {
-    }
-
-    // This is for VS2013 compatibility -- replace with '= default' when VS2013 is completely dropped.
-    uri_components& operator=(uri_components&& other) CPPREST_NOEXCEPT
-    {
-        if (this != &other)
-        {
-            m_scheme = std::move(other.m_scheme);
-            m_host = std::move(other.m_host);
-            m_user_info = std::move(other.m_user_info);
-            m_path = std::move(other.m_path);
-            m_query = std::move(other.m_query);
-            m_fragment = std::move(other.m_fragment);
-            m_port = other.m_port;
-        }
-        return *this;
-    }
 
     _ASYNCRTIMP cpprest_utils::string_t join();
 
@@ -200,36 +169,6 @@ public:
     /// </summary>
     /// <param name="uri_string">An encoded URI string to create the URI instance.</param>
     _ASYNCRTIMP uri(const cpprest_utils::string_t& uri_string);
-
-    /// <summary>
-    /// Copy constructor.
-    /// </summary>
-    uri(const uri&) = default;
-
-    /// <summary>
-    /// Copy assignment operator.
-    /// </summary>
-    uri& operator=(const uri&) = default;
-
-    /// <summary>
-    /// Move constructor.
-    /// </summary>
-    // This is for VS2013 compatibility -- replace with '= default' when VS2013 is completely dropped.
-    uri(uri&& other) CPPREST_NOEXCEPT : m_uri(std::move(other.m_uri)), m_components(std::move(other.m_components)) {}
-
-    /// <summary>
-    /// Move assignment operator
-    /// </summary>
-    // This is for VS2013 compatibility -- replace with '= default' when VS2013 is completely dropped.
-    uri& operator=(uri&& other) CPPREST_NOEXCEPT
-    {
-        if (this != &other)
-        {
-            m_uri = std::move(other.m_uri);
-            m_components = std::move(other.m_components);
-        }
-        return *this;
-    }
 
     /// <summary>
     /// Get the scheme component of the URI as an encoded string.

@@ -1,5 +1,6 @@
 #include "do_cpprest_uri.h"
 
+#include <cctype>
 #include <functional> // std::reference_wrapper
 #include <sstream>
 
@@ -26,7 +27,7 @@ namespace
 /// </summary>
 inline bool is_unreserved(int c)
 {
-    return cpprest_utils::is_alnum((char)c) || c == '-' || c == '.' || c == '_' || c == '~';
+    return ::isalnum(c) || c == '-' || c == '.' || c == '_' || c == '~';
 }
 
 /// <summary>
@@ -81,7 +82,7 @@ inline bool is_reserved(int c) { return is_gen_delim(c) || is_sub_delim(c); }
 /// </summary>
 inline bool is_scheme_character(int c)
 {
-    return cpprest_utils::is_alnum((char)c) || c == '+' || c == '-' || c == '.';
+    return ::isalnum(c) || c == '+' || c == '-' || c == '.';
 }
 
 /// <summary>
