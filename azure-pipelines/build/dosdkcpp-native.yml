@@ -46,20 +46,22 @@ variables:
 
 pool: 
   name: 1es_hosted_pool_ubuntu_1804
-  vmImage: do-adu-build-$(version)
+  #TODO(jimson): After Imagefactory check-in is completed and we can create new image, use the commented below
+  #vmImage: do-adu-build-$(version)
+  vmImage: do-adu-build-2
 
 jobs:
 - job: Debug
   steps:
   - template: templates/dosdkcpp-native-steps.yml
     parameters:
-      targetOsArch: 'ubuntu1804_x64'
+      targetOsArch: 'ubuntu1804-x64'
       config: debug
 
 - job: Release
   steps:
   - template: templates/dosdkcpp-native-steps.yml
     parameters:
-      targetOsArch: 'ubuntu1804_x64'
+      targetOsArch: 'ubuntu1804-x64'
       config: minsizerel
       skipTests: true
