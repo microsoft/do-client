@@ -40,7 +40,13 @@ pr:
       - azure-pipelines/*
       - sdk-cpp/build/cleanup-install.sh
 
-pool: 1es_hosted_pool_ubuntu_1804
+variables:
+- name: version
+  value: 0.8.0
+
+pool: 
+  name: 1es_hosted_pool_ubuntu_1804
+  vmImage: do-adu-build-$(version)
 
 jobs:
 - job: Debug

@@ -20,12 +20,12 @@ variables:
 
 pool: 
   name: 1es_hosted_pool_ubuntu_1804
-  vmImage: do-adu-build-($(version))
+  vmImage: do-adu-build-$(version)
 
 jobs:
 - template: templates/do-docker-jobs.yml
   parameters:
-    targetOsArch: 'debian10_arm32'
+    targetOsArch: 'debian10-arm32'
     version: ${{variables.version}}
     stepsTemplate: 'dopapt-docker-steps.yml'
 
@@ -37,6 +37,6 @@ jobs:
 
 - template: templates/do-docker-jobs.yml
   parameters:
-    targetOsArch: 'ubuntu1804_arm64'
+    targetOsArch: 'ubuntu1804-arm64'
     version: ${{variables.version}}
     stepsTemplate: 'dopapt-docker-steps.yml'
