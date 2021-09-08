@@ -20,7 +20,6 @@ namespace cpprest_utils
     Code borrowed from cpprestsdk project: https://github.com/microsoft/cpprestsdk/
     libcurl includes APIs to work with URLs starting from v7.62.0.
     Ubuntu 18.04 ships with libcurl v7.58.0 only so we cannot use the URL API.
-    TODO(shishirb): Once cpprestsdk usage is removed completely, revisit here and remove unused code.
  */
 
 #ifndef __cdecl
@@ -60,36 +59,6 @@ typedef std::stringstream stringstream_t;
 /// </summary>
 /// <param name="target">The string to convert to lowercase.</param>
 _ASYNCRTIMP void __cdecl inplace_tolower(std::string& target) CPPREST_NOEXCEPT;
-
-/// <summary>
-/// Our own implementation of alpha numeric instead of std::isalnum to avoid
-/// taking global lock for performance reasons.
-/// </summary>
-inline bool __cdecl is_alnum(const unsigned char uch) CPPREST_NOEXCEPT
-{ // test if uch is an alnum character
-    // special casing char to avoid branches
-    // clang-format off
-    static CPPREST_CONSTEXPR bool is_alnum_table[UCHAR_MAX + 1] = {
-        /*        X0 X1 X2 X3 X4 X5 X6 X7 X8 X9 XA XB XC XD XE XF */
-        /* 0X */   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        /* 1X */   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        /* 2X */   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        /* 3X */   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, /* 0-9 */
-        /* 4X */   0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, /* A-Z */
-        /* 5X */   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
-        /* 6X */   0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, /* a-z */
-        /* 7X */   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0
-        /* non-ASCII values initialized to 0 */
-    };
-    // clang-format on
-    return (is_alnum_table[uch]);
-}
-
-/// <summary>
-/// Our own implementation of alpha numeric instead of std::isalnum to avoid
-/// taking global lock for performance reasons.
-/// </summary>
-inline bool __cdecl is_alnum(const char ch) CPPREST_NOEXCEPT { return (is_alnum(static_cast<unsigned char>(ch))); }
 
 inline const utf8string& print_utf8string(const utf8string& val) { return val; }
 inline const string_t& print_string(const string_t& val) { return val; }

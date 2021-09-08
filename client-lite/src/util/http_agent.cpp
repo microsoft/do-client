@@ -5,7 +5,7 @@
 #include <boost/algorithm/string.hpp>
 #include "do_cpprest_uri_builder.h"
 #include "do_cpprest_uri.h"
-#include "do_curl_multi_operation.h"
+#include "do_curl_wrappers.h"
 #include "do_http_defines.h"
 #include "safe_int.h"
 
@@ -14,7 +14,7 @@
 
 namespace msdod = microsoft::deliveryoptimization::details;
 
-HttpAgent::HttpAgent(CurlMultiOperation& curlOps, IHttpAgentEvents& callback) :
+HttpAgent::HttpAgent(CurlRequests& curlOps, IHttpAgentEvents& callback) :
     _curlOps(curlOps),
     _callback(callback)
 {
@@ -62,7 +62,7 @@ bool HttpAgent::ValidateUrl(const std::string& url)
 }
 
 // IHttpAgent
-HRESULT HttpAgent::SendRequest(PCSTR szUrl, PCSTR szProxyUrl, PCSTR szRange, UINT64 callerContext) try
+HRESULT HttpAgent::SendRequest(PCSTR szUrl, PCSTR szProxyUrl, PCSTR szRange) try
 {
     RETURN_IF_FAILED(_CreateClient(szUrl, szProxyUrl));
     DO_ASSERT(_requestContext.curlHandle);
@@ -86,8 +86,7 @@ HRESULT HttpAgent::SendRequest(PCSTR szUrl, PCSTR szProxyUrl, PCSTR szRange, UIN
     _requestContext.hrTranslatedStatusCode = S_OK;
     _requestContext.responseOnHeadersAvailableInvoked = false;
     _requestContext.responseOnCompleteInvoked = false;
-    _callbackContext = callerContext;
-    _curlOps.AddHandle(_requestContext.curlHandle, s_CompleteCallback, this);
+    _curlOps.Add(_requestContext.curlHandle, s_CompleteCallback, this);
     return S_OK;
 } CATCH_RETURN()
 
@@ -95,37 +94,37 @@ void HttpAgent::Close()
 {
     if (_requestContext.curlHandle)
     {
-        _curlOps.RemoveHandle(_requestContext.curlHandle);
+        _curlOps.Remove(_requestContext.curlHandle);
     }
     // Clients may now make new requests if they choose
 }
 
 // The Query* functions are supposed to be called only from within the IHttpAgentEvents callbacks
 // function to get back valid data.
-HRESULT HttpAgent::QueryStatusCode(UINT64, _Out_ UINT* pStatusCode) const
+HRESULT HttpAgent::QueryStatusCode(_Out_ UINT* pStatusCode) const
 {
     *pStatusCode = static_cast<UINT>(_requestContext.responseStatusCode);
     return S_OK;
 }
 
-HRESULT HttpAgent::QueryContentLength(UINT64, _Out_ UINT64* pContentLength)
+HRESULT HttpAgent::QueryContentLength(_Out_ UINT64* pContentLength)
 {
     *pContentLength = 0;
 
     std::string lengthHeader;
-    if (SUCCEEDED(QueryHeaders(0, "Content-Length", lengthHeader)))
+    if (SUCCEEDED(QueryHeaders("Content-Length", lengthHeader)))
     {
         *pContentLength = std::stoull(lengthHeader);
     }
     return S_OK;
 }
 
-HRESULT HttpAgent::QueryContentLengthFromRange(UINT64 httpContext, _Out_ UINT64* pContentLength) try
+HRESULT HttpAgent::QueryContentLengthFromRange(_Out_ UINT64* pContentLength) try
 {
     *pContentLength = 0;
 
     std::string rangeHeader;
-    RETURN_IF_FAILED_EXPECTED(QueryHeadersByType(httpContext, HttpAgentHeaders::Range, rangeHeader));
+    RETURN_IF_FAILED_EXPECTED(QueryHeadersByType(HttpAgentHeaders::Range, rangeHeader));
 
     // attempt to extract the content length from the content range format:
     // Content-Range: bytes <start>-<end>/<length>
@@ -135,7 +134,7 @@ HRESULT HttpAgent::QueryContentLengthFromRange(UINT64 httpContext, _Out_ UINT64*
     return S_OK;
 } CATCH_RETURN()
 
-HRESULT HttpAgent::QueryHeaders(UINT64, PCSTR pszName, std::string& headers) const noexcept
+HRESULT HttpAgent::QueryHeaders(PCSTR pszName, std::string& headers) const noexcept
 {
     headers.clear();
     const auto& reponseHeaders = _requestContext.responseHeaders;
@@ -166,7 +165,7 @@ HRESULT HttpAgent::QueryHeaders(UINT64, PCSTR pszName, std::string& headers) con
     return S_OK;
 }
 
-HRESULT HttpAgent::QueryHeadersByType(UINT64 httpContext, HttpAgentHeaders type, std::string& headers) noexcept
+HRESULT HttpAgent::QueryHeadersByType(HttpAgentHeaders type, std::string& headers) noexcept
 {
     PCSTR headerName;
     switch (type)
@@ -177,7 +176,7 @@ HRESULT HttpAgent::QueryHeadersByType(UINT64 httpContext, HttpAgentHeaders type,
     default:
         return E_UNEXPECTED;
     }
-    return QueryHeaders(httpContext, headerName, headers);
+    return QueryHeaders(headerName, headers);
 }
 
 HRESULT HttpAgent::_CreateClient(PCSTR szUrl, PCSTR szProxyUrl) try
@@ -361,7 +360,7 @@ size_t HttpAgent::_WriteCallback(char* pBuffer, size_t size, size_t nMemb)
     // Forward body only for success response
     if (SUCCEEDED(_requestContext.hrTranslatedStatusCode))
     {
-        (void)_callback.OnData(reinterpret_cast<BYTE*>(pBuffer), cbBuffer, 0, _callbackContext);
+        (void)_callback.OnData(reinterpret_cast<BYTE*>(pBuffer), cbBuffer);
     }
     return cbBuffer;
 }
@@ -379,12 +378,12 @@ void HttpAgent::_CompleteCallback(int curlResult)
         _TrySetStatusCodeAndInvokeOnHeadersAvailable();
 
         _requestContext.hrTranslatedStatusCode = _ResultFromStatusCode(_requestContext.responseStatusCode);
-        (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode, 0, _callbackContext);
+        (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode);
     }
     else
     {
         _requestContext.hrTranslatedStatusCode = HRESULT_FROM_XPLAT_SYSERR(curlResult);
-        (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode, 0, _callbackContext);
+        (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode);
     }
 }
 
@@ -406,12 +405,12 @@ void HttpAgent::_TrySetStatusCodeAndInvokeOnHeadersAvailable()
     _requestContext.hrTranslatedStatusCode = _ResultFromStatusCode(_requestContext.responseStatusCode);
     if (SUCCEEDED(_requestContext.hrTranslatedStatusCode))
     {
-        (void)_callback.OnHeadersAvailable(0, _callbackContext);
+        (void)_callback.OnHeadersAvailable();
     }
     else
     {
         // Not interested in receiving body for failure response. Notify completion immediately.
         _requestContext.responseOnCompleteInvoked = true;
-        (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode, 0, _callbackContext);
+        (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode);
     }
 }
