@@ -27,18 +27,18 @@ pool:
 jobs:
 - template: templates/do-docker-jobs.yml
   parameters:
-    targetOsArch: 'debian9-arm32'
+    targetOsArch: 'debian9_arm32'
     version: ${{variables.version}}
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 
 - template: templates/do-docker-jobs.yml
   parameters:
-    targetOsArch: 'debian10-arm32'
+    targetOsArch: 'debian10_arm32'
     version: ${{variables.version}}
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 
 - template: templates/do-docker-jobs.yml
   parameters:
-    targetOsArch: 'ubuntu1804-arm64' # azure pipelines does not support '.' in display names
+    targetOsArch: 'ubuntu1804_arm64' # azure pipelines does not support '.' in display names
     version: ${{variables.version}}
     stepsTemplate: 'doclient-lite-docker-steps.yml'
