@@ -2,11 +2,9 @@
 # Client-lite is built for running tests alone, it is not published.
 # Publishes the binaries + packages as artifacts.
 
-# Version here refers to test package version, and follows format of 0.0.<Pipeline Build Number>
-# This is due to azure universal packaging apis requiring semantic versioning
-# Builds are monotonically increasing based on run number so test builds can always pull the newest version
 variables:
-  test.package.version: 0.0.$(Build.BuildId)
+- name: version
+  value: 0.8.0
 
 trigger:
   branches:
@@ -39,10 +37,6 @@ pr:
     exclude:
       - azure-pipelines/*
       - sdk-cpp/build/cleanup-install.sh
-
-variables:
-- name: version
-  value: 0.8.0
 
 pool: 
   name: 1es_hosted_pool_ubuntu_1804

@@ -1,6 +1,10 @@
 # Pipeline to build DO Plugins using docker to target non-native OS and/or architecture.
 # Publishes the binaries + packages as artifacts.
 
+variables:
+- name: version
+  value: 0.8.0
+
 # Disable branch and pr triggers - currently run this manually to avoid hogging build machine resources
 # Rely on Ubuntu x64 pipeline for CI/CD
 trigger:
@@ -13,10 +17,6 @@ schedules:
   branches:
     include:
     - main
-
-variables:
-- name: version
-  value: 0.8.0
 
 pool: 
   name: 1es_hosted_pool_ubuntu_1804
