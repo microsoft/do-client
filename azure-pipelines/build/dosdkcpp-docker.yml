@@ -20,25 +20,23 @@ schedules:
 
 pool: 
   name: 1es_hosted_pool_ubuntu_1804
-  #TODO(jimson): After Imagefactory check-in is completed and we can create new image, use the commented below
-  #vmImage: do-adu-build-$(version)
-  vmImage: do-adu-build-2
+  vmImage: do-adu-build-$(version)
 
 jobs:
 - template: templates/do-docker-jobs.yml
   parameters:
     targetOsArch: 'debian10_arm32'
-    version: ${{variables.version}}
+    version: ${{variables.imageVersion}}
     stepsTemplate: 'dosdkcpp-docker-steps.yml'
 
 - template: templates/do-docker-jobs.yml
   parameters:
     targetOsArch: 'debian9_arm32'
-    version: ${{variables.version}}
+    version: ${{variables.imageVersion}}
     stepsTemplate: 'dosdkcpp-docker-steps.yml'
 
 - template: templates/do-docker-jobs.yml
   parameters:
     targetOsArch: 'ubuntu1804_arm64'
-    version: ${{variables.version}}
+    version: ${{variables.imageVersion}}
     stepsTemplate: 'dosdkcpp-docker-steps.yml'
