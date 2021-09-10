@@ -3,6 +3,7 @@
 #include <cctype>
 #include <functional> // std::reference_wrapper
 #include <sstream>
+#include "do_cpprest_utils.h"
 
 namespace microsoft
 {
@@ -243,7 +244,18 @@ struct inner_parse_out
                     // skip the colon
                     port_begin++;
 
-                    port = cpprest_utils::scan_string<int>(cpprest_utils::string_t(port_begin, authority_end));
+                    port = [str = cpprest_utils::string_t(port_begin, authority_end)]()
+                        {
+                            int retValue;
+                            cpprest_utils::istringstream_t iss(str);
+                            iss.imbue(std::locale::classic());
+                            iss >> retValue;
+                            if (iss.bad())
+                            {
+                                throw std::invalid_argument("Invalid input string");
+                            }
+                            return retValue;
+                        }();
                 }
                 else
                 {
