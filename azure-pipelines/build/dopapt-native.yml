@@ -2,7 +2,7 @@
 # Publishes the binaries + packages as artifacts.
 
 variables:
-- name: version
+- name: imageVersion
   value: 0.8.0
 
 trigger:

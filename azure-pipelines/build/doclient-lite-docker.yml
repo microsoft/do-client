@@ -2,7 +2,7 @@
 # Publishes the binaries + packages as artifacts.
 
 variables:
-- name: version
+- name: imageVersion # This is used to specify the vmImage & dockerImage to build the current release, this version # will always be the subsequent release in development branches
   value: 0.8.0
 
 # Disable branch and pr triggers - currently run this manually to avoid hogging build machine resources

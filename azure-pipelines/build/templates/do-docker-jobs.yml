@@ -4,7 +4,7 @@
 parameters:
 - name: targetOsArch    # example: debian9_arm32
   type: string
-- name: version
+- name: imageVersion
   type: string
 - name: stepsTemplate   # example: dopapt-docker-steps.yml
   type: string
