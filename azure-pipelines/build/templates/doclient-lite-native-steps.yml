@@ -11,12 +11,6 @@ parameters:
   default: false
 
 steps:
-- task: CmdLine@2
-  inputs:
-    script: 'sudo apt-get install -y libcurl4-openssl-dev'
-    workingDirectory: '$(Build.SourcesDirectory)/build'
-  displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
-
 # Have to use cmdline rather than built in python task, because the python env variable chooses python2
 # There is a pipeline task which allows you to specify version, but that requires configuring of the agent tools directory
 - task: CmdLine@2
