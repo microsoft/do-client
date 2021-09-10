@@ -197,7 +197,9 @@ HRESULT HttpAgent::_CreateClient(PCSTR szUrl, PCSTR szProxyUrl) try
         // Set options that are generic to all requests
         curl_easy_setopt(_requestContext.curlHandle, CURLOPT_FOLLOWLOCATION, static_cast<long>(1));
         curl_easy_setopt(_requestContext.curlHandle, CURLOPT_MAXREDIRS, static_cast<long>(10));
+#if CURL_AT_LEAST_VERSION(7,54,0)
         curl_easy_setopt(_requestContext.curlHandle, CURLOPT_SUPPRESS_CONNECT_HEADERS, static_cast<long>(1));
+#endif
         curl_easy_setopt(_requestContext.curlHandle, CURLOPT_HTTPGET, static_cast<long>(1));
         curl_easy_setopt(_requestContext.curlHandle, CURLOPT_USERAGENT, DO_USER_AGENT_STR);
 
