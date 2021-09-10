@@ -63,20 +63,6 @@ _ASYNCRTIMP void __cdecl inplace_tolower(std::string& target) CPPREST_NOEXCEPT;
 inline const utf8string& print_utf8string(const utf8string& val) { return val; }
 inline const string_t& print_string(const string_t& val) { return val; }
 
-template<typename Target>
-Target scan_string(const string_t& str)
-{
-    Target t;
-    istringstream_t iss(str);
-    iss.imbue(std::locale::classic());
-    iss >> t;
-    if (iss.bad())
-    {
-        throw std::bad_cast();
-    }
-    return t;
-}
-
 /// <summary>
 /// Converts to a UTF-8 string.
 /// </summary>
