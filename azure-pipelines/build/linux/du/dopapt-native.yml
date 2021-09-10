@@ -1,11 +1,9 @@
 # Pipeline to build DO Plugins targeting x86-64 architecture.
 # Publishes the binaries + packages as artifacts.
 
-# Version here refers to test package version, and follows format of 0.0.<Pipeline Build Number>
-# This is due to azure universal packaging apis requiring semantic versioning
-# Builds are monotonically increasing based on run number so test builds can always pull the newest version
 variables:
-  test.package.version: 0.0.$(Build.BuildId)
+- name: imageVersion
+  value: 0.8.0
 
 trigger:
   branches:
@@ -39,7 +37,9 @@ pr:
       - 'azure-pipelines/*'
       - 'plugins/linux-apt/scripts/configure-apt-method.sh'
 
-pool: 1es_hosted_pool_ubuntu_1804
+pool: 
+  name: 1es_hosted_pool_ubuntu_1804
+  vmImage: do-adu-build-$(imageVersion)
 
 jobs:
 - job: Debug

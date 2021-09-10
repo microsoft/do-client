@@ -65,7 +65,7 @@ function installBuildDependencies
     fi
 
     echo "[INFO] Installing build dependencies"
-    apt-get install -y make build-essential g++ gdb gdbserver gcc git wget
+    apt-get install -y cmake make build-essential g++ gdb gdbserver gcc git wget
     apt-get install -y python3 ninja-build
 
     if [[ "$PLATFORM" == "debian9" ]];
@@ -79,7 +79,7 @@ function installBuildDependencies
         make
         make install
     else
-        apt-get -y install cmake libmsgsl-dev
+        apt-get -y install libmsgsl-dev
     fi
 
     apt-get install -y libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
