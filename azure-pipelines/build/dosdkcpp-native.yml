@@ -40,7 +40,7 @@ pr:
 
 pool: 
   name: 1es_hosted_pool_ubuntu_1804
-  vmImage: do-adu-build-$(version)
+  vmImage: do-adu-build-$(imageVersion)
 
 jobs:
 - job: Debug

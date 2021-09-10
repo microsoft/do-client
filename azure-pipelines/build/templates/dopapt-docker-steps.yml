@@ -24,11 +24,11 @@ steps:
   inputs:
     command: pull
     containerRegistry: doclientcontainerregistry
-    arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.version}}'
+    arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}}'
 
 - task: CmdLine@2
   inputs:
-    script: 'sudo docker run --rm --entrypoint=/bin/bash -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-plugin-apt doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.version}} "/code/build/docker/docker-build-plugin.sh" "/code" "${{parameters.config}}"'
+    script: 'sudo docker run --rm --entrypoint=/bin/bash -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-plugin-apt doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/docker/docker-build-plugin.sh" "/code" "${{parameters.config}}"'
   displayName: 'Build deliveryoptimization-plugin-apt ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: CopyFiles@2
