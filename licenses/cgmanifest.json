@@ -58,6 +58,42 @@
     },
     {
       "Component": {
+        "Type": "linux",
+        "linux": {
+          "Name": "libcurl4",
+          "Version": "7.58.0-2ubuntu3.14",
+          "Distribution": "Ubuntu",
+          "Release": "18.04"
+        }
+      },
+      "DevelopmentDependency": false
+    },
+    {
+      "Component": {
+        "Type": "linux",
+        "linux": {
+          "Name": "libcurl4",
+          "Version": "7.52.1-5+deb9u15",
+          "Distribution": "Debian",
+          "Release": "9.13"
+        }
+      },
+      "DevelopmentDependency": false
+    },
+    {
+      "Component": {
+        "Type": "linux",
+        "linux": {
+          "Name": "libcurl4",
+          "Version": "7.64.0-4+deb10u2",
+          "Distribution": "Debian",
+          "Release": "10.10"
+        }
+      },
+      "DevelopmentDependency": false
+    },
+    {
+      "Component": {
         "Type": "other",
         "other": {
           "Name": "libproxy",
