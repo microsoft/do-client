@@ -35,9 +35,9 @@ pr:
     exclude:
       - azure-pipelines/*
 
-pool: 
+pool:
   name: 1es_hosted_pool_ubuntu_1804
-  vmImage: do-adu-build-$(imageVersion)
+  demands: ImageOverride -equals do-adu-build-$(imageVersion)
 
 jobs:
 - job: Debug
