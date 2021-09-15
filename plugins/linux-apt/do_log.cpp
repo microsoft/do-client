@@ -1,5 +1,7 @@
 #include "do_log.h"
 
+#ifdef DEBUG
+
 #include <unistd.h> // getpid
 #include <sys/syscall.h> // SYS_gettid
 #include <fstream>
@@ -11,8 +13,7 @@ void LogMessage(const std::string& msg) try
     static std::fstream logStream;
     if (!logStream.is_open())
     {
-        // TODO(shishirb) Change to permanent log path
-        logStream.open("/tmp/doclient-apt-plugin.log", std::ios_base::app | std::ios_base::ate);
+        logStream.open(DO_PLUGIN_APT_LOG_PATH, std::ios_base::app | std::ios_base::ate);
         if (logStream.bad())
         {
             throw DOPluginException("Couldn't open debug log file");
@@ -31,3 +32,5 @@ void LogMessage(const std::string& msg) try
 } catch (...)
 {
 }
+
+#endif // DEBUG

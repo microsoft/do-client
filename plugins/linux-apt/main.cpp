@@ -301,6 +301,7 @@ int main(int argc, char** argv)
 
         LogDebug("Start up with %d args, %s.", argc, msdoutil::ComponentVersion().c_str());
 
+#ifdef DEBUG
         if (argc == 2)
         {
             if (strcmp(argv[1], "--dev-test") == 0)
@@ -315,6 +316,7 @@ int main(int argc, char** argv)
             printf("Unknown option: %s\n", argv[1]);
             return 1;
         }
+#endif // DEBUG
 
         WorkLoop();
     }

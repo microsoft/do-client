@@ -13,11 +13,13 @@ file(GLOB dopapt_source
 )
 
 set(dopapt_cache_path "/var/cache/deliveryoptimization-plugin-apt")
+set(dopapt_log_path "/tmp/deliveryoptimization-plugin-apt.log")
 
 add_executable(${DO_PLUGIN_APT_BIN_NAME} "${dopapt_source}")
 target_compile_definitions(${DO_PLUGIN_APT_BIN_NAME}
     PRIVATE
         DO_PLUGIN_APT_CACHE_PATH="${dopapt_cache_path}"
+        DO_PLUGIN_APT_LOG_PATH="${dopapt_log_path}"
 )
 add_platform_interface_definitions(${DO_PLUGIN_APT_BIN_NAME})
 add_do_version_lib(${DO_PLUGIN_APT_BIN_NAME} ${PROJECT_VERSION})

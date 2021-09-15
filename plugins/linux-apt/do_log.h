@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef DEBUG
+
 #include <string>
 #include "do_string_util.h"
 
@@ -20,3 +22,9 @@ void LogDebug(const char* fmt, Args&&... args) try
 } catch (...)
 {
 }
+
+#else
+
+#define LogDebug(...)
+
+#endif // DEBUG
