@@ -171,7 +171,7 @@ void TryDeleteFile(const std::string& path)
         const auto ret = remove(path.data());
         if (ret == -1)
         {
-            LogDebug("Failed to delete file, %d: %s", errno, path.data());
+            LogError("Failed to delete file, %d: %s", errno, path.data());
         }
     }
 }
@@ -244,11 +244,11 @@ void WorkUriAcquire(const std::string& url, const std::string& filePath)
     }
     catch (const DOPluginException& doex)
     {
-        LogDebug("DO exception in download: %s", doex.what());
+        LogError("DO exception in download: %s", doex.what());
     }
     catch (const std::exception& ex)
     {
-        LogDebug("C++ exception in download: %s", ex.what());
+        LogError("C++ exception in download: %s", ex.what());
     }
 
     SendUriFailure(url, filePath);
@@ -322,17 +322,17 @@ int main(int argc, char** argv)
     }
     catch (const DOPluginException& doex)
     {
-        LogDebug("DO exception: %s", doex.what());
+        LogError("DO exception: %s", doex.what());
         exitCode = 2;
     }
     catch (const std::exception& ex)
     {
-        LogDebug("C++ exception: %s", ex.what());
+        LogError("C++ exception: %s", ex.what());
         exitCode = 3;
     }
     catch (...)
     {
-        LogDebug("Unknown exception");
+        LogError("Unknown exception");
         exitCode = 4;
     }
 
