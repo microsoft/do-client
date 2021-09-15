@@ -1,5 +1,7 @@
 #include "do_config.h"
 
+#if (DO_CLIENT_ID == DO_CLIENT_ID_AGENT)
+
 #include <cstdio> // popen
 #include <cstdlib> // calloc
 #include <cstring> // strncpy
@@ -177,3 +179,5 @@ extern "C" void deliveryoptimization_free_version_buf(char** ppBuffer)
         *ppBuffer = NULL;
     }
 }
+
+#endif // agent

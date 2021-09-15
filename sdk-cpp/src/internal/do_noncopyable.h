@@ -1,5 +1,6 @@
 
-#pragma once
+#ifndef _DELIVERY_OPTIMIZATION_DO_NONCOPYABLE_H
+#define _DELIVERY_OPTIMIZATION_DO_NONCOPYABLE_H
 
 // Handy base class to create non-copyable classes
 class CDONoncopyable
@@ -11,3 +12,5 @@ public:
 protected:
     CDONoncopyable() {}
 };
+
+#endif

@@ -12,8 +12,8 @@ Delivery Optimization HTTP downloader with Microsoft Connected Cache support.
 
 ## SDK
 
-Library for enabling inter-process communication (IPC) through native C++
-code for Delivery Optimization Agent on Linux.
+Library for enabling inter-process communication (IPC) with deliveryoptimization clients
+through native C++ code.
 
 ## Plug-ins
 
@@ -179,6 +179,18 @@ tracked appropriately.
 | Architecture | Agent | SDK | Plugin |
 |-----|--------|-----|--------|
 | arm32 | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20Simple%20Client%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=25&branchName=main) | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20CPP-SDK%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=33&branchName=main) | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20Plugins%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=31&branchName=main) |
+
+### Windows 10/11
+
+| Architecture | SDK |
+|-----|--------|
+| x86-64 | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20CPP-SDK%20Windows10%20x64?branchName=feature%2Fxplat_sdk)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=53&branchName=feature%2Fxplat_sdk) |
+
+### MacOS
+
+| Architecture | SDK |
+|-----|--------|
+| x86-64 | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20CPP-SDK%20MacOs%20X64?branchName=user%2Fjimson%2Fsdk_mac)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=57&branchName=user%2Fjimson%2Fsdk_mac)) |
 
 ## Contact
 

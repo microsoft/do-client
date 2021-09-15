@@ -1,4 +1,4 @@
-# Template: Steps to build DO Plugins targeting x86-64 architecture.
+# Template: Steps to build DO C++ SDK targeting x86-64 architecture.
 # Consume this steps template in one or more jobs by passing in parameter values.
 
 parameters:
@@ -37,7 +37,7 @@ steps:
   condition: eq('${{parameters.config}}', 'minsizerel')
   inputs:
     targetType: 'filePath'
-    filePath: 'build/check_binary_size.sh'
+    filePath: 'build/scripts/check_binary_size.sh'
     arguments: '385488 /tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}/sdk-cpp/libdeliveryoptimization.so.*.*.*'
   displayName: 'Limit binary size increase'
 

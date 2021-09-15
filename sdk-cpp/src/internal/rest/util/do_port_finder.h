@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _DELIVERY_OPTIMIZATION_DO_PORT_FINDER_H
+#define _DELIVERY_OPTIMIZATION_DO_PORT_FINDER_H
 
 #include <string>
 
@@ -18,3 +19,4 @@ public:
 } // namespace details
 } // namespace deliveryoptimization
 } // namespace microsoft
+#endif
