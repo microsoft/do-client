@@ -1,41 +1,11 @@
 project (deliveryoptimization_sdk VERSION 0.5.0)
 
-set(DO_INTERFACE_ID_UNKNOWN 0)
-set(DO_INTERFACE_ID_REST 1)
-set(DO_INTERFACE_ID_COM 2)
-if (CMAKE_SYSTEM_NAME MATCHES Linux OR CMAKE_SYSTEM_NAME MATCHES Darwin)
-    set(DO_INTERFACE_ID ${DO_INTERFACE_ID_REST})
-elseif (CMAKE_SYSTEM_NAME MATCHES Windows)
-    set(DO_INTERFACE_ID ${DO_INTERFACE_ID_COM})
-else()
-    message(WARNING "Unknown platform - client not supported on this platform")
-    set(DO_INTERFACE_ID ${DO_PLATFORM_ID_UNKNOWN})
-endif()
-message(STATUS "DO_INTERFACE_ID: ${DO_INTERFACE_ID}")
-
-set(DO_CLIENT_ID_UNKNOWN 0)
-set(DO_CLIENT_ID_DOSVC 1)
-set(DO_CLIENT_ID_AGENT 2)
-if (CMAKE_SYSTEM_NAME MATCHES Linux)
-    # In the future, may need to supply a variable to build.py which specifies which agent to build on linux
-    # For now, linux support of the SDK is limited to only the open-sourced agent.
-    set(DO_CLIENT_ID ${DO_CLIENT_ID_AGENT})
-elseif (CMAKE_SYSTEM_NAME MATCHES Darwin)
-    set(DO_CLIENT_ID ${DO_CLIENT_ID_DOSVC})
-elseif (CMAKE_SYSTEM_NAME MATCHES Windows)
-    set(DO_CLIENT_ID ${DO_CLIENT_ID_DOSVC})
-else()
-    message(WARNING "Unknown platform - client not supported on this platform")
-    set(DO_CLIENT_ID_UNKNOWN ${DO_PLATFORM_ID_UNKNOWN})
-endif()
-message(STATUS "DO_CLIENT_ID: ${DO_CLIENT_ID}")
-
-if (${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX} OR ${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_MAC})
+if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
     message("DO configured to use shared Boost libraries")
     add_definitions(-DBOOST_ALL_DYN_LINK=1)
 endif()
 
-if (${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
+if (DO_PLATFORM_LINUX)
     fixup_compile_options_for_arm()
 endif()
 
@@ -56,17 +26,6 @@ set(sdk_source_common
     "src/internal/*.cpp"
 )
 
-set(sdk_compile_definitions_common
-    DO_INTERFACE_ID=${DO_INTERFACE_ID}
-    DO_INTERFACE_ID_REST=${DO_INTERFACE_ID_REST}
-    DO_INTERFACE_ID_COM=${DO_INTERFACE_ID_COM}
-    DO_INTERFACE_ID_UNKNOWN=${DO_INTERFACE_ID_UNKNOWN}
-    DO_CLIENT_ID=${DO_CLIENT_ID}
-    DO_CLIENT_ID_DOSVC=${DO_CLIENT_ID_DOSVC}
-    DO_CLIENT_ID_AGENT=${DO_CLIENT_ID_AGENT}
-    DO_CLIENT_ID_UNKNOWN=${DO_CLIENT_ID_UNKNOWN}
-)
-
 set(sdk_public_includes
     $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include/${DO_SDK_LIB_NAME}>
@@ -76,7 +35,7 @@ set(sdk_private_includes_common
     "src/internal"
 )
 
-if(${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
+if(DO_PLATFORM_LINUX)
     include(GNUInstallDirs)
 
     file(GLOB sdk_source
@@ -109,7 +68,7 @@ if(${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
 
     strip_symbols(${DO_SDK_LIB_NAME})
 
-elseif(${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_MAC})
+elseif(DO_PLATFORM_MAC)
     file(GLOB sdk_source
         ${sdk_source_common}
         "src/internal/rest/*.cpp"
@@ -158,11 +117,11 @@ target_include_directories(${DO_SDK_LIB_NAME}
 target_compile_definitions(${DO_SDK_LIB_NAME}
     PRIVATE
         ${sdk_compile_definitions}
-        ${sdk_compile_definitions_common}
 )
 if (DO_DEV_DEBUG)
     target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE DO_DEV_DEBUG)
 endif ()
+add_platform_interface_definitions(${DO_SDK_LIB_NAME})
 
 target_link_libraries(${DO_SDK_LIB_NAME}
     PUBLIC
@@ -175,7 +134,7 @@ target_link_libraries(${DO_SDK_LIB_NAME}
 
 ### Region CMake Install ###
 
-if(${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
+if(DO_PLATFORM_LINUX)
     # Install the lib while also exporting all the usage requirements to a named target.
     install(
         TARGETS

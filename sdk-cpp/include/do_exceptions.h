@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include <system_error>
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
-#include <winerror.h>
+#if defined(DO_INTERFACE_COM)
+#include <winerror.h>   // FAILED macro
 #endif
 
 namespace microsoft
@@ -51,7 +51,7 @@ private:
     std::string _msg;
 };
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
 //TODO: Look into replacing using internal exception class
 inline void throw_if_fail(int32_t hr)
 {

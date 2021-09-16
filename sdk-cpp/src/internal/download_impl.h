@@ -6,7 +6,7 @@
 #include "download_interface.h"
 #include "do_download_status.h"
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
 #include <wrl.h>
 
 #include "do_download_property.h"
@@ -33,7 +33,7 @@ public:
 
     download_status GetStatus() override;
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
     void SetCallback(const download_property_value::status_callback_t& callback, download& download) override;
 
     download_property_value GetProperty(download_property key) override;
@@ -41,12 +41,12 @@ public:
 #endif
 
 private:
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
     static void _SetPropertyHelper(IDODownload& download, download_property key, const download_property_value& val);
     download_property_value _GetPropertyHelper(download_property key);
 
     Microsoft::WRL::ComPtr<IDODownload> _spDownload;
-#elif (DO_INTERFACE_ID == DO_INTERFACE_ID_REST)
+#elif defined(DO_INTERFACE_REST)
     void _DownloadOperationCall(const std::string& type);
 
     std::string _id;

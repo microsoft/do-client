@@ -7,7 +7,7 @@
 #include <string>
 #include "do_download_status.h"
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
 #include "do_download_property.h"
 #endif
 
@@ -40,7 +40,7 @@ public:
     static void download_url_to_path(const std::string& uri, const std::string& downloadFilePath, std::chrono::seconds timeoutSecs = std::chrono::hours(24));
     static void download_url_to_path(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeoutSecs = std::chrono::hours(24));
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
     /* Sets a download property for the current download object
     This function attempts to set a download property using the caller-supplied value. This method can throw
     ~~~~

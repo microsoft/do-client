@@ -8,10 +8,10 @@ extern const uint64_t g_smallFileSizeBytes;
 extern const uint64_t g_largeFileSizeBytes;
 extern const uint64_t g_prodFileSizeBytes;
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_REST)
+#if defined(DO_INTERFACE_REST)
 extern const std::string g_docsProcName;
 extern const std::string g_docsSvcName;
-#elif (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#elif defined(DO_INTERFACE_COM)
 extern const std::string g_smallFilePhfInfoJson;
 #endif
 

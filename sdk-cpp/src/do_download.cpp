@@ -122,7 +122,7 @@ void download::download_url_to_path(const std::string& uri, const std::string& d
 }
 
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
 void download::set_property(download_property prop, const download_property_value& val)
 {
     if (prop == download_property::callback_interface)

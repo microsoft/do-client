@@ -33,7 +33,7 @@ public:
         ASSERT_EQ(status.state(), expectedState) << "Download must have reached expected state before timeout";
     }
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_REST)
+#if defined(DO_INTERFACE_REST)
     static bool IsActiveProcess(std::string name);
     static int ShutdownProcess(std::string name);
     static void RestartService(const std::string& name);
@@ -49,7 +49,7 @@ public:
 #endif // Rest
 
 private:
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_REST)
+#if defined(DO_INTERFACE_REST)
     static int _GetPidFromProcName(std::string name);
     static int _KillProcess(int pid, int signal);
 #endif // Rest

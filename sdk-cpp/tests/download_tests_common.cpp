@@ -12,7 +12,7 @@
 #include "do_download.h"
 #include "do_download_status.h"
 #include "do_exceptions.h"
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_REST)
+#if defined(DO_INTERFACE_REST)
 #include "do_test_helpers.h"
 #endif
 #include "test_data.h"
@@ -142,9 +142,9 @@ TEST_F(DownloadTests, SimpleDownloadTest_WithMalformedPath)
     }
     catch (const msdo::exception& e)
     {
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
         //ASSERT_EQ(e.error_code(), msdo::DO_E_INVALID_NAME);
-#elif (DO_INTERFACE_ID == DO_INTERFACE_ID_REST)
+#elif defined(DO_INTERFACE_REST)
         ASSERT_EQ(e.error_code(), DO_ERROR_FROM_XPLAT_SYSERR(ENOENT));
 #endif
         ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
@@ -162,9 +162,9 @@ TEST_F(DownloadTests, SimpleDownloadTest_With404UrlAndMalformedPath)
     }
     catch (const msdo::exception& e)
     {
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
         ASSERT_EQ(e.error_code(), HTTP_E_STATUS_NOT_FOUND);
-#elif (DO_INTERFACE_ID == DO_INTERFACE_ID_REST)
+#elif defined(DO_INTERFACE_REST)
         ASSERT_EQ(e.error_code(), DO_ERROR_FROM_XPLAT_SYSERR(ENOENT));
 #endif
         ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
@@ -179,7 +179,7 @@ TEST_F(DownloadTests, SimpleDownloadTest_With404UrlAndMalformedPath)
 // TODO(jimson): Resolve difference in tests, leave below test commented until then
 // This test will have different behavior on windows because the file is not created in the dest dir until finalize() is invoked
 // Also, no exception will be thrown in the try catch on windows
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_REST)
+#if defined(DO_INTERFACE_REST)
 TEST_F(DownloadTests, Download1PausedDownload2SameDestTest)
 {
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
@@ -284,9 +284,9 @@ TEST_F(DownloadTests, ResumeOnAlreadyDownloadedFileTest)
     }
     catch (const msdo::exception& e)
     {
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
         ASSERT_EQ(e.error_code(), static_cast<int32_t>(msdo::errc::do_e_invalid_state));
-#elif (DO_INTERFACE_ID == DO_INTERFACE_ID_REST)
+#elif defined(DO_INTERFACE_REST)
         ASSERT_EQ(e.error_code(), static_cast<int32_t>(msdo::errc::not_found));
 #endif
     }
@@ -316,9 +316,9 @@ TEST_F(DownloadTests, CancelDownloadOnCompletedState)
     }
     catch (const msdo::exception& e)
     {
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
         ASSERT_EQ(e.error_code(), static_cast<int32_t>(msdo::errc::do_e_invalid_state));
-#elif (DO_INTERFACE_ID == DO_INTERFACE_ID_REST)
+#elif defined(DO_INTERFACE_REST)
         ASSERT_EQ(e.error_code(), static_cast<int32_t>(msdo::errc::not_found));
 #endif
     };
@@ -338,7 +338,7 @@ TEST_F(DownloadTests, CancelDownloadInTransferredState)
     ASSERT_EQ(status.bytes_total(), status.bytes_transferred());
     ASSERT_EQ(status.bytes_total(), g_smallFileSizeBytes);
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_REST) 
+#if defined(DO_INTERFACE_REST)
     // On Windows need to finalize in order for file to show up on disk, so exclude check here
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
 #endif
@@ -348,9 +348,9 @@ TEST_F(DownloadTests, CancelDownloadInTransferredState)
     }
     catch (const msdo::exception& e)
     {
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
         ASSERT_EQ(e.error_code(), static_cast<int32_t>(msdo::errc::do_e_invalid_state));
-#elif (DO_INTERFACE_ID == DO_INTERFACE_ID_REST)
+#elif defined(DO_INTERFACE_REST)
         ASSERT_EQ(e.error_code(), static_cast<int32_t>(msdo::errc::not_found));
 #endif
     }
@@ -366,9 +366,9 @@ static void _PauseResumeTest(bool delayAfterStart = false)
     simpleDownload.start();
     if (delayAfterStart)
     {
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_REST)
+#if defined(DO_INTERFACE_REST)
         std::this_thread::sleep_for(1s);
-#elif (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#elif defined(DO_INTERFACE_COM)
         std::this_thread::sleep_for(5s);
 #endif
     }
@@ -511,7 +511,7 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName3)), g_smallFileSizeBytes);
 }
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_REST)
+#if defined(DO_INTERFACE_REST)
 TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunning)
 {
     TestHelpers::StopService("deliveryoptimization-agent.service");
@@ -578,4 +578,4 @@ TEST_F(DownloadTests, MultipleRestPortFileExists_Download)
 }
 
 
-#endif // Linux 
+#endif // Linux
