@@ -54,13 +54,6 @@ else ()
     message (STATUS "Build timestamp NOT found. Generated it via cmake: ${DO_BUILD_TIMESTAMP}.")
 endif ()
 
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-    # Use ms- prefix to avoid clashes with another company's product named do-agent.
-    # Use it also for other sub-projects to have consistency.
-    set(DOSVC_BIN_NAME "deliveryoptimization-agent")
-    set(DO_PLUGIN_APT_BIN_NAME "deliveryoptimization-plugin-apt")
-endif()
-
 # Differentiate cross platform builds
 # Note: The C preprocessor can compare integer values but not strings
 set(DO_PLATFORM_ID_UNKNOWN 0)
@@ -78,6 +71,11 @@ else()
     set(DO_PLATFORM_ID ${DO_PLATFORM_ID_UNKNOWN})
 endif()
 message(STATUS "DO_PLATFORM_ID: ${DO_PLATFORM_ID}")
+
+if (${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
+    set(DOSVC_BIN_NAME "deliveryoptimization-agent")
+    set(DO_PLUGIN_APT_BIN_NAME "deliveryoptimization-plugin-apt")
+endif()
 
 # Only one subproject can be built with each invocation of cmake. This avoids confusion in specifying options
 # exposed by an individual subproject.
