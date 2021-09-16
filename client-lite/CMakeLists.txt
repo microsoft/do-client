@@ -34,6 +34,7 @@ endfunction ()
 # Include external libraries here:
 find_package(Boost COMPONENTS filesystem REQUIRED)
 find_package(CURL REQUIRED)
+# g++ requires explicit specification of the thread library to be used
 find_package(Threads REQUIRED)
 
 if (DO_PROXY_SUPPORT)
