@@ -21,8 +21,8 @@ const std::chrono::seconds g_smallFileWaitTime = 10s;
 const std::chrono::seconds g_largeFileWaitTime = 5min;
 
 #if (DO_INTERFACE_ID == DO_INTERFACE_ID_REST)
-const std::string g_docsProcName = "docs";
-const std::string g_docsSvcName = "do-client-lite.service";
+const std::string g_docsProcName = "deliveryoptimization-agent";
+const std::string g_docsSvcName = "deliveryoptimization-agent.service";
 #elif (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
 const std::string g_smallFilePhfInfoJson = "{\"PiecesHashFileUrl\":\"https://eus2intdo101.blob.core.windows.net/partnercatalogcontainer/pc00051365650774478716C3536617271346B6B33563946436D6C794B6A516B2F74376751506F7A4933337472593D0000B9CCB33-51FB-4062-AFAC-08C8A088CB35.json\",\"HashOfHashes\":\"Q6VPwDxql56arq4kk3V9FCmlyKjQk/t7gQPozI33trY=\"}";
 #endif
