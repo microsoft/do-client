@@ -53,7 +53,7 @@ elseif (DO_PLATFORM_MAC)
         "rest/test_helpers.cpp"
     )
 
-elseif (${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_WINDOWS})
+elseif(DO_PLATFORM_WINDOWS)
 
     set(dosdkcpp_private_includes
         "../src/internal/com"

@@ -90,7 +90,7 @@ elseif(DO_PLATFORM_MAC)
     set(sdk_public_linked_libs
         ${Boost_LIBRARIES}
     )
-elseif(${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_WINDOWS})
+elseif(DO_PLATFORM_WINDOWS)
     file(GLOB sdk_source
         ${sdk_source_common}
         "src/internal/com/*.cpp"
