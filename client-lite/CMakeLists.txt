@@ -8,12 +8,6 @@ option (DO_PROXY_SUPPORT "Set DO_PROXY_SUPPORT to OFF to turn off proxy support 
 
 add_definitions(-DBOOST_ALL_DYN_LINK=1)
 
-# Get full debug info and also define DEBUG macro in debug builds
-string(TOLOWER ${CMAKE_BUILD_TYPE} DO_BUILD_TYPE)
-if (DO_BUILD_TYPE MATCHES debug)
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
-endif()
-
 # -Wno-noexcept-type, the offending function is SetResultLoggingCallback, this warning is fixed in C++17 because exception specification
 # is part of a function type. Since the offending function is not public when compiled into docs_common just add the compiler flag here
 # to disable the warning.

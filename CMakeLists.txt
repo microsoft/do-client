@@ -75,6 +75,12 @@ if (DO_PLATFORM_LINUX)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie -z relro -z now")
 endif (DO_PLATFORM_LINUX)
 
+# Define DEBUG macro in debug builds
+string(TOLOWER ${CMAKE_BUILD_TYPE} DO_BUILD_TYPE)
+if (DO_BUILD_TYPE MATCHES debug)
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+endif()
+
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/common/cmake)
 include (do-build-helpers)
 include (do-packaging-helpers)

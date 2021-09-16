@@ -3,20 +3,28 @@
 #include <string>
 #include "do_string_util.h"
 
-void LogMessage(const std::string& msg);
+#ifdef DEBUG
 
-// This explicit overload prevents format-security warning
-// for callers who log a simple string without any format arguments.
-inline void LogDebug(const char* msg)
-{
-    LogMessage(std::string{msg});
-}
+void LogDebugMessage(const std::string& msg);
 
 template <typename... Args>
-void LogDebug(const char* fmt, Args&&... args) try
+void LogDebug(const char* fmt, Args&&... args)
 {
     const std::string msg = strutil::FormatString(fmt, std::forward<Args>(args)...);
-    LogMessage(msg);
-} catch (...)
+    LogDebugMessage(msg);
+}
+
+#else
+
+#define LogDebug(...)
+
+#endif // DEBUG
+
+void LogErrorMessage(const std::string& msg);
+
+template <typename... Args>
+void LogError(const char* fmt, Args&&... args)
 {
+    const std::string msg = strutil::FormatString(fmt, std::forward<Args>(args)...);
+    LogErrorMessage(msg);
 }
