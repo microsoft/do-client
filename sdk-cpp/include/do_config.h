@@ -1,5 +1,7 @@
-#pragma once
+#ifndef _DELIVERY_OPTIMIZATION_DO_CONFIG_H
+#define _DELIVERY_OPTIMIZATION_DO_CONFIG_H
 
+#if (DO_CLIENT_ID == DO_CLIENT_ID_AGENT)
 #ifdef __cplusplus
 extern "C"
 {
@@ -25,3 +27,7 @@ void deliveryoptimization_free_version_buf(char** ppBuffer);
 #ifdef __cplusplus
 }
 #endif
+
+#endif // Linux
+
+#endif // _DELIVERY_OPTIMIZATION_DO_CONFIG_H

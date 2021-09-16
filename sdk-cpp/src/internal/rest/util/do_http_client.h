@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _DELIVERY_OPTIMIZATION_DO_HTTP_CLIENT_H
+#define _DELIVERY_OPTIMIZATION_DO_HTTP_CLIENT_H
 
 #include <mutex>
 #include <boost/property_tree/ptree.hpp>
@@ -31,3 +32,4 @@ private:
 } // namespace details
 } // namespace deliveryoptimization
 } // namespace microsoft
+#endif

@@ -35,7 +35,7 @@ steps:
   condition: eq('${{parameters.config}}', 'minsizerel')
   inputs:
     targetType: 'filePath'
-    filePath: 'build/check_binary_size.sh'
+    filePath: 'build/scripts/check_binary_size.sh'
     arguments: '150824 /tmp/build-deliveryoptimization-plugin-apt/linux-${{parameters.config}}/plugins/linux-apt/deliveryoptimization-plugin-apt'
   displayName: 'Limit binary size increase'
 

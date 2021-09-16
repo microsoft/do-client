@@ -1,4 +1,5 @@
-# Pipeline to build DO Agent targeting x86-64 architecture.
+# Pipeline to build DO C++ SDK targeting x86-64 architecture.
+# Client-lite is built for running tests alone, it is not published.
 # Publishes the binaries + packages as artifacts.
 
 # Version here refers to test package version, and follows format of 0.0.<Pipeline Build Number>
@@ -13,14 +14,15 @@ trigger:
       - main
   paths:
     include:
-      - azure-pipelines/build/doclient-lite-native.yml
-      - azure-pipelines/build/templates/doclient-lite-native-steps.yml
-      - client-lite/*
+      - azure-pipelines/build/linux/du/dosdkcpp-native.yml
+      - azure-pipelines/build/linux/du/templates/dosdkcpp-native-steps.yml
       - common/*
+      - sdk-cpp/*
       - build/build.py
       - CMakeLists.txt
     exclude:
       - azure-pipelines/*
+      - sdk-cpp/build/cleanup-install.sh
 
 pr:
   branches:
@@ -28,28 +30,29 @@ pr:
       - main
   paths:
     include:
-      - azure-pipelines/build/doclient-lite-native.yml
-      - azure-pipelines/build/templates/doclient-lite-native-steps.yml
-      - client-lite/*
+      - azure-pipelines/build/linux/du/dosdkcpp-native.yml
+      - azure-pipelines/build/linux/du/templates/dosdkcpp-native-steps.yml
       - common/*
+      - sdk-cpp/*
       - build/build.py
       - CMakeLists.txt
     exclude:
       - azure-pipelines/*
+      - sdk-cpp/build/cleanup-install.sh
 
 pool: 1es_hosted_pool_ubuntu_1804
 
 jobs:
 - job: Debug
   steps:
-  - template: templates/doclient-lite-native-steps.yml
+  - template: templates/dosdkcpp-native-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804_x64'
       config: debug
 
 - job: Release
   steps:
-  - template: templates/doclient-lite-native-steps.yml
+  - template: templates/dosdkcpp-native-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804_x64'
       config: minsizerel

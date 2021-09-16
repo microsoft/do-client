@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _DELIVERY_OPTIMIZATION_DO_HTTP_MESSAGE_H
+#define _DELIVERY_OPTIMIZATION_DO_HTTP_MESSAGE_H
 
 #include <string>
 #include <vector>
@@ -46,3 +47,4 @@ private:
 } // namespace details
 } // namespace deliveryoptimization
 } // namespace microsoft
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _DELIVERY_OPTIMIZATION_DO_DOWNLOAD_STATUS_H
+#define _DELIVERY_OPTIMIZATION_DO_DOWNLOAD_STATUS_H
 
 #include <stdint.h>
 
@@ -72,3 +73,4 @@ private:
 };
 }
 }
+#endif

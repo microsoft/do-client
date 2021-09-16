@@ -1,0 +1,94 @@
+# Template: Steps to build DO SDK CPP targeting x86-64 architecture.
+# Consume this steps template in one or more jobs by passing in parameter values.
+
+parameters:
+- name: targetOsArch    # example: Windows10-x64
+  type: string
+- name: config          # debug/release
+  type: string
+- name: vcpkgDir
+  type: string
+  default: $(Agent.TempDirectory)\deliveryoptimization_tools
+- name: dependencyScriptsLocation
+  type: string 
+  default: $(Build.SourcesDirectory)/build/scripts
+- name: skipTests
+  type: boolean
+  default: false
+
+steps:
+# Key input is hashed to compute the cache key so when the contents of install-vcpkg-deps.ps1 changes, a new key will be generated
+# This way, anytime we modify dependencies from install-vcpkg-deps.ps1 script, we don't retrieve from the old cache
+- task: Cache@2
+  inputs:
+    key: '${{parameters.dependencyScriptsLocation}}/install-vcpkg-deps.ps1 | "${{parameters.targetOsArch}}"'
+    path: ${{parameters.vcpkgDir}}
+    cacheHitVar: CACHE_RESTORED
+
+- task: PowerShell@2
+  condition: and(succeeded(), ne(variables.CACHE_RESTORED, 'true'))
+  inputs:
+    targetType: 'filePath'
+    filePath: ${{parameters.dependencyScriptsLocation}}\install-vcpkg-deps.ps1
+    arguments: ${{parameters.vcpkgDir}}
+  displayName: 'Install vcpkg dependencies'
+
+- task: PythonScript@0
+  inputs:
+    scriptSource: 'filePath'
+    scriptPath: 'build/build.py'
+    arguments: '--project sdk --config ${{parameters.config}} --vcpkgdir ${{parameters.vcpkgDir}}\vcpkg --clean'
+  displayName: 'Build sdk-cpp ${{parameters.targetOsArch}}-${{parameters.config}}'
+
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: '.\sdk-cpp\tests\${{parameters.config}}\deliveryoptimization-sdk-tests.exe'
+    workingDirectory: 'C:\Users\VssAdministrator\AppData\Local\Temp\build-deliveryoptimization-sdk\windows-${{parameters.config}}'
+  displayName: 'Run unit tests'
+
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: 'C:\Users\VssAdministrator\AppData\Local\Temp\build-deliveryoptimization-sdk\windows-${{parameters.config}}\sdk-cpp\${{parameters.config}}'
+    Contents: |
+        deliveryoptimization.lib
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+    CleanTargetFolder: true
+  displayName: 'Populate artifacts staging dir'
+
+- task: PowerShell@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    targetType: 'inline'
+    script: |
+      net stop dosvc
+      Get-DeliveryOptimizationLog C:\Windows\ServiceProfiles\NetworkService\AppData\Local\Microsoft\Windows\DeliveryOptimization\Logs\dosvc.* | Set-Content C:\Users\VssAdministrator\AppData\Local\Temp\dosvc.log
+      net start dosvc
+  displayName: 'Get dosvc logs'
+
+- task: CopyFiles@2
+  condition: always()
+  inputs:
+    Contents: |
+        dosvc.log
+    SourceFolder: 'C:\Users\VssAdministrator\AppData\Local\Temp'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}/test-run'
+  displayName: 'Copy dosvc logs to staging dir'
+
+- task: CopyFiles@2
+  inputs:
+    Contents: |
+        do_download.h
+        do_download_property.h
+        do_download_status.h
+        do_exceptions.h
+    SourceFolder: $(Build.SourcesDirectory)\sdk-cpp\include
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/include'
+  displayName: 'Copy public headers to staging dir'
+
+- task: PublishBuildArtifacts@1
+  condition: always() # so logs from test run are always published
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'deliveryoptimization-sdk'
+    publishLocation: 'Container'

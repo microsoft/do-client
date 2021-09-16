@@ -7,7 +7,7 @@
 #include "do_exceptions.h"
 #include "do_exceptions_internal.h"
 #include "download_interface.h"
-#include "download_rest.h"
+#include "download_impl.h"
 
 namespace msdod = microsoft::deliveryoptimization::details;
 using namespace std::chrono_literals; // NOLINT(build/namespaces)
@@ -19,7 +19,7 @@ namespace deliveryoptimization
 
 download::download(const std::string& uri, const std::string& downloadFilePath)
 {
-    _download = std::make_shared<msdod::CDownloadRest>(uri, downloadFilePath);
+    _download = std::make_shared<msdod::CDownloadImpl>(uri, downloadFilePath);
 }
 
 download::~download() = default;
@@ -54,61 +54,21 @@ download_status download::get_status() const
     return _download->GetStatus();
 }
 
-void download::download_url_to_path(const std::string& uri, const std::string& downloadFilePath, std::chrono::seconds timeOut)
+void download::start_and_wait_until_completion(std::chrono::seconds timeOut)
 {
-    std::atomic_bool isCancelled { false };
-    download_url_to_path(uri, downloadFilePath, isCancelled, timeOut);
+    std::atomic_bool isCancelled{ false };
+    start_and_wait_until_completion(isCancelled, timeOut);
 }
 
-// Ensures download is finalized/aborted in the agent to avoid stale download objects.
-// Future: We could expect callers to explicitly opt-in to persist downloads in the agent and
-//   use that as an indicator to perform/skip the cleanup directly in ~download().
-class download_cleanup_call
-{
-private:
-    download* _ptr { nullptr };
-
-public:
-    explicit download_cleanup_call(download* pObj) :
-        _ptr(pObj)
-    {
-    }
-
-    ~download_cleanup_call()
-    {
-        if (_ptr != nullptr)
-        {
-            try
-            {
-                const auto state = _ptr->get_status().state();
-                if (state == download_state::transferred)
-                {
-                    _ptr->finalize();
-                }
-                else if ((state != download_state::aborted) && (state != download_state::finalized))
-                {
-                    _ptr->abort();
-                }
-            }
-            catch (...)
-            {
-            }
-        }
-    }
-};
-
-void download::download_url_to_path(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeOut)
+void download::start_and_wait_until_completion(const std::atomic_bool& isCancelled, std::chrono::seconds timeOut)
 {
     constexpr std::chrono::seconds maxPollTime = 5s;
     std::chrono::milliseconds pollTime = 500ms;
     const auto endTime = std::chrono::system_clock::now() + timeOut;
 
-    download oneShotDownload(uri, downloadFilePath);
-    download_cleanup_call scopedCleanup{&oneShotDownload};
+    start();
+    download_status status = get_status();
 
-    oneShotDownload.start();
-
-    download_status status;
     bool timedOut = false;
     do
     {
@@ -121,17 +81,18 @@ void download::download_url_to_path(const std::string& uri, const std::string& d
         {
             pollTime += 500ms;
         }
-        status = oneShotDownload.get_status();
+        status = get_status();
         timedOut = std::chrono::system_clock::now() >= endTime;
     } while ((status.state() == download_state::created || status.state() == download_state::transferring || status.is_transient_error())
         && !timedOut);
 
     if (status.state() == download_state::transferred)
     {
-        // nothing to do, download_cleanup_call invokes finalize()
+        finalize();
     }
     else
     {
+        abort();
         if (isCancelled)
         {
             msdod::ThrowException(std::errc::operation_canceled);
@@ -147,6 +108,54 @@ void download::download_url_to_path(const std::string& uri, const std::string& d
         }
     }
 }
+
+void download::download_url_to_path(const std::string& uri, const std::string& downloadFilePath, std::chrono::seconds timeOut)
+{
+    download oneShotDownload(uri, downloadFilePath);
+    oneShotDownload.start_and_wait_until_completion(timeOut);
+}
+
+void download::download_url_to_path(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeOut)
+{
+    download oneShotDownload(uri, downloadFilePath);
+    oneShotDownload.start_and_wait_until_completion(isCancelled, timeOut);
+}
+
+
+#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+void download::set_property(download_property prop, const download_property_value& val)
+{
+    if (prop == download_property::callback_interface)
+    {
+        download_property_value::status_callback_t userCallback;
+        val.as(userCallback);
+
+        _download->SetCallback(userCallback, *this);
+    }
+    else
+    {
+        _download->SetProperty(prop, val);
+    }
+}
+
+int32_t download::set_property_nothrow(download_property prop, const download_property_value& val) noexcept
+{
+    try
+    {
+        set_property(prop, val);
+    }
+    catch (const exception& e)
+    {
+        return e.error_code();
+    }
+    return 0;
+}
+
+download_property_value download::get_property(download_property prop)
+{
+    return _download->GetProperty(prop);
+}
+#endif
 
 } // namespace deliveryoptimization
 } // namespace microsoft

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _DELIVERY_OPTIMIZATION_DO_PERSISTENCE_H
+#define _DELIVERY_OPTIMIZATION_DO_PERSISTENCE_H
 
 namespace microsoft
 {
@@ -14,3 +15,4 @@ const std::string& GetAdminConfigFilePath();
 } // namespace details
 } // namespace deliveryoptimization
 } // namespace microsoft
+#endif

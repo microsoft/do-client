@@ -1,4 +1,5 @@
-#include "download_rest.h"
+
+#include "download_impl.h"
 
 #include <map>
 #include <thread>
@@ -21,8 +22,7 @@ namespace deliveryoptimization
 {
 namespace details
 {
-
-CDownloadRest::CDownloadRest(const std::string& uri, const std::string& downloadFilePath)
+CDownloadImpl::CDownloadImpl(const std::string& uri, const std::string& downloadFilePath)
 {
     std::stringstream url;
     url << g_downloadUriPart << "/create" << "?Uri=" << Url::EncodeDataString(uri) << "&DownloadFilePath="
@@ -54,32 +54,32 @@ CDownloadRest::CDownloadRest(const std::string& uri, const std::string& download
     ThrowException(msdo::errc::no_service);
 }
 
-void CDownloadRest::Start()
+void CDownloadImpl::Start()
 {
     _DownloadOperationCall("start");
 }
 
-void CDownloadRest::Pause()
+void CDownloadImpl::Pause()
 {
     _DownloadOperationCall("pause");
 }
 
-void CDownloadRest::Resume()
+void CDownloadImpl::Resume()
 {
     _DownloadOperationCall("start");
 }
 
-void CDownloadRest::Finalize()
+void CDownloadImpl::Finalize()
 {
     _DownloadOperationCall("finalize");
 }
 
-void CDownloadRest::Abort()
+void CDownloadImpl::Abort()
 {
     _DownloadOperationCall("abort");
 }
 
-msdo::download_status CDownloadRest::GetStatus()
+msdo::download_status CDownloadImpl::GetStatus()
 {
     std::stringstream url;
     url << g_downloadUriPart << "/getstatus" << "?Id=" << _id;
@@ -114,7 +114,7 @@ msdo::download_status CDownloadRest::GetStatus()
     return out;
 }
 
-void CDownloadRest::_DownloadOperationCall(const std::string& type)
+void CDownloadImpl::_DownloadOperationCall(const std::string& type)
 {
     std::stringstream url;
     url << g_downloadUriPart << '/' << type << "?Id=" << _id;
