@@ -80,14 +80,14 @@ file (GLOB files_docs_common
 
 # Enable easy debugging in devdebug mode by not requiring running as root
 if (DO_DEV_DEBUG)
-message("Agent: Dev debug mode")
-set(docs_svc_config_dir_path "/tmp/etc/${DOSVC_BIN_NAME}")
-set(docs_svc_log_dir_path "/tmp/log/${DOSVC_BIN_NAME}")
-set(docs_svc_run_dir_path "/tmp/run/${DOSVC_BIN_NAME}")
+    message("Agent: Dev debug mode")
+    set(docs_svc_config_dir_path "/tmp/etc/${DOSVC_BIN_NAME}")
+    set(docs_svc_log_dir_path "/tmp/log/${DOSVC_BIN_NAME}")
+    set(docs_svc_run_dir_path "/tmp/run/${DOSVC_BIN_NAME}")
 else ()
-set(docs_svc_config_dir_path "/etc/${DOSVC_BIN_NAME}")
-set(docs_svc_log_dir_path "/var/log/${DOSVC_BIN_NAME}")
-set(docs_svc_run_dir_path "/var/run/${DOSVC_BIN_NAME}")
+    set(docs_svc_config_dir_path "/etc/${DOSVC_BIN_NAME}")
+    set(docs_svc_log_dir_path "/var/log/${DOSVC_BIN_NAME}")
+    set(docs_svc_run_dir_path "/var/run/${DOSVC_BIN_NAME}")
 endif ()
 
 # Build product files into a lib for use by other targets

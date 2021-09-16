@@ -61,6 +61,24 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(DO_PLUGIN_APT_BIN_NAME "deliveryoptimization-plugin-apt")
 endif()
 
+# Differentiate cross platform builds
+# Note: The C preprocessor can compare integer values but not strings
+set(DO_PLATFORM_ID_UNKNOWN 0)
+set(DO_PLATFORM_ID_LINUX 1)
+set(DO_PLATFORM_ID_MAC 2)
+set(DO_PLATFORM_ID_WINDOWS 3)
+if (CMAKE_SYSTEM_NAME MATCHES Linux)
+    set(DO_PLATFORM_ID ${DO_PLATFORM_ID_LINUX})
+elseif (CMAKE_SYSTEM_NAME MATCHES Windows)
+    set(DO_PLATFORM_ID ${DO_PLATFORM_ID_WINDOWS})
+elseif (CMAKE_SYSTEM_NAME MATCHES Darwin) # Mac
+    set(DO_PLATFORM_ID ${DO_PLATFORM_ID_MAC})
+else()
+    message(WARNING "Unknown platform")
+    set(DO_PLATFORM_ID ${DO_PLATFORM_ID_UNKNOWN})
+endif()
+message(STATUS "DO_PLATFORM_ID: ${DO_PLATFORM_ID}")
+
 # Only one subproject can be built with each invocation of cmake. This avoids confusion in specifying options
 # exposed by an individual subproject.
 if (DO_INCLUDE_AGENT)

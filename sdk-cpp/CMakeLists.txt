@@ -1,23 +1,5 @@
 project (deliveryoptimization_sdk VERSION 0.5.0)
 
-# Differentiate cross platform builds
-# Note: The C preprocessor can compare integer values but not strings
-set(DO_PLATFORM_ID_UNKNOWN 0)
-set(DO_PLATFORM_ID_LINUX 1)
-set(DO_PLATFORM_ID_MAC 2)
-set(DO_PLATFORM_ID_WINDOWS 3)
-if (CMAKE_SYSTEM_NAME MATCHES Linux)
-    set(DO_PLATFORM_ID ${DO_PLATFORM_ID_LINUX})
-elseif (CMAKE_SYSTEM_NAME MATCHES Windows)
-    set(DO_PLATFORM_ID ${DO_PLATFORM_ID_WINDOWS})
-elseif (CMAKE_SYSTEM_NAME MATCHES Darwin) # Mac
-    set(DO_PLATFORM_ID ${DO_PLATFORM_ID_MAC})
-else()
-    message(WARNING "Unknown platform")
-    set(DO_PLATFORM_ID ${DO_PLATFORM_ID_UNKNOWN})
-endif()
-message(STATUS "DO_PLATFORM_ID: ${DO_PLATFORM_ID}")
-
 set(DO_INTERFACE_ID_UNKNOWN 0)
 set(DO_INTERFACE_ID_REST 1)
 set(DO_INTERFACE_ID_COM 2)
@@ -48,7 +30,7 @@ else()
 endif()
 message(STATUS "DO_CLIENT_ID: ${DO_CLIENT_ID}")
 
-if (${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX} OR ${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_MAC}) 
+if (${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX} OR ${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_MAC})
     message("DO configured to use shared Boost libraries")
     add_definitions(-DBOOST_ALL_DYN_LINK=1)
 endif()
@@ -104,7 +86,7 @@ if(${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
     )
 
     add_library(${DO_SDK_LIB_NAME} SHARED "${sdk_source}")
-    
+
     set(sdk_compile_definitions
         DOSVC_BIN_NAME="${DOSVC_BIN_NAME}"
         DO_PLUGIN_APT_BIN_NAME="${DO_PLUGIN_APT_BIN_NAME}"
@@ -173,7 +155,7 @@ target_include_directories(${DO_SDK_LIB_NAME}
         ${sdk_private_includes}
         ${sdk_private_includes_common}
 )
-target_compile_definitions(${DO_SDK_LIB_NAME} 
+target_compile_definitions(${DO_SDK_LIB_NAME}
     PRIVATE
         ${sdk_compile_definitions}
         ${sdk_compile_definitions_common}
@@ -183,9 +165,9 @@ if (DO_DEV_DEBUG)
 endif ()
 
 target_link_libraries(${DO_SDK_LIB_NAME}
-    PUBLIC 
+    PUBLIC
         ${sdk_public_linked_libs}
-    PRIVATE 
+    PRIVATE
         ${sdk_private_linked_libs}
 )
 
