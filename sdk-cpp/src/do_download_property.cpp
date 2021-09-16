@@ -2,6 +2,7 @@
 #if defined(DO_INTERFACE_COM)
 #include "do_download_property.h"
 
+#include <cassert>
 #include <locale>
 #include <vector>
 #include <string>
