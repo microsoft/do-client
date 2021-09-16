@@ -3,13 +3,6 @@
 find_package(Boost COMPONENTS filesystem program_options REQUIRED)
 find_package(GTest REQUIRED)
 
-set(sdk_tests_compile_definitions_common
-    DO_INTERFACE_ID=${DO_INTERFACE_ID}
-    DO_INTERFACE_ID_REST=${DO_INTERFACE_ID_REST}
-    DO_INTERFACE_ID_COM=${DO_INTERFACE_ID_COM}
-    DO_INTERFACE_ID_UNKNOWN=${DO_INTERFACE_ID_UNKNOWN}
-)
-
 set(sdk_tests_linked_libs_common
     Microsoft::deliveryoptimization
     ${Boost_LIBRARIES}
@@ -26,7 +19,7 @@ set(test_source_common
     "*.cpp"
 )
 
-if(${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
+if(DO_PLATFORM_LINUX)
 
     set(dosdkcpp_private_includes
         "../src/internal/rest"
@@ -43,7 +36,7 @@ if(${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX})
         "rest/*.cpp"
     )
 
-elseif (${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_MAC})
+elseif (DO_PLATFORM_MAC)
 
     set(dosdkcpp_private_includes
         "../src/internal/rest"
@@ -60,7 +53,7 @@ elseif (${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_MAC})
         "rest/test_helpers.cpp"
     )
 
-elseif (${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_WINDOWS})
+elseif(DO_PLATFORM_WINDOWS)
 
     set(dosdkcpp_private_includes
         "../src/internal/com"
@@ -74,11 +67,7 @@ elseif (${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_WINDOWS})
 endif() # Windows
 
 add_executable(deliveryoptimization-sdk-tests ${test_source})
-
-target_compile_definitions(deliveryoptimization-sdk-tests
-    PRIVATE
-        ${sdk_tests_compile_definitions_common}
-)
+add_platform_interface_definitions(deliveryoptimization-sdk-tests)
 
 target_include_directories(deliveryoptimization-sdk-tests
     PRIVATE

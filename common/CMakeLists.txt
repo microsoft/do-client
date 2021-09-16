@@ -1,4 +1,4 @@
-if (${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_LINUX} OR ${DO_PLATFORM_ID} EQUAL ${DO_PLATFORM_ID_MAC})
+if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
     add_subdirectory(lib-dohttp)
     if (DO_BUILD_TESTS)
         # Plugins subproject doesn't have test code

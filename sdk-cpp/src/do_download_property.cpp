@@ -1,5 +1,5 @@
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
 #include "do_download_property.h"
 
 #include <locale>
@@ -136,4 +136,5 @@ const download_property_value::native_type& download_property_value::native_valu
 {
     return _var;
 };
-#endif
+
+#endif // DO_INTERFACE_COM

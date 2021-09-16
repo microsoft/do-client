@@ -1,7 +1,9 @@
 #ifndef _DELIVERY_OPTIMIZATION_DO_DOWNLOAD_PROPERTY_H
 #define _DELIVERY_OPTIMIZATION_DO_DOWNLOAD_PROPERTY_H
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+//TODO(jimson): Callers may not have defined these compile definitions, as a result their builds may fail if the definition is not set when using the SDK
+//Look into removing platform specific header files from the SDK installation
+#if defined(DO_INTERFACE_COM)
 
 #include <OAIdl.h>
 #include <functional>
@@ -90,5 +92,6 @@ private:
 };
 }
 }
-#endif // Windows
+
+#endif // DO_INTERFACE_COM
 #endif // _DELIVERY_OPTIMIZATION_DO_DOWNLOAD_PROPERTY_H

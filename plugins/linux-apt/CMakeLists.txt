@@ -19,7 +19,7 @@ target_compile_definitions(${DO_PLUGIN_APT_BIN_NAME}
     PRIVATE
         DO_PLUGIN_APT_CACHE_PATH="${dopapt_cache_path}"
 )
-
+add_platform_interface_definitions(${DO_PLUGIN_APT_BIN_NAME})
 add_do_version_lib(${DO_PLUGIN_APT_BIN_NAME} ${PROJECT_VERSION})
 
 target_link_libraries(${DO_PLUGIN_APT_BIN_NAME} PRIVATE

@@ -485,8 +485,8 @@ class WindowsBuildRunner(BuildRunnerBase):
     @property
     def generate_options(self):
         return super().generate_options + [
-                f'-DCMAKE_TOOLCHAIN_FILE={get_vcpkg_toolchain_file_path(self.vcpkg_root_path)}',
-                f'-DVCPKG_TARGET_TRIPLET={self._vcpkg_triplet}'
+                '-DCMAKE_TOOLCHAIN_FILE={}'.format(get_vcpkg_toolchain_file_path(self.vcpkg_root_path)),
+                '-DVCPKG_TARGET_TRIPLET={}'.format(self._vcpkg_triplet)
             ]
 
     @property
@@ -496,15 +496,9 @@ class WindowsBuildRunner(BuildRunnerBase):
     @property
     def _vcpkg_triplet(self):
         """The triplet string required by vcpkg."""
-        # There is no static version of the arm or arm64 packages.
-        # if self.arch.startswith('arm'):
-        #     return f'{self.arch}-{self.platform}'
-        # else:
-        #     return f'{self.arch}-{self.platform}-static'
-
         # We don't use the 'static' vcpkg install yet.
         # Looks like vcpkg uses static libs by default.
-        return f'{self.arch}-{self.platform}'
+        return '{}-{}'.format(self.arch, self.platform)
 
 class MacBuildRunner(BuildRunnerBase):
     """OsX BuildRunner class."""
@@ -529,8 +523,8 @@ class MacBuildRunner(BuildRunnerBase):
     @property
     def generate_options(self):
         return super().generate_options + [
-                f'-DCMAKE_TOOLCHAIN_FILE={get_vcpkg_toolchain_file_path(self.vcpkg_root_path)}',
-                f'-DVCPKG_TARGET_TRIPLET={self._vcpkg_triplet}'
+                '-DCMAKE_TOOLCHAIN_FILE={}'.format(get_vcpkg_toolchain_file_path(self.vcpkg_root_path)),
+                '-DVCPKG_TARGET_TRIPLET={}'.format(self._vcpkg_triplet)
             ]
 
     @property
@@ -540,15 +534,9 @@ class MacBuildRunner(BuildRunnerBase):
     @property
     def _vcpkg_triplet(self):
         """The triplet string required by vcpkg."""
-        # There is no static version of the arm or arm64 packages.
-        # if self.arch.startswith('arm'):
-        #     return f'{self.arch}-{self.platform}'
-        # else:
-        #     return f'{self.arch}-{self.platform}-static'
-
         # We don't use the 'static' vcpkg install yet.
         # Looks like vcpkg uses static libs by default.
-        return f'{self.arch}-{self.platform}'
+        return '{}-{}'.format(self.arch, self.platform)
 
 #endregion BuildRunner Classes
 

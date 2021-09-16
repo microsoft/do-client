@@ -6,7 +6,7 @@
 
 #include "test_data.h"
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
 #include <combaseapi.h>
 #endif
 
@@ -30,9 +30,9 @@ int main(int argc, char** argv)
         std::cout << "Got overriden MCC host: " << g_mccHostName << '\n';
     }
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
     ASSERT_TRUE(SUCCEEDED(CoInitializeEx(nullptr, COINIT_MULTITHREADED))); // SDK leaves com init up to caller, so initialize in test exe here
-#endif 
+#endif
 
     auto manualStart = vm["manual-start"].as<bool>();
     if (manualStart)
@@ -45,9 +45,9 @@ int main(int argc, char** argv)
 
     int res = RUN_ALL_TESTS();
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
     CoUninitialize();
-#endif 
+#endif
 
     return res;
 }

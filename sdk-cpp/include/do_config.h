@@ -1,7 +1,10 @@
 #ifndef _DELIVERY_OPTIMIZATION_DO_CONFIG_H
 #define _DELIVERY_OPTIMIZATION_DO_CONFIG_H
 
-#if (DO_CLIENT_ID == DO_CLIENT_ID_AGENT)
+//TODO(jimson): Callers may not have defined these compile definitions, as a result their builds may fail if the definition is not set when using the SDK
+//Look into removing platform specific header files from the SDK installation
+#if defined(DO_CLIENT_AGENT)
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -28,6 +31,6 @@ void deliveryoptimization_free_version_buf(char** ppBuffer);
 }
 #endif
 
-#endif // Linux
+#endif // DO_CLIENT_AGENT
 
 #endif // _DELIVERY_OPTIMIZATION_DO_CONFIG_H

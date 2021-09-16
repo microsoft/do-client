@@ -80,14 +80,14 @@ file (GLOB files_docs_common
 
 # Enable easy debugging in devdebug mode by not requiring running as root
 if (DO_DEV_DEBUG)
-message("Agent: Dev debug mode")
-set(docs_svc_config_dir_path "/tmp/etc/${DOSVC_BIN_NAME}")
-set(docs_svc_log_dir_path "/tmp/log/${DOSVC_BIN_NAME}")
-set(docs_svc_run_dir_path "/tmp/run/${DOSVC_BIN_NAME}")
+    message("Agent: Dev debug mode")
+    set(docs_svc_config_dir_path "/tmp/etc/${DOSVC_BIN_NAME}")
+    set(docs_svc_log_dir_path "/tmp/log/${DOSVC_BIN_NAME}")
+    set(docs_svc_run_dir_path "/tmp/run/${DOSVC_BIN_NAME}")
 else ()
-set(docs_svc_config_dir_path "/etc/${DOSVC_BIN_NAME}")
-set(docs_svc_log_dir_path "/var/log/${DOSVC_BIN_NAME}")
-set(docs_svc_run_dir_path "/var/run/${DOSVC_BIN_NAME}")
+    set(docs_svc_config_dir_path "/etc/${DOSVC_BIN_NAME}")
+    set(docs_svc_log_dir_path "/var/log/${DOSVC_BIN_NAME}")
+    set(docs_svc_run_dir_path "/var/run/${DOSVC_BIN_NAME}")
 endif ()
 
 # Build product files into a lib for use by other targets
@@ -100,7 +100,7 @@ target_compile_definitions(docs_common
 if (DO_DEV_DEBUG)
     target_compile_definitions(docs_common PUBLIC DO_DEV_DEBUG)
 endif ()
-
+add_platform_interface_definitions(docs_common)
 target_include_directories(docs_common PUBLIC ${docs_common_includes})
 
 if (DO_PROXY_SUPPORT)
@@ -119,6 +119,7 @@ add_do_version_lib(${PROJECT_NAME} ${PROJECT_VERSION})
 
 # Add the executable
 add_executable(${DOSVC_BIN_NAME} ${files_docs_exe})
+add_platform_interface_definitions(${DOSVC_BIN_NAME})
 target_include_directories(${DOSVC_BIN_NAME} PRIVATE ${docs_common_includes})
 target_link_libraries(${DOSVC_BIN_NAME}
     doversion

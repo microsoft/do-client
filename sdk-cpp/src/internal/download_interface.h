@@ -3,7 +3,7 @@
 
 #include "do_download_status.h"
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
 #include "do_download_property.h"
 
 class download;
@@ -29,7 +29,7 @@ public:
 
     virtual download_status GetStatus() = 0;
 
-#if (DO_INTERFACE_ID == DO_INTERFACE_ID_COM)
+#if defined(DO_INTERFACE_COM)
     virtual download_property_value GetProperty(download_property key) = 0;
 
     virtual void SetProperty(download_property key, const download_property_value& val) = 0;
