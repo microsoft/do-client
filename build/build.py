@@ -496,12 +496,6 @@ class WindowsBuildRunner(BuildRunnerBase):
     @property
     def _vcpkg_triplet(self):
         """The triplet string required by vcpkg."""
-        # There is no static version of the arm or arm64 packages.
-        # if self.arch.startswith('arm'):
-        #     return f'{self.arch}-{self.platform}'
-        # else:
-        #     return f'{self.arch}-{self.platform}-static'
-
         # We don't use the 'static' vcpkg install yet.
         # Looks like vcpkg uses static libs by default.
         return '{}-{}'.format(self.arch, self.platform)
@@ -540,12 +534,6 @@ class MacBuildRunner(BuildRunnerBase):
     @property
     def _vcpkg_triplet(self):
         """The triplet string required by vcpkg."""
-        # There is no static version of the arm or arm64 packages.
-        # if self.arch.startswith('arm'):
-        #     return f'{self.arch}-{self.platform}'
-        # else:
-        #     return f'{self.arch}-{self.platform}-static'
-
         # We don't use the 'static' vcpkg install yet.
         # Looks like vcpkg uses static libs by default.
         return '{}-{}'.format(self.arch, self.platform)
