@@ -15,7 +15,7 @@ jobs:
   - template: ${{parameters.stepsTemplate}}
     parameters:
       targetOsArch: ${{parameters.targetOsArch}}
-      version: ${{parameters.imageVersion}}
+      imageVersion: ${{parameters.imageVersion}}
       config: debug
 
 - job: ${{parameters.targetOsArch}}_release
@@ -23,5 +23,5 @@ jobs:
   - template: ${{parameters.stepsTemplate}}
     parameters:
       targetOsArch: ${{parameters.targetOsArch}}
-      version: ${{parameters.imageVersion}}
+      imageVersion: ${{parameters.imageVersion}}
       config: minsizerel
