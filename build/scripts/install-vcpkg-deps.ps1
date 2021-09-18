@@ -1,5 +1,3 @@
-# NOTE: This script is a sample, partly created to detail all the dependencies required for building do-client components on windows
-
 $vcpkgdir=$args[0] # path to install vcpkgdir, i.e. C:\users\user\appdata\local\temp
 
 Write-Host "Installing vcpkg to $vcpkgdir"
@@ -8,7 +6,11 @@ Write-Host "Installing vcpkg to $vcpkgdir"
 git clone https://github.com/microsoft/vcpkg $vcpkgdir\vcpkg
 
 cd $vcpkgdir\vcpkg
+git checkout 2021.05.12
 .\bootstrap-vcpkg.bat
-
-.\vcpkg install gtest:x64-windows boost:x64-windows gsl:x64-windows
+.\vcpkg integrate install
+.\vcpkg update
+.\vcpkg install gtest:x64-windows
+.\vcpkg install boost-filesystem:x64-windows
+.\vcpkg install boost-program-options:x64-windows
 
