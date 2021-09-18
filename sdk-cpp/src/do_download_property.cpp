@@ -77,9 +77,9 @@ download_property_value::download_property_value(std::vector<unsigned char>& val
 download_property_value::~download_property_value()
 {
 #ifdef DEBUG
-    // Variant clear fails when being destructed from tests
-    (void)VariantClear(&_var);
+    //TODO(jimson): Variant clear fails with DISP_E_BADVARTYPE, so the assertion will terminate the application
     //assert(SUCCEEDED(VariantClear(&_var)));
+    (void)VariantClear(&_var);
 #else
     (void)VariantClear(&_var);
 #endif
