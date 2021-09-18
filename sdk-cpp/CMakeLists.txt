@@ -3,14 +3,14 @@ project (deliveryoptimization_sdk VERSION 0.5.0)
 if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
     message("DO configured to use shared Boost libraries")
     add_definitions(-DBOOST_ALL_DYN_LINK=1)
+
+    # Include external libraries here
+    find_package(Boost COMPONENTS filesystem REQUIRED)
 endif()
 
 if (DO_PLATFORM_LINUX)
     fixup_compile_options_for_arm()
 endif()
-
-# Include external libraries here
-find_package(Boost COMPONENTS filesystem system REQUIRED)
 
 if (DO_BUILD_TESTS)
     add_subdirectory(tests)
