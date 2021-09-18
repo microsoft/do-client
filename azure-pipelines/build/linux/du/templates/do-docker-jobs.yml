@@ -1,0 +1,27 @@
+# Template: Jobs to build DO projects using docker to target non-native OS and/or architecture.
+# Consume this jobs template in a pipeline yaml by passing in parameter values.
+
+parameters:
+- name: targetOsArch    # example: debian9_arm32
+  type: string
+- name: imageVersion
+  type: string
+- name: stepsTemplate   # example: dopapt-docker-steps.yml
+  type: string
+
+jobs:
+- job: ${{parameters.targetOsArch}}_debug
+  steps:
+  - template: ${{parameters.stepsTemplate}}
+    parameters:
+      targetOsArch: ${{parameters.targetOsArch}}
+      imageVersion: ${{parameters.imageVersion}}
+      config: debug
+
+- job: ${{parameters.targetOsArch}}_release
+  steps:
+  - template: ${{parameters.stepsTemplate}}
+    parameters:
+      targetOsArch: ${{parameters.targetOsArch}}
+      imageVersion: ${{parameters.imageVersion}}
+      config: minsizerel

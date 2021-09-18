@@ -1,6 +1,8 @@
 #include "do_download_status.h"
 
-namespace microsoft::deliveryoptimization
+namespace microsoft
+{
+namespace deliveryoptimization
 {
 
 bool download_status::is_error() const
@@ -18,4 +20,5 @@ bool download_status::is_complete() const
     return _state == download_state::transferred;
 }
 
-} // namespace microsoft::deliveryoptimization
+} // namespace deliveryoptimization
+} // namespace microsoft

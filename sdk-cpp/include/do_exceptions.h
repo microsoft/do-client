@@ -1,19 +1,28 @@
-#pragma once
+#ifndef _DELIVERY_OPTIMIZATION_DO_EXCEPTIONS_H
+#define _DELIVERY_OPTIMIZATION_DO_EXCEPTIONS_H
 
 #include <exception>
 #include <stdint.h>
 #include <system_error>
 
-namespace microsoft::deliveryoptimization
+#if defined(DO_INTERFACE_COM)
+#include <winerror.h>   // FAILED macro
+#endif
+
+namespace microsoft
+{
+namespace deliveryoptimization
 {
 
 enum class errc : int32_t
 {
-    unexpected              = -2147418113,
-    invalid_arg             = -2147024809,
-    not_found               = -2147023728,
-    no_service              = -2133848063,
-    download_no_progress    = -2133843966,
+    unexpected                  = -2147418113,
+    invalid_arg                 = -2147024809,
+    not_found                   = -2147023728,
+    no_service                  = -2133848063,
+    download_no_progress        = -2133843966,
+    do_e_invalid_state          = -2133843949, // TODO: Revisit convention here - should separate error code enum be used for do_e* errors?
+    do_e_unknown_property_id    = -2133843951
 };
 
 class error_category : public std::error_category
@@ -41,4 +50,18 @@ private:
     std::error_code _code;
     std::string _msg;
 };
+
+#if defined(DO_INTERFACE_COM)
+//TODO: Look into replacing using internal exception class
+inline void throw_if_fail(int32_t hr)
+{
+    if (FAILED(hr))
+    {
+        throw exception(hr);
+    }
 }
+#endif
+
+}
+}
+#endif

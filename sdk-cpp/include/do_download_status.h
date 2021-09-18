@@ -1,8 +1,11 @@
-#pragma once
+#ifndef _DELIVERY_OPTIMIZATION_DO_DOWNLOAD_STATUS_H
+#define _DELIVERY_OPTIMIZATION_DO_DOWNLOAD_STATUS_H
 
 #include <stdint.h>
 
-namespace microsoft::deliveryoptimization
+namespace microsoft
+{
+namespace deliveryoptimization
 {
 
 enum class download_state
@@ -69,3 +72,5 @@ private:
 
 };
 }
+}
+#endif

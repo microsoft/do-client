@@ -10,4 +10,9 @@ if [ -d @dopapt_cache_path@ ]; then
     rm -rf @dopapt_cache_path@
 fi
 
+if [ -f @dopapt_log_path@ ]; then
+    echo "Removing @dopapt_log_path@."
+    rm @dopapt_log_path@
+fi
+
 echo "Done!"

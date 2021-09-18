@@ -2,16 +2,6 @@
   "Registrations": [
     {
       "Component": {
-        "Type": "git",
-        "git": {
-          "RepositoryUrl": "https://github.com/Microsoft/cpprestsdk",
-          "CommitHash": "18212a2a7967e12d740bfb957e500892b3463c88"
-        }
-      },
-      "DevelopmentDependency": false
-    },
-    {
-      "Component": {
         "Type": "linux",
         "linux": {
           "Name": "boost",
@@ -62,6 +52,42 @@
         "git": {
           "RepositoryUrl": "https://github.com/Microsoft/GSL",
           "CommitHash": "1995e86d1ad70519465374fb4876c6ef7c9f8c61"
+        }
+      },
+      "DevelopmentDependency": false
+    },
+    {
+      "Component": {
+        "Type": "linux",
+        "linux": {
+          "Name": "libcurl4",
+          "Version": "7.58.0-2ubuntu3.14",
+          "Distribution": "Ubuntu",
+          "Release": "18.04"
+        }
+      },
+      "DevelopmentDependency": false
+    },
+    {
+      "Component": {
+        "Type": "linux",
+        "linux": {
+          "Name": "libcurl4",
+          "Version": "7.52.1-5+deb9u15",
+          "Distribution": "Debian",
+          "Release": "9.13"
+        }
+      },
+      "DevelopmentDependency": false
+    },
+    {
+      "Component": {
+        "Type": "linux",
+        "linux": {
+          "Name": "libcurl4",
+          "Version": "7.64.0-4+deb10u2",
+          "Distribution": "Debian",
+          "Release": "10.10"
         }
       },
       "DevelopmentDependency": false

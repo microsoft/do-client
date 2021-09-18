@@ -96,7 +96,7 @@ static_assert(FAILED(E_NOT_SET), "FAILED macro does not recognize failure code")
 #endif
 
 // Convert std c++ and boost errors to NTSTATUS-like values but with 0xD0 facility (0xC0D00005 for example).
-#define HRESULT_FROM_XPLAT_SYSERR(err)  (0xC0000000 | (FACILITY_DELIVERY_OPTIMIZATION << 16) | ((HRESULT)(err) & 0x0000FFFF))
+#define HRESULT_FROM_XPLAT_SYSERR(err)  (HRESULT)(0xC0000000 | (FACILITY_DELIVERY_OPTIMIZATION << 16) | ((HRESULT)(err) & 0x0000FFFF))
 
 inline HRESULT HRESULT_FROM_STDCPP(const std::error_code& ec)
 {

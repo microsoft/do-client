@@ -1,0 +1,54 @@
+# Template: Steps to build DO C++ SDK using docker to target non-native OS and/or architecture.
+# Consume this steps template in one or more jobs by passing in parameter values.
+
+parameters:
+- name: targetOsArch    # example: debian9_arm32
+  type: string
+- name: imageVersion
+  type: string
+- name: config          # debug/release
+  type: string
+
+steps:
+- task: Docker@2
+  displayName: Login to ACR
+  inputs:
+    command: login
+    containerRegistry: doclientcontainerregistry
+    repository: $(parameters.targetOsArch)
+
+- task: Docker@2
+  displayName: Pull latest build image
+  inputs:
+    command: pull
+    containerRegistry: doclientcontainerregistry
+    arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}}'
+
+- task: CmdLine@2
+  inputs:
+    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-sdk doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "sdk" "--cmaketarget" "deliveryoptimization"'
+  displayName: 'Build sdk-cpp ${{parameters.targetOsArch}}-${{parameters.config}}'
+
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
+    Contents: |
+      libdeliveryoptimization*.deb
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+    CleanTargetFolder: true
+  displayName: 'Populate artifacts staging dir'
+
+- task: CopyFiles@2
+  condition: eq('${{parameters.config}}', 'minsizerel')
+  inputs:
+    SourceFolder: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
+    Contents: |
+      sdk-cpp/libdeliveryoptimization*.dbg
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+  displayName: 'Populate debug symbols to staging dir'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'deliveryoptimization-sdk'
+    publishLocation: 'Container'

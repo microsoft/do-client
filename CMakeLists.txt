@@ -20,16 +20,66 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Get verbose output from cmake generation and build steps
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
+# Set target OS platform
+if (CMAKE_SYSTEM_NAME MATCHES Linux)
+    set(DO_PLATFORM_LINUX 1)
+    message (STATUS "DO Platform: Linux")
+elseif (CMAKE_SYSTEM_NAME MATCHES Windows)
+    set(DO_PLATFORM_WINDOWS 1)
+    message (STATUS "DO Platform: Windows")
+elseif (CMAKE_SYSTEM_NAME MATCHES Darwin) # Mac
+    set(DO_PLATFORM_MAC 1)
+    message (STATUS "DO Platform: Mac")
+else()
+    message(FATAL_ERROR "Unknown platform")
+endif()
+
+# Set target lib<-->client interface
+if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
+    set(DO_INTERFACE_REST 1)
+    message (STATUS "DO Interface: REST")
+elseif (DO_PLATFORM_WINDOWS)
+    set(DO_INTERFACE_COM 1)
+    message (STATUS "DO Interface: COM")
+else()
+    message(FATAL_ERROR "Unknown platform for interface")
+endif()
+
+# Set target client
+# Note: In the future, may need to supply a variable to build.py which specifies which agent to build on linux.
+# For now, linux support of the SDK is limited to only the open-sourced agent.
+if (DO_PLATFORM_MAC OR DO_PLATFORM_WINDOWS)
+    set(DO_CLIENT_DOSVC 1)
+    message (STATUS "DO Client: DoSvc")
+elseif (DO_PLATFORM_LINUX)
+    set(DO_CLIENT_AGENT 1)
+    message (STATUS "DO Client: Agent")
+else()
+    message(FATAL_ERROR "Unknown platform for client")
+endif()
+
 # PIC (Position Independent Code) ensures .a files can be linked to executables that have PIE enabled
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# PIE (Position Independent Executable) ensures exe/.so can run when ASLR is enabled in the target OS
-set(COMPILER_HARDENING_FLAGS
-    "-fPIE -pie -D_FORTIFY_SOURCE=2 -fstack-protector-strong -Wformat -Werror=format-security")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ${COMPILER_HARDENING_FLAGS} -fmerge-all-constants")
+# TODO: msvc and gcc support different compiler/linker flags, need to go through all flags and verify what's needed for each platform
+# Certain flags cause build issues because the flag itself isn't supported on msvc
+# Offending CMAKE_CXX_FLAGS: -Wformat
+# Offending CMAKE_EXE_LINKER_FLAGS: relro
+if (DO_PLATFORM_LINUX)
+    # PIE (Position Independent Executable) ensures exe/.so can run when ASLR is enabled in the target OS
+    set(COMPILER_HARDENING_FLAGS
+        "-fPIE -pie -D_FORTIFY_SOURCE=2 -fstack-protector-strong -Wformat -Werror=format-security")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ${COMPILER_HARDENING_FLAGS} -fmerge-all-constants")
 
-# relro+now thwarts some attack vectors by reordering some ELF data structures and also by making the GOT read-only
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie -z relro -z now")
+    # relro+now thwarts some attack vectors by reordering some ELF data structures and also by making the GOT read-only
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie -z relro -z now")
+endif (DO_PLATFORM_LINUX)
+
+# Define DEBUG macro in debug builds
+string(TOLOWER ${CMAKE_BUILD_TYPE} DO_BUILD_TYPE)
+if (DO_BUILD_TYPE MATCHES debug)
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/common/cmake)
 include (do-build-helpers)
@@ -48,10 +98,10 @@ else ()
     message (STATUS "Build timestamp NOT found. Generated it via cmake: ${DO_BUILD_TIMESTAMP}.")
 endif ()
 
-# Use ms- prefix to avoid clashes with another company's product named do-agent.
-# Use it also for other sub-projects to have consistency.
-set(DOSVC_BIN_NAME "deliveryoptimization-agent")
-set(DO_PLUGIN_APT_BIN_NAME "deliveryoptimization-plugin-apt")
+if (DO_PLATFORM_LINUX)
+    set(DOSVC_BIN_NAME "deliveryoptimization-agent")
+    set(DO_PLUGIN_APT_BIN_NAME "deliveryoptimization-plugin-apt")
+endif()
 
 # Only one subproject can be built with each invocation of cmake. This avoids confusion in specifying options
 # exposed by an individual subproject.

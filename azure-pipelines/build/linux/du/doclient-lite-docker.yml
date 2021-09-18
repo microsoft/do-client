@@ -1,0 +1,42 @@
+# Pipeline to build DO Agent using docker to target non-native OS and/or architecture.
+# Publishes the binaries + packages as artifacts.
+
+variables:
+- name: imageVersion # This is used to specify the vmImage & dockerImage to build the current release, this version # will always be the subsequent release in development branches
+  value: 0.8.0
+
+# Disable branch and pr triggers - currently run this manually to avoid hogging build machine resources
+# Rely on Ubuntu x64 pipeline for CI/CD
+trigger:
+- none
+pr:
+- none
+schedules:
+- cron: "0 0 * * *"
+  displayName: Daily midnight build
+  branches:
+    include:
+    - main
+
+pool:
+  name: 1es_hosted_pool_ubuntu_1804
+  demands: ImageOverride -equals do-adu-build-$(imageVersion)
+
+jobs:
+- template: templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'debian9_arm32'
+    imageVersion: ${{variables.imageVersion}}
+    stepsTemplate: 'doclient-lite-docker-steps.yml'
+
+- template: templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'debian10_arm32'
+    imageVersion: ${{variables.imageVersion}}
+    stepsTemplate: 'doclient-lite-docker-steps.yml'
+
+- template: templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'ubuntu1804_arm64' # azure pipelines does not support '.' in display names
+    imageVersion: ${{variables.imageVersion}}
+    stepsTemplate: 'doclient-lite-docker-steps.yml'

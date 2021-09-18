@@ -8,7 +8,8 @@ const cppfs::path g_testTempDir = "/tmp/docs_test_scratch";
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
-    DoTraceLoggingRegister(); // enable failure output to console
+    // DoTraceLoggingRegister(); // enable failure output to console
+    // TODO(shishirb) enable console only logging
 
     std::error_code ec;
     cppfs::create_directories(g_testTempDir, ec);

@@ -104,3 +104,56 @@ macro (add_do_version_lib target_name maj_min_patch_ver)
     # CMake requires us to specify the binary dir when the source dir is not a child of the current dir
     add_subdirectory(${do_project_root_SOURCE_DIR}/common ${CMAKE_CURRENT_BINARY_DIR}/common)
 endmacro ()
+
+# From https://github.com/dotnet/coreclr/pull/3872/files
+# For minsizerel build, split unneeded symbols from target binary file and into a separate .dbg file.
+# Reduces the installed size on disk of our binaries while still making symbols available for debugging.
+function(strip_symbols targetName)
+    string(TOLOWER ${CMAKE_BUILD_TYPE} MY_BUILD_TYPE)
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" AND MY_BUILD_TYPE STREQUAL minsizerel)
+
+        find_program(OBJCOPY objcopy)
+        if (OBJCOPY STREQUAL "OBJCOPY-NOTFOUND")
+            message(WARNING "objcopy not found. Binaries will not be stripped.")
+        else()
+            set(strip_source_file $<TARGET_FILE:${targetName}>)
+            set(strip_destination_file ${strip_source_file}.dbg)
+            add_custom_command(
+                TARGET ${targetName}
+                POST_BUILD
+                VERBATIM
+                COMMAND ${OBJCOPY} --only-keep-debug ${strip_source_file} ${strip_destination_file}
+                COMMAND ${OBJCOPY} --strip-unneeded ${strip_source_file}
+                COMMAND ${OBJCOPY} --add-gnu-debuglink=${strip_destination_file} ${strip_source_file}
+                COMMENT Stripping symbols from ${strip_source_file} into file ${strip_destination_file})
+        endif()
+
+    endif()
+endfunction()
+
+function (add_platform_interface_definitions target_name)
+    if (DO_PLATFORM_LINUX)
+        target_compile_definitions (${target_name} PRIVATE DO_PLATFORM_LINUX=1)
+    endif ()
+    if (DO_PLATFORM_WINDOWS)
+        target_compile_definitions (${target_name} PRIVATE DO_PLATFORM_WINDOWS=1)
+    endif ()
+    if (DO_PLATFORM_MAC)
+        target_compile_definitions (${target_name} PRIVATE DO_PLATFORM_MAC=1)
+    endif ()
+
+    if (DO_INTERFACE_REST)
+        target_compile_definitions (${target_name} PRIVATE DO_INTERFACE_REST=1)
+    endif ()
+    if (DO_INTERFACE_COM)
+        target_compile_definitions (${target_name} PRIVATE DO_INTERFACE_COM=1)
+    endif ()
+
+    if (DO_CLIENT_AGENT)
+        target_compile_definitions (${target_name} PRIVATE DO_CLIENT_AGENT=1)
+    endif ()
+    if (DO_CLIENT_DOSVC)
+        target_compile_definitions (${target_name} PRIVATE DO_CLIENT_DOSVC=1)
+    endif ()
+
+endfunction ()

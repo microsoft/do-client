@@ -1,0 +1,57 @@
+# Pipeline to build the DO CPP SDK on Windows 10 
+# Runs tests after build and publishes the binaries as artifacts
+
+trigger:
+  branches:
+    include:
+      - main
+      - feature/xplat_sdk
+  paths:
+    include:
+      - azure-pipelines/build/windows/*
+      - common/*
+      - sdk-cpp/*
+      - build/build.py
+      - CMakeLists.txt
+    exclude:
+      - 'azure-pipelines/*'
+      - sdk-cpp/build/cleanup-install.sh
+
+pr:
+  branches:
+    include:
+      - main
+      - feature/xplat_sdk
+  paths:
+    include:
+      - azure-pipelines/build/windows/*
+      - common/*
+      - sdk-cpp/*
+      - build/build.py
+      - CMakeLists.txt
+    exclude:
+      - 'azure-pipelines/*'
+      - sdk-cpp/build/cleanup-install.sh
+
+pool:
+  vmImage: "windows-latest"
+
+jobs:
+- job: Debug
+  steps:
+  - checkout: self
+    submodules: true
+  - template: templates/dosdkcpp-steps.yml
+    parameters:
+      targetOsArch: 'windows10-x64'
+      config: debug
+
+- job: Release
+  steps:
+  - checkout: self
+    submodules: true
+  - template: templates/dosdkcpp-steps.yml
+    parameters:
+      targetOsArch: 'windows10-x64'
+      config: release
+      skipTests: true

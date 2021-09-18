@@ -20,3 +20,16 @@ inline std::array<char, 30> SysTimePointToUTCString(wall_clock_t::time_point tim
         st.tm_year + 1900, st.tm_mon + 1, st.tm_mday, st.tm_hour, st.tm_min, st.tm_sec, static_cast<int>(fractionalSeconds.count()));
     return timebuf;
 }
+
+inline std::array<char, 30> SysTimePointToFileNameString(wall_clock_t::time_point timePoint)
+{
+    const auto tt = wall_clock_t::to_time_t(timePoint);
+    struct tm st = {};
+    gmtime_r(&tt, &st);
+
+    auto ft = filetime_cast(timePoint.time_since_epoch());
+    std::array<char, 30> timebuf = {};
+    snprintf(timebuf.data(), timebuf.size(), "%04d%02d%02d_%02d%02d%02d",
+        st.tm_year + 1900, st.tm_mon + 1, st.tm_mday, st.tm_hour, st.tm_min, st.tm_sec);
+    return timebuf;
+}

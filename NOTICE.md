@@ -17,43 +17,32 @@ required to debug changes to any libraries licensed under the GNU Lesser General
 
 ====================================================================
 
-microsoft/cpprestsdk 18212a2a7967e12d740bfb957e500892b3463c88 - MIT
+libcurl
 
-Copyright (c) Microsoft.
-Copyright (c) 2014, Peter Thorson.
-Copyright (c) Microsoft Corporation.
-Copyright (c) 2011, Micael Hildenborg
-Copyright (c) 2004-2008 Rene Nyffenegger
-Portions Copyright (c) Microsoft Corporation
-Copyright (c) 1999, 2002 Aladdin Enterprises.
-Copyright (c) 2006 Noel Llopis and Charles Nicholson
-Copyright (c) 2008-2009 Bjoern Hoehrmann <bjoern@hoehrmann.de>
+The curl license
 
-C++ REST SDK
+COPYRIGHT AND PERMISSION NOTICE
 
-The MIT License (MIT)
-
-Copyright (c) Microsoft Corporation
+Copyright (c) 1996 - 2021, Daniel Stenberg, daniel@haxx.se, and many
+contributors, see the THANKS file.
 
 All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Permission to use, copy, modify, and distribute this software for any purpose
+with or without fee is hereby granted, provided that the above copyright
+notice and this permission notice appear in all copies.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY RIGHTS.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of a copyright holder shall not be
+used in advertising or otherwise to promote the sale, use or other dealings in
+this Software without prior written authorization of the copyright holder.
 
 ====================================================================
 
@@ -227,7 +216,7 @@ are met:
 ====================================================================
 
 libproxy
-  
+
                   GNU LESSER GENERAL PUBLIC LICENSE
                        Version 2.1, February 1999
 
@@ -733,7 +722,7 @@ It was downloaded from:
 Upstream Authors:
 
     Patrick Powell <papowell@astart.com>
-    Piotr Roszatycki <dexter@debian.org> 
+    Piotr Roszatycki <dexter@debian.org>
     Ralf S. Engelschall <rse@engelschall.com>
     Brandon Long <blong@fiction.net>
     Thomas Roessler <roessler@guug.de>
@@ -761,7 +750,7 @@ License:
     any purpose with or without fee is hereby granted, provided that
     the above copyright notice and this permission notice appear in all
     copies.
-  
+
     THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
     WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
     MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.

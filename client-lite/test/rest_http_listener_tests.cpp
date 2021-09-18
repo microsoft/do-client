@@ -84,7 +84,7 @@ TEST(RestListenerTests, ManyPortsInUse)
 
     RestHttpListener listener;
     const auto before = std::chrono::steady_clock::now();
-    listener.Start("http://127.0.0.1");
+    listener.Start(asioWorker.IoService(), http_listener_callback_t{});
     const auto after = std::chrono::steady_clock::now();
     std::cout << "Listener started at: " << listener.Endpoint() << "\n";
     const auto elapsedMsecs = std::chrono::duration_cast<std::chrono::milliseconds>(after - before).count();

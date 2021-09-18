@@ -32,6 +32,12 @@ std::shared_ptr<Download> DownloadForId(const DownloadManager& manager, const st
 
 class DownloadManagerTests : public ::testing::Test
 {
+public:
+    void SetUp() override
+    {
+        ClearTestTempDir();
+    }
+
 protected:
     ConfigManager configs;
     DownloadManager manager { configs };
@@ -62,8 +68,6 @@ TEST_F(DownloadManagerTests, EmptyDownload)
 
 TEST_F(DownloadManagerTests, SmallFileDownload)
 {
-    ClearTempDir();
-
     const std::string destFile = g_testTempDir / "smallfile.test";
     const std::string id = manager.CreateDownload(g_smallFileUrl, destFile);
     VerifyUrlAndPath(manager, id, g_smallFileUrl, destFile);
@@ -77,8 +81,6 @@ TEST_F(DownloadManagerTests, SmallFileDownload)
 
 TEST_F(DownloadManagerTests, MultipleDownloads)
 {
-    ClearTempDir();
-
     const std::string destFile1 = g_testTempDir / "smallfile.test";
     const std::string id1 = manager.CreateDownload(g_smallFileUrl, destFile1);
     VerifyUrlAndPath(manager, id1, g_smallFileUrl, destFile1);
@@ -125,7 +127,7 @@ TEST_F(DownloadManagerTests, FileDownloadFatal404)
 
     // Expect immediate failure upon starting
     manager.StartDownload(id);
-    std::this_thread::sleep_for(2s);
+    ASSERT_EQ(StartAndWaitUntilNotTransferring(manager, id, 5min), S_OK);
     const auto status = manager.GetDownloadStatus(id);
     ASSERT_EQ(status.BytesTransferred, 0);
     ASSERT_EQ(status.BytesTotal, 0);
@@ -138,8 +140,6 @@ TEST_F(DownloadManagerTests, FileDownloadFatal404)
 
 TEST_F(DownloadManagerTests, FileMidDownloadTransient404)
 {
-    ClearTempDir();
-
     const std::string destFile = g_testTempDir / "largefile.test";
     const std::string id = manager.CreateDownload(g_largeFileUrl, destFile);
     manager.StartDownload(id);
@@ -170,8 +170,6 @@ TEST_F(DownloadManagerTests, FileMidDownloadTransient404)
 
 TEST_F(DownloadManagerTests, HttpsFileDownload)
 {
-    ClearTempDir();
-
     const std::string destFile = g_testTempDir / "httpsfile.test";
     const std::string url = "https://omextemplates.content.office.net/support/templates/en-us/tf01228997.accdt";
     const std::string id = manager.CreateDownload(url, destFile);
@@ -184,8 +182,6 @@ TEST_F(DownloadManagerTests, HttpsFileDownload)
 
 TEST_F(DownloadManagerTests, PauseResumeDownload)
 {
-    ClearTempDir();
-
     const std::string destFile = g_testTempDir / "largefile.test";
 
     const auto id = manager.CreateDownload(g_largeFileUrl, destFile);
@@ -209,8 +205,6 @@ TEST_F(DownloadManagerTests, PauseResumeDownload)
     VerifyFileSize(destFile, 536870440);
 }
 
-// Test fails when using cpprestsdk built without this change (automatic follow of redirects)
-// made on Mar 31, 2020 - https://github.com/microsoft/cpprestsdk/pull/1328
 TEST_F(DownloadManagerTests, DownloadUrlWithRedirects)
 {
     const std::string destFile = g_testTempDir / "redirect.test";
@@ -270,4 +264,24 @@ TEST_F(DownloadManagerTests, InvalidState)
     {
         manager.SetDownloadProperty(id, DownloadProperty::LocalPath, destFile);
     });
+}
+
+TEST_F(DownloadManagerTests, DownloadPathAccessDenied)
+{
+    const auto id = manager.CreateDownload(g_smallFileUrl, "/var/run/doagent-test.bin");
+    VerifyDOResultException(HRESULT_FROM_XPLAT_SYSERR(EACCES), [&]()
+    {
+        manager.StartDownload(id);
+    });
+    manager.AbortDownload(id);
+}
+
+TEST_F(DownloadManagerTests, DownloadPathNotFound)
+{
+    const auto id = manager.CreateDownload(g_smallFileUrl, "/var2/run/doagent-test.bin");
+    VerifyDOResultException(HRESULT_FROM_XPLAT_SYSERR(ENOENT), [&]()
+    {
+        manager.StartDownload(id);
+    });
+    manager.AbortDownload(id);
 }

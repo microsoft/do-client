@@ -2,6 +2,7 @@
 
 #include <shared_mutex>
 #include <unordered_map>
+#include "do_curl_wrappers.h"
 #include "mcc_manager.h"
 #include "task_thread.h"
 
@@ -36,6 +37,7 @@ private:
     mutable std::shared_timed_mutex _downloadsMtx;
 
     ConfigManager& _config;
+    CurlRequests _curlOps;
     MCCManager _mccManager;
 
 private:

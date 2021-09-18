@@ -1,0 +1,123 @@
+# Template: Steps to build DO C++ SDK targeting x86-64 architecture.
+# Consume this steps template in one or more jobs by passing in parameter values.
+
+parameters:
+- name: targetOsArch    # example: ubuntu1804_x64
+  type: string
+- name: config          # debug/release/minsizerel/relwithdebuginfo
+  type: string
+- name: skipTests
+  type: boolean
+  default: false
+
+steps:
+# Have to use cmdline rather than built in python task, because the python env variable chooses python2
+# There is a pipeline task which allows you to specify version, but that requires configuring of the agent tools directory
+# TODO(shishirb) Include --skip-tests build.py option when skipTests is true
+- task: CmdLine@2
+  inputs:
+    script: 'python3 ./build.py --project agent --cmaketarget deliveryoptimization-agent --config ${{parameters.config}} --package-for DEB --clean'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
+  displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
+
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: 'sudo dpkg -i deliveryoptimization-agent*.deb'
+    workingDirectory: '/tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}'
+  displayName: 'Install agent Debian package'
+
+- task: CmdLine@2
+  inputs:
+    script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization --config ${{parameters.config}} --package-for DEB --clean'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
+  displayName: 'Build sdk ${{parameters.targetOsArch}}-${{parameters.config}}'
+
+- task: Bash@3
+  condition: eq('${{parameters.config}}', 'minsizerel')
+  inputs:
+    targetType: 'filePath'
+    filePath: 'build/scripts/check_binary_size.sh'
+    arguments: '418672 /tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}/sdk-cpp/libdeliveryoptimization.so.*.*.*'
+  displayName: 'Limit binary size increase'
+
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: 'sudo dpkg -i libdeliveryoptimization*.deb'
+    workingDirectory: '/tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}'
+  displayName: 'Install libdeliveryoptimization Debian Package'
+
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization-sdk-tests --config ${{parameters.config}}'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
+  displayName: 'Build sdk-cpp tests ${{parameters.targetOsArch}}-${{parameters.config}}'
+
+# Run all tests. These must run as root because docs is running as the 'do' user
+# and thus files created by docs are not owned by us, causing test SetUp/TearDown to fail.
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: 'sudo ./sdk-cpp/tests/deliveryoptimization-sdk-tests'
+    workingDirectory: '/tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}'
+  displayName: 'Run unit tests'
+
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: 'sudo dpkg -r libdeliveryoptimization-dev libdeliveryoptimization deliveryoptimization-agent'
+  displayName: 'Remove installed packages'
+
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '/tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}'
+    Contents: |
+      libdeliveryoptimization*
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+    CleanTargetFolder: true
+  displayName: 'Populate artifacts staging dir'
+
+- task: CopyFiles@2
+  condition: eq('${{parameters.config}}', 'minsizerel')
+  inputs:
+    SourceFolder: '/tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}'
+    Contents: |
+      sdk-cpp/libdeliveryoptimization*.dbg
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+  displayName: 'Populate debug symbols to staging dir'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'deliveryoptimization-sdk'
+    publishLocation: 'Container'
+
+# TODO(jimson) Azure artifacts are no longer free to publish to, this task will fail as a result, bug to resolve issue here:
+# https://microsoft.visualstudio.com/OS/_workitems/edit/30317524
+# Note: The second feed publishes to a feed that did not hit storage limits. Choose which one to keep when re-enabling the publish.
+#
+#  - task: UniversalPackages@0
+#    inputs:
+#      command: 'publish'
+#      publishDirectory: '$(Build.ArtifactStagingDirectory)'
+#      feedsToUsePublish: 'internal'
+#      vstsFeedPublish: 'a6e08e1f-d299-4d2f-aaa5-db7ddde849e0'
+#      publishPackageMetadata: false
+#      vstsFeedPackagePublish: 'deliveryoptimization-sdk'
+#      versionOption: 'custom'
+#      versionPublish: '$(test.package.version)'
+#    displayName: 'Publish artifacts to test feed'
+
+# - task: UniversalPackages@0
+#   inputs:
+#     command: 'publish'
+#     publishDirectory: '$(Build.ArtifactStagingDirectory)'
+#     feedsToUsePublish: 'internal'
+#     vstsFeedPublish: '7cdf52bf-a6f7-436c-b12f-3f063ef389c4/a671f3bd-f4e8-44b8-9553-9a9c04fa266a'
+#     vstsFeedPackagePublish: 'deliveryoptimization-sdk'
+#     versionOption: 'patch'
+#     packagePublishDescription: 'sdk'
+#     versionPublish: '$(test.package.version)'
+#   displayName: 'Publish artifacts to test feed'

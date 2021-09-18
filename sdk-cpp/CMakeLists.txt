@@ -1,85 +1,140 @@
-project (deliveryoptimization_sdk VERSION 0.4.0)
+project (deliveryoptimization_sdk VERSION 0.5.0)
 
-add_definitions(-DBOOST_ALL_DYN_LINK=1)
+if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
+    message("DO configured to use shared Boost libraries")
+    add_definitions(-DBOOST_ALL_DYN_LINK=1)
 
-# Differentiate cross platform builds
-# Note: The C preprocessor can compare integer values but not strings
-set(DO_PLATFORM_ID_UNKNOWN 0)
-set(DO_PLATFORM_ID_LINUX 1)
-set(DO_PLATFORM_ID_MAC 2)
-set(DO_PLATFORM_ID_WINDOWS 3)
-if (CMAKE_SYSTEM_NAME MATCHES Linux)
-    set(DO_PLATFORM_ID ${DO_PLATFORM_ID_LINUX})
-elseif (CMAKE_SYSTEM_NAME MATCHES Darwin) # Mac
-    message(WARNING "Currently unsupported platform")
-    set(DO_PLATFORM_ID ${DO_PLATFORM_ID_MAC})
-elseif (CMAKE_SYSTEM_NAME MATCHES Windows)
-    message(WARNING "Currently unsupported platform")
-    set(DO_PLATFORM_ID ${DO_PLATFORM_ID_WINDOWS})
-else()
-    message(WARNING "Unknown platform")
-    set(DO_PLATFORM_ID ${DO_PLATFORM_ID_UNKNOWN})
+    # Include external libraries here
+    find_package(Boost COMPONENTS filesystem REQUIRED)
 endif()
 
-fixup_compile_options_for_arm()
-
-# Include external libraries here
-find_package(Boost COMPONENTS filesystem system REQUIRED)
-
-# Cpprest Issues:
-# 1. v2.10.10 min version (see required PR link below). cpprestsdk does not seem to support specifying this through cmake.
-# https://github.com/microsoft/cpprestsdk/pull/1019/files
-#
-# 2. Installing libcpprest-dev via apt installs cpprest's cmake config files to a non-default cmake search path before v2.10.9
-# See: https://github.com/microsoft/cpprestsdk/issues/686
-# This issue has been patched but has not made its way to the stable branch for Ubuntu
-# Since we are statically linking to v2.10.16 we no longer need to worry about the above as cpprest is patched to provide the proper package configuration metadata
-find_package(cpprestsdk CONFIG REQUIRED)
+if (DO_PLATFORM_LINUX)
+    fixup_compile_options_for_arm()
+endif()
 
 if (DO_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
-file(GLOB sdk_source
+set(DO_SDK_LIB_NAME "deliveryoptimization")
+add_do_version_lib("${DO_SDK_LIB_NAME}-lib" ${PROJECT_VERSION})
+
+### Region CMake Build ###
+
+set(sdk_source_common
     "src/*.cpp"
-    "src/internal/rest/*.cpp"
-    "src/internal/util/*.cpp"
+    "src/internal/*.cpp"
 )
 
-set(DO_SDK_LIB_NAME "deliveryoptimization")
+set(sdk_public_includes
+    $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/${DO_SDK_LIB_NAME}>
+)
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+set(sdk_private_includes_common
+    "src/internal"
+)
+
+if(DO_PLATFORM_LINUX)
     include(GNUInstallDirs)
 
-    add_do_version_lib("${DO_SDK_LIB_NAME}-lib" ${PROJECT_VERSION})
+    file(GLOB sdk_source
+        ${sdk_source_common}
+        "src/internal/rest/*.cpp"
+        "src/internal/rest/util/*.cpp"
+    )
 
     add_library(${DO_SDK_LIB_NAME} SHARED "${sdk_source}")
-    add_library(Microsoft::${DO_SDK_LIB_NAME} ALIAS ${DO_SDK_LIB_NAME})
-    target_include_directories(${DO_SDK_LIB_NAME}
-        PUBLIC
-            $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include>
-            $<INSTALL_INTERFACE:include/${DO_SDK_LIB_NAME}>
-        PRIVATE
-            "src/internal/rest"
-            "src/internal/util"
-            "src/internal"
-            ${docs_common_includes}
-            ${include_directories_for_arm}
-    )
-    target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE
-        DO_PLATFORM_ID=${DO_PLATFORM_ID}
-        DO_PLATFORM_ID_UNKNOWN=${DO_PLATFORM_ID_UNKNOWN}
-        DO_PLATFORM_ID_LINUX=${DO_PLATFORM_ID_LINUX}
-        DO_PLATFORM_ID_MAC=${DO_PLATFORM_ID_MAC}
-        DO_PLATFORM_ID_WINDOWS=${DO_PLATFORM_ID_WINDOWS}
+
+    set(sdk_compile_definitions
         DOSVC_BIN_NAME="${DOSVC_BIN_NAME}"
         DO_PLUGIN_APT_BIN_NAME="${DO_PLUGIN_APT_BIN_NAME}"
     )
-    target_link_libraries(${DO_SDK_LIB_NAME}
-        PRIVATE doversion cpprestsdk::cpprest
-        PUBLIC ${Boost_LIBRARIES}
+
+    set(sdk_private_includes
+        "src/internal/rest"
+        "src/internal/rest/util"
+        ${include_directories_for_arm}
     )
 
+    set(sdk_private_linked_libs
+        doversion
+        dohttp
+    )
+
+    set(sdk_public_linked_libs
+        ${Boost_LIBRARIES}
+    )
+
+    strip_symbols(${DO_SDK_LIB_NAME})
+
+elseif(DO_PLATFORM_MAC)
+    file(GLOB sdk_source
+        ${sdk_source_common}
+        "src/internal/rest/*.cpp"
+        "src/internal/rest/util/*.cpp"
+    )
+
+    add_library(${DO_SDK_LIB_NAME} SHARED "${sdk_source}")
+
+    set(sdk_private_includes
+        "src/internal/rest"
+        "src/internal/rest/util"
+    )
+
+    set(sdk_private_linked_libs
+        doversion
+        dohttp
+    )
+
+    set(sdk_public_linked_libs
+        ${Boost_LIBRARIES}
+    )
+elseif(DO_PLATFORM_WINDOWS)
+    file(GLOB sdk_source
+        ${sdk_source_common}
+        "src/internal/com/*.cpp"
+    )
+
+    add_library(${DO_SDK_LIB_NAME} STATIC "${sdk_source}")
+
+    set(sdk_private_includes
+        "src/internal"
+        "src/internal/com"
+        "src/internal/com/deliveryoptimization"
+        "src/internal/util"
+    )
+endif()
+
+add_library(Microsoft::${DO_SDK_LIB_NAME} ALIAS ${DO_SDK_LIB_NAME})
+target_include_directories(${DO_SDK_LIB_NAME}
+    PUBLIC
+        ${sdk_public_includes}
+    PRIVATE
+        ${sdk_private_includes}
+        ${sdk_private_includes_common}
+)
+target_compile_definitions(${DO_SDK_LIB_NAME}
+    PRIVATE
+        ${sdk_compile_definitions}
+)
+if (DO_DEV_DEBUG)
+    target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE DO_DEV_DEBUG)
+endif ()
+add_platform_interface_definitions(${DO_SDK_LIB_NAME})
+
+target_link_libraries(${DO_SDK_LIB_NAME}
+    PUBLIC
+        ${sdk_public_linked_libs}
+    PRIVATE
+        ${sdk_private_linked_libs}
+)
+
+### Endregion CMake Build ###
+
+### Region CMake Install ###
+
+if(DO_PLATFORM_LINUX)
     # Install the lib while also exporting all the usage requirements to a named target.
     install(
         TARGETS
@@ -202,7 +257,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
             DEPENDS
                 runtime
         )
-
-    endif() # Build for Packaging
-
+    endif() # Packaging
 endif() # Linux
+
+### End Region Install ###

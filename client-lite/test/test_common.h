@@ -4,9 +4,6 @@
 
 #include <chrono>
 #include <experimental/filesystem>
-
-// 'U' macro has a conflicting definition between gtest headers and cpprestsdk headers, so undef here:
-#undef U
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
@@ -14,7 +11,7 @@ namespace cppfs = std::experimental::filesystem;
 
 extern const cppfs::path g_testTempDir;
 
-inline void ClearTempDir()
+inline void ClearTestTempDir()
 {
     if (cppfs::exists(g_testTempDir))
     {

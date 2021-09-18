@@ -17,6 +17,13 @@ std::string MapToString(const T& map)
     return ss.str();
 }
 
+// This explicit overload prevents format-security warning
+// at call sites that do not pass any format arguments.
+inline std::string FormatString(const char* msg)
+{
+    return std::string{msg};
+}
+
 template <typename... Args>
 std::string FormatString(const char* fmt, Args&&... args)
 {

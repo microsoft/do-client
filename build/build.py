@@ -25,82 +25,101 @@ DOCLIENT_SUBPROJECT_BUILD_MAP = {
 
 def main():
     """The main entry point."""
-    script_args = parse_args()
     # Set the global vars for the script
     global VERBOSE
     global DOCLIENT_SUBPROJECT_BUILD_MAP
-    build = create_build_runner(script_args)
+
+    build = create_build_runner()
     build.run()
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Builds the DeliveryOptimization client components')
-    parser.add_argument(
-        '--project', dest='project', type=str, required=True,
-        help='The cmake subproject to build. e.g. {}'.format(list(DOCLIENT_SUBPROJECT_BUILD_MAP.keys()))
-    )
-    parser.add_argument(
-        '--operation', dest='operation', type=str,
-        help='The operation to perform. e.g. generate/build/cleanonly. Default is generate+build'
-    )
-    parser.add_argument(
-        '--generator', dest='generator', type=str,
-        help='The CMake generator to use. e.g. Ninja, Unix Makefiles'
-    )
-    parser.add_argument(
-        '--config', dest='config', type=str,
-        help='The target configuration. e.g. debug or release'
-    )
-    parser.add_argument(
-        '--cmaketarget', dest='cmaketarget', type=str,
-        help='The cmake target within each subproject to build. e.g. within sdk: deliveryoptimization-sdk-tests'
-    )
-    parser.add_argument(
-        '--package-for', dest='package_type', type=str,
-        help='Supply package type. e.g. deb, or rpm'
-    )
-    parser.add_argument(
-        '--clean', dest='clean', action='store_true',
-        help='Remove built binaries before re-building them'
-    )
-    parser.add_argument(
-        '--static-analysis', dest='static_analysis', action='store_true',
-        help='Run static analysis tools (cpplint)'
-    )
-    parser.add_argument(
-        '--skip-tests', dest='skip_tests', action='store_true',
-        help='Skip adding and building test code'
-    )
+# region ArgParser
 
-    '''DOCS only'''
-    parser.add_argument(
-        '--no-proxy-support', dest='no_proxy_support', action='store_true',
-        help='Enable building docs without support for proxy handling'
-    )
+class ArgParserBase(object):
+    """Base class for specific platform arg parser
 
-    return parser.parse_args()
+    ArgParser classes will inherit from this class
+    and will parse args specific to that build.
 
-class NotSupportedTargetPlatformError(ValueError):
-    pass
-
-class NotSupportedHostEnvironmentError(ValueError):
-    pass
-
-def create_build_runner(script_args):
-    """Creates the appropriate subclass of BuildRunnerBase.
-
-    Chooses the correct BuildRunner class for the target platform.
-    Args:
-        script_args (namespace):
-            The arguments passed to the script parsed by argparse.
-
-    Returns:
-        The appropriate subclass of Build.
     """
 
-    if is_running_on_linux():
-        return LinuxBuildRunner(script_args)
-    else:
-        raise NotSupportedTargetPlatformError('Target platform is either not supported or could not be deduced from build environment')
+    def __init__(self):
+        self.parser = argparse.ArgumentParser(description='Builds the DeliveryOptimization client components')
+        self.parser.add_argument(
+            '--project', dest='project', type=str, required=True,
+            help='The cmake subproject to build. e.g. {}'.format(list(DOCLIENT_SUBPROJECT_BUILD_MAP.keys()))
+        )
+        self.parser.add_argument(
+            '--operation', dest='operation', type=str,
+            help='The operation to perform. e.g. generate/build/cleanonly. Default is generate+build'
+        )
+        self.parser.add_argument(
+            '--generator', dest='generator', type=str,
+            help='The CMake generator to use. e.g. Ninja, Unix Makefiles'
+        )
+        self.parser.add_argument(
+            '--config', dest='config', type=str,
+            help='The target configuration. e.g. debug or release'
+        )
+        self.parser.add_argument(
+            '--cmaketarget', dest='cmaketarget', type=str,
+            help='The cmake target within each subproject to build. e.g. within sdk: deliveryoptimization-sdk-tests'
+        )
+        self.parser.add_argument(
+            '--clean', dest='clean', action='store_true',
+            help='Remove built binaries before re-building them'
+        )
+        self.parser.add_argument(
+            '--skip-tests', dest='skip_tests', action='store_true',
+            help='Skip adding and building test code'
+        )
+        self.parser.add_argument(
+            '--static-analysis', dest='static_analysis', action='store_true',
+            help='Run static analysis tools (cpplint)'
+        )
+        self.parser.add_argument(
+            '--build-directory', dest='build_directory', type=str,
+            help='Override default build output directory'
+        )
+
+    def parse(self):
+        return self.parser.parse_args()
+
+class LinuxArgParser(ArgParserBase):
+    def __init__(self):
+        super().__init__()
+        self.parser.add_argument(
+            '--package-for', dest='package_type', type=str,
+            help='Supply package type. e.g. deb, or rpm'
+        )
+
+        '''Agent only'''
+        self.parser.add_argument(
+            '--no-proxy-support', dest='no_proxy_support', action='store_true',
+            help='Enable building deliveryoptimization-agent without support for proxy handling'
+        )
+
+class WindowsArgParser(ArgParserBase):
+    def __init__(self):
+        super().__init__()
+        self.parser.add_argument(
+            '--vcpkgdir', dest='vcpkgdir', type=str,
+            help='vcpkg installation directory for c++ packages on windows'
+        )
+        self.parser.add_argument(
+            '--arch', dest='arch', type=str,
+            help='The target architecture. e.g x86, x64, or arm.'
+        )
+
+class MacArgParser(ArgParserBase):
+    def __init__(self):
+        super().__init__()
+        self.parser.add_argument(
+            '--vcpkgdir', dest='vcpkgdir', type=str,
+            help='vcpkg installation directory for c++ packages on mac'
+        )
+
+
+# endregion ArgParser
 
 #region BuildRunner classes
 
@@ -125,6 +144,8 @@ class BuildRunnerBase(object):
         self.project_root_path = get_project_root_path()
         self.cmake_target = None
         self.project = None
+        self.build_directory = None
+
         if (script_args.cmaketarget is None):
             self.cmake_target = "all"
         else:
@@ -143,23 +164,32 @@ class BuildRunnerBase(object):
         else:
             self.config = 'debug'
 
-        if not (self.config == 'debug' or self.config == 'release'):
+        if self.config not in ['debug', 'devdebug', 'release', 'relwithdebinfo', 'minsizerel']:
             raise ValueError('Building configuration for {self.platform} is not supported.'.format(self.config, self.platform))
+
         if self.script_args.generator:
             self.generator = self.script_args.generator
-        else:
-            self.generator = 'Ninja'
 
-        self.package_type = None
-        if self.script_args.package_type:
-            self.package_type = self.script_args.package_type.lower()
-
-        self.static_analysis = script_args.static_analysis
         self.skip_tests = script_args.skip_tests
 
         self.source_path = self.project_root_path
 
         self.build_time = datetime.datetime.utcnow().strftime("%Y%m%d.%H%M%S")
+
+        if self.script_args.build_directory:
+            self.build_directory = self.script_args.build_directory
+
+    @property
+    def compiler(self):
+        """The compiler to use.
+
+        Should be overriden by subclass.
+
+        Returns:
+            The name of the compiler.
+            e.g. clang, gnu, msvc
+        """
+        pass
 
     @property
     def flavor(self):
@@ -170,6 +200,24 @@ class BuildRunnerBase(object):
             e.g. linux-debug
         """
         return '{}-{}'.format(self.platform, self.config)
+
+    @property
+    def generator(self):
+        """The CMake generator for this build.
+
+        Can be overriden by subclass.
+        Tells CMake what type of build to generate.
+        'Unix Makefiles' will generate a set of make files,
+        'Visual Studio ...' will generate vs proj files,
+        etc.
+
+        Returns:
+            CMake generator ID as string.
+            None if default generator should be used (not recommended).
+        """
+        if is_running_on_linux():
+            return "Ninja"
+        return None
 
     @property
     def platform(self):
@@ -186,7 +234,7 @@ class BuildRunnerBase(object):
     @property
     def build_path(self):
         """Path for the build."""
-        return get_default_build_path(self.project, self.flavor)
+        return get_build_path(self.project, self.build_directory, self.flavor)
 
     def run(self):
         if self.cmake_target != None:
@@ -212,9 +260,6 @@ class BuildRunnerBase(object):
 
             self.print_end_build_msg()
             self.print_times()
-
-            if self.package_type:
-                self.package()
 
     def print_start_build_msg(self):
         """Prints a message at the start of Build.run.
@@ -299,6 +344,13 @@ class BuildRunnerBase(object):
 
         if self.config == "debug":
             generate_options.extend(["-DCMAKE_BUILD_TYPE=Debug"])
+        elif self.config == "devdebug":
+            generate_options.extend(["-DCMAKE_BUILD_TYPE=Debug"])
+            generate_options.extend(["-DDO_DEV_DEBUG=1"])
+        elif self.config == "relwithdebinfo":
+            generate_options.extend(["-DCMAKE_BUILD_TYPE=RelWithDebInfo"])
+        elif self.config == "minsizerel":
+            generate_options.extend(["-DCMAKE_BUILD_TYPE=MinSizeRel"])
         else:
             generate_options.extend(["-DCMAKE_BUILD_TYPE=Release"])
 
@@ -306,8 +358,11 @@ class BuildRunnerBase(object):
         # even though we can pass this only to the generate phase.
         generate_options.extend(['-DDO_BUILD_TIMESTAMP={}'.format(self.build_time)])
 
-        if self.static_analysis:
-            generate_options.extend(["-DCMAKE_CXX_CPPLINT=cpplint"])
+        if self.skip_tests:
+            generate_options.extend(["-DDO_BUILD_TESTS=OFF"])
+
+        if self.project:
+            generate_options.extend([DOCLIENT_SUBPROJECT_BUILD_MAP[self.project]])
 
         return generate_options
 
@@ -353,16 +408,23 @@ class LinuxBuildRunner(BuildRunnerBase):
     def __init__(self, script_args):
         super().__init__(script_args)
 
+        self.package_type = None
+        if self.script_args.package_type:
+            self.package_type = self.script_args.package_type.lower()
+
+        self.static_analysis = self.script_args.static_analysis
+
     @property
     def platform(self):
         return 'linux'
 
     @property
+    def generator(self):
+        return 'Ninja'
+
+    @property
     def generate_options(self):
         generate_options = super().generate_options
-
-        if self.project:
-            generate_options.extend([DOCLIENT_SUBPROJECT_BUILD_MAP[self.project]])
 
         if self.package_type:
             if self.package_type in ["deb", "debian"]:
@@ -372,13 +434,137 @@ class LinuxBuildRunner(BuildRunnerBase):
             else:
                 raise ValueError('{} is not a supported package_type'.format(self.package_type))
 
-        if self.skip_tests:
-            generate_options.extend(["-DDO_BUILD_TESTS=OFF"])
+        if self.static_analysis:
+            generate_options.extend(["-DCMAKE_CXX_CPPLINT=cpplint"])
 
         return generate_options
+
+    def run(self):
+        super().run()
+        if self.package_type:
+            self.package()
+
+    def package(self):
+        subprocess.call(['/bin/bash', '-c', 'cd {} && cpack .'.format(self.build_path)])
+
+class WindowsBuildRunner(BuildRunnerBase):
+    """Windows BuildRunner class."""
+
+    def __init__(self, script_args):
+        super().__init__(script_args)
+        # Windows generates the vcxproj for all as ALL_BUILD.vcxproj, so need to change the target here
+        if (self.cmake_target == 'all'):
+            self.cmake_target = 'ALL_BUILD'
+
+        if self.script_args.arch:
+            self.arch = self.script_args.arch.lower()
+        elif get_env_var('BUILD_ARCHITECTURE'):
+            self.arch = get_env_var('BUILD_ARCHITECTURE')
+        else:
+            self.arch = 'x64'
+
+        if self.arch.startswith('arm'):
+            raise ValueError("Windows Arm Builds are not supported right now.")
+
+        self.vcpkg_root_path = self.project_root_path + "/vcpkg" if script_args.vcpkgdir is None else script_args.vcpkgdir
+
+    @property
+    def platform(self):
+        return 'windows'
+
+    @property
+    def compiler(self):
+        return 'msvc'
+
+    @property
+    def generator(self):
+        # No need to specify architecture here as the default target platform name (architecture) is that of the host and is provided in the CMAKE_VS_PLATFORM_NAME_DEFAULT variable
+        # https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2016%202019.html
+        return 'Visual Studio 16 2019'
+
+    @property
+    def generate_options(self):
+        return super().generate_options + [
+                '-DCMAKE_TOOLCHAIN_FILE={}'.format(get_vcpkg_toolchain_file_path(self.vcpkg_root_path)),
+                '-DVCPKG_TARGET_TRIPLET={}'.format(self._vcpkg_triplet)
+            ]
+
+    @property
+    def build_options(self):
+        return super().build_options + ['--config', self.config]
+
+    @property
+    def _vcpkg_triplet(self):
+        """The triplet string required by vcpkg."""
+        # We don't use the 'static' vcpkg install yet.
+        # Looks like vcpkg uses static libs by default.
+        return '{}-{}'.format(self.arch, self.platform)
+
+class MacBuildRunner(BuildRunnerBase):
+    """OsX BuildRunner class."""
+
+    def __init__(self, script_args):
+        super().__init__(script_args)
+        self.vcpkg_root_path = get_env_var('BUILD_VCPKGDIR') if script_args.vcpkgdir is None else script_args.vcpkgdir
+        self.arch = 'x64'
+
+    @property
+    def platform(self):
+        return 'osx'
+
+    @property
+    def compiler(self):
+        return 'clang'
+
+    @property
+    def generator(self):
+        return 'Ninja'
+
+    @property
+    def generate_options(self):
+        return super().generate_options + [
+                '-DCMAKE_TOOLCHAIN_FILE={}'.format(get_vcpkg_toolchain_file_path(self.vcpkg_root_path)),
+                '-DVCPKG_TARGET_TRIPLET={}'.format(self._vcpkg_triplet)
+            ]
+
+    @property
+    def build_options(self):
+        return super().build_options + ['--config', self.config]
+
+    @property
+    def _vcpkg_triplet(self):
+        """The triplet string required by vcpkg."""
+        # We don't use the 'static' vcpkg install yet.
+        # Looks like vcpkg uses static libs by default.
+        return '{}-{}'.format(self.arch, self.platform)
+
 #endregion BuildRunner Classes
 
 #region Util Functions
+
+def create_build_runner():
+    """Creates the appropriate subclass of BuildRunnerBase.
+
+    Chooses the correct BuildRunner class for the target platform.
+    Args:
+        script_args (namespace):
+            The arguments passed to the script parsed by argparse.
+
+    Returns:
+        The appropriate subclass of Build.
+    """
+
+    if is_running_on_linux():
+        script_args = LinuxArgParser().parse()
+        return LinuxBuildRunner(script_args)
+    elif is_running_on_windows():
+        script_args = WindowsArgParser().parse()
+        return WindowsBuildRunner(script_args)
+    elif is_running_on_osx():
+        script_args = MacArgParser().parse()
+        return MacBuildRunner(script_args)
+
+    raise ValueError('Target platform is either not supported or could not be deduced from build environment')
 
 def get_os_name():
     """Gets the friendly OS name.
@@ -401,6 +587,24 @@ def is_running_on_linux():
         False otherwise.
     """
     return get_os_name().startswith('linux')
+
+def is_running_on_windows():
+    """Indicates if this build is running on a Windows agent/machine
+
+    Returns:
+        True if the build is running on a Windows agent/machine.
+        False otherwise.
+    """
+    return get_os_name().startswith('win')
+
+def is_running_on_osx():
+    """Indicates if this build is running on a OsX agent/machine
+
+    Returns:
+        True if the build is running on a Osx agent/machine.
+        False otherwise.
+    """
+    return get_os_name().startswith('darwin')
 
 def get_project_root_path():
     """Gets the root path to our git repo.
@@ -431,7 +635,19 @@ def get_cmake_files_path(root_path=None):
         root_path = get_project_root_path()
     return os.path.abspath(os.path.join(root_path, 'build', 'cmake'))
 
-def get_default_build_path(project, flavor=None):
+def get_vcpkg_toolchain_file_path(root_path):
+    """Gets the path to the vcpkg cmake toolchain file.
+
+    Args:
+        root_path (str):
+            The vcpkg root path.
+
+    Returns:
+        The path to the vcpkg cmake toolchain file.
+    """
+    return os.path.abspath(os.path.join(root_path, 'scripts', 'buildsystems', 'vcpkg.cmake'))
+
+def get_build_path(project, build_directory=None, flavor=None):
     """Gets the default path to the build folder.
 
     Uses the 'flavor' property to construct the path if available.
@@ -443,7 +659,9 @@ def get_default_build_path(project, flavor=None):
     Returns:
         The default bin path.
     """
-    build_path = os.path.join(tempfile.gettempdir(), "build-deliveryoptimization-" + project, flavor)
+    if build_directory == None:
+        build_directory = tempfile.gettempdir()
+    build_path = os.path.join(build_directory, "build-deliveryoptimization-" + project, flavor)
     return build_path
 
 def get_env_var(name):

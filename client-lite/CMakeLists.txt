@@ -2,17 +2,11 @@ if (NOT DOSVC_BIN_NAME)
     message (FATAL_ERROR "Agent daemon name not defined")
 endif ()
 
-project (${DOSVC_BIN_NAME} VERSION 0.4.0)
+project (${DOSVC_BIN_NAME} VERSION 0.5.0)
 
 option (DO_PROXY_SUPPORT "Set DO_PROXY_SUPPORT to OFF to turn off proxy support for downloads and thus remove dependency on libproxy." ON)
 
 add_definitions(-DBOOST_ALL_DYN_LINK=1)
-
-# Get full debug info and also define DEBUG macro in debug builds
-string(TOLOWER ${CMAKE_BUILD_TYPE} DO_BUILD_TYPE)
-if (DO_BUILD_TYPE MATCHES debug)
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
-endif()
 
 # -Wno-noexcept-type, the offending function is SetResultLoggingCallback, this warning is fixed in C++17 because exception specification
 # is part of a function type. Since the offending function is not public when compiled into docs_common just add the compiler flag here
@@ -32,17 +26,10 @@ function (target_link_dl_lib target)
 endfunction ()
 
 # Include external libraries here:
-find_package(Boost COMPONENTS log filesystem REQUIRED)
-
-# Cpprest Issues:
-# 1. v2.10.10 min version (see required PR link below). cpprestsdk does not seem to support specifying this through cmake.
-# https://github.com/microsoft/cpprestsdk/pull/1019/files
-#
-# 2. Installing libcpprest-dev via apt installs cpprest's cmake config files to a non-default cmake search path before v2.10.9
-# See: https://github.com/microsoft/cpprestsdk/issues/686
-# This issue has been patched but has not made its way to the stable branch for Ubuntu
-# Since we are statically linking to v2.10.16 we no longer need to worry about the above as cpprest is patched to provide the proper package configuration metadata
-find_package(cpprestsdk CONFIG REQUIRED)
+find_package(Boost COMPONENTS filesystem REQUIRED)
+find_package(CURL REQUIRED)
+# g++ requires explicit specification of the thread library to be used
+find_package(Threads REQUIRED)
 
 if (DO_PROXY_SUPPORT)
     message (STATUS "Proxy support requested. Will look for libproxy.")
@@ -78,21 +65,33 @@ file (GLOB files_docs_common
     src/util/*.cpp
 )
 
-# Dir path used for docs_common and debian control scripts
-set(docs_svc_config_dir_path "/etc/${DOSVC_BIN_NAME}")
-set(docs_svc_persistence_dir_path "/var/cache/${DOSVC_BIN_NAME}")
-set(docs_svc_run_dir_path "/var/run/${DOSVC_BIN_NAME}")
+# Enable easy debugging in devdebug mode by not requiring running as root
+if (DO_DEV_DEBUG)
+    message("Agent: Dev debug mode")
+    set(docs_svc_config_dir_path "/tmp/etc/${DOSVC_BIN_NAME}")
+    set(docs_svc_log_dir_path "/tmp/log/${DOSVC_BIN_NAME}")
+    set(docs_svc_run_dir_path "/tmp/run/${DOSVC_BIN_NAME}")
+else ()
+    set(docs_svc_config_dir_path "/etc/${DOSVC_BIN_NAME}")
+    set(docs_svc_log_dir_path "/var/log/${DOSVC_BIN_NAME}")
+    set(docs_svc_run_dir_path "/var/run/${DOSVC_BIN_NAME}")
+endif ()
+
+add_do_version_lib(${PROJECT_NAME} ${PROJECT_VERSION})
 
 # Build product files into a lib for use by other targets
 add_library(docs_common STATIC ${files_docs_common})
 target_compile_definitions(docs_common
     PRIVATE DO_CONFIG_DIRECTORY_PATH="${docs_svc_config_dir_path}"
-            DO_PERSISTENCE_DIRECTORY_PATH="${docs_svc_persistence_dir_path}"
+            DO_AGENT_LOG_DIRECTORY_PATH="${docs_svc_log_dir_path}"
             DO_RUN_DIRECTORY_PATH="${docs_svc_run_dir_path}"
 )
-
+if (DO_DEV_DEBUG)
+    target_compile_definitions(docs_common PUBLIC DO_DEV_DEBUG)
+endif ()
+add_platform_interface_definitions(docs_common)
+target_link_libraries(docs_common PUBLIC dohttp doversion ${CURL_LIBRARIES})
 target_include_directories(docs_common PUBLIC ${docs_common_includes})
-
 if (DO_PROXY_SUPPORT)
     target_compile_definitions(docs_common PRIVATE DO_PROXY_SUPPORT)
     target_link_libraries(docs_common PUBLIC libproxy::proxy)
@@ -105,18 +104,19 @@ file (GLOB files_docs_exe
     src/exe/*.cpp
 )
 
-add_do_version_lib(${PROJECT_NAME} ${PROJECT_VERSION})
-
 # Add the executable
 add_executable(${DOSVC_BIN_NAME} ${files_docs_exe})
+add_platform_interface_definitions(${DOSVC_BIN_NAME})
 target_include_directories(${DOSVC_BIN_NAME} PRIVATE ${docs_common_includes})
 target_link_libraries(${DOSVC_BIN_NAME}
-    doversion
     docs_common
-    cpprestsdk::cpprest
-    ${Boost_LIBRARIES})
+    ${Boost_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
+)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    strip_symbols(${DOSVC_BIN_NAME})
+
     include(GNUInstallDirs)
 
     # Install binary

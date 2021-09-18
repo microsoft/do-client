@@ -6,8 +6,12 @@
 #include "do_common.h"
 
 #include <signal.h>
-
+#ifdef DO_DEV_DEBUG
+#include <iostream> // std::cin
+#endif
 #include <chrono>
+#include <boost/asio.hpp>
+#include <curl/curl.h>
 #include "do_event.h"
 #include "do_persistence.h"
 
@@ -15,11 +19,11 @@
 namespace msdoutil = microsoft::deliveryoptimization::util::details;
 
 #include "config_manager.h"
+#include "do_curl_wrappers.h"
 #include "download_manager.h"
 #include "proc_launch_helper.h"
 #include "rest_http_controller.h"
 #include "rest_port_advertiser.h"
-#include "trace_sink.h"
 
 using namespace std::chrono_literals; // NOLINT(build/namespaces) how else should we use chrono literals?
 
@@ -38,24 +42,32 @@ public:
 
     void WaitForShutdown(const std::function<bool()>& fnIsIdle)
     {
+#ifdef DO_DEV_DEBUG
+        // Workaround for vscode debugger not forwarding ctrl+c to debuggee.
+        // Note: When run as a daemon, shutdown is signaled immediately because there is no TTY attached.
+        std::thread([this]()
+            {
+                printf("Type 'quit' and press enter to exit:\n");
+                std::string line;
+                while (std::getline(std::cin, line) && (line != "quit"));
+
+                DoLogInfo("Received key press {%s}. Initiating shutdown.", line.c_str());
+                _shutdownEvent.SetEvent();
+            }).detach();
+#endif
         constexpr auto idleTimeout = 60s;
         while (true)
         {
-
             if (_shutdownEvent.Wait(idleTimeout))
             {
                 break;
             }
-
-            // Use this opportunity to flush logs periodically
-            TraceConsumer::getInstance().Flush();
 
             if (fnIsIdle())
             {
                 DoLogInfo("Received idle notification. Initiating shutdown.");
                 break;
             }
-
         }
     }
 
@@ -83,15 +95,43 @@ private:
 std::function<void()> ProcessController::_sighupHandler;
 ManualResetEvent ProcessController::_shutdownEvent;
 
+class BoostAsioService
+{
+public:
+    BoostAsioService()
+    {
+        _workerThread = std::thread{[this] { _io.run(); }};
+    }
+
+    ~BoostAsioService()
+    {
+        _io.stop();
+        _workerThread.join();
+    }
+
+    boost::asio::io_service& IoService()
+    {
+        return _io;
+    }
+
+private:
+    boost::asio::io_service _io;
+    boost::asio::io_service::work _work { _io };
+    std::thread _workerThread;
+};
+
 HRESULT Run() try
 {
     InitializeDOPaths();
+
+    CurlGlobalInit curlGlobalInit;
+    BoostAsioService asioService;
 
     ConfigManager clientConfigs;
     auto downloadManager = std::make_shared<DownloadManager>(clientConfigs);
     RestHttpController controller(clientConfigs, downloadManager);
 
-    controller.Start();
+    controller.Start(asioService.IoService());
     DoLogInfo("HTTP controller listening at: %s", controller.ServerEndpoint().data());
 
     RestPortAdvertiser portAdvertiser(controller.Port());
@@ -99,8 +139,7 @@ HRESULT Run() try
 
     DropPermissions();
 
-    RETURN_IF_FAILED(TraceConsumer::getInstance().Initialize());
-    DoTraceLoggingRegister();
+    DOLog::Init(docli::GetLogDirectory(), DOLog::Level::Verbose);
 
     DoLogInfo("Started, %s", msdoutil::ComponentVersion().c_str());
 
@@ -129,8 +168,7 @@ int main(int argc, char** argv) try
 
     const HRESULT hr = LOG_IF_FAILED(Run());
 
-    DoTraceLoggingUnregister();
-    TraceConsumer::getInstance().Finalize();
+    DOLog::Close();
 
     printf("Reached end of main, hr: %x\n", hr);
     return hr;
@@ -139,7 +177,6 @@ catch (...)
 {
     const HRESULT hrEx = LOG_CAUGHT_EXCEPTION();
     printf("Caught exception in main, hr: %x\n", hrEx);
-    DoTraceLoggingUnregister();
-    TraceConsumer::getInstance().Finalize();
+    DOLog::Close();
     return hrEx;
 }

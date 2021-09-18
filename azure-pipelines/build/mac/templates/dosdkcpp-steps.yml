@@ -1,0 +1,87 @@
+# Template: Steps to build DO SDK CPP targeting x86-64 architecture.
+# Consume this steps template in one or more jobs by passing in parameter values.
+
+#TODO(jimson): The main differences between the windows/mac templates are the custom filepaths used for build outputs
+# See if we can define constants for these values, and use them conditionally depending on the targetOS
+# That way, we can consolidate the separate windows/mac templates into one
+parameters:
+- name: targetOs    # example: osx
+  type: string
+- name: config      # debug/release
+  type: string
+- name: vcpkgDir
+  type: string
+  default: /tmp/deliveryoptimization_tools
+- name: dependencyScriptsLocation
+  type: string 
+  default: $(Build.SourcesDirectory)/build/scripts
+- name: skipTests
+  type: boolean
+  default: false
+- name: buildOutputLocation
+  type: string
+  default: /tmp/
+
+steps:
+- task: CmdLine@2
+  inputs:
+    script: |
+      brew install ninja
+  displayName: 'Install build agent dependencies'
+
+# Key input is hashed to compute the cache key so when the contents of install-vcpkg-deps.sh changes, a new key will be generated
+# This way, anytime we modify dependencies from install-vcpkg-deps.sh script, we don't retrieve from the old cache
+- task: Cache@2
+  inputs:
+    key: '${{parameters.dependencyScriptsLocation}}/install-vcpkg-deps.sh | "${{parameters.targetOs}}"'
+    path: ${{parameters.vcpkgDir}}
+    cacheHitVar: CACHE_RESTORED
+
+- task: CmdLine@2
+  condition: and(succeeded(), ne(variables.CACHE_RESTORED, 'true'))
+  inputs:
+    script: |
+      chmod +x install-vcpkg-deps.sh
+      ./install-vcpkg-deps.sh ${{parameters.vcpkgDir}}
+    workingDirectory: ${{parameters.dependencyScriptsLocation}}
+  displayName: 'Install vcpkg dependencies'
+
+- task: CmdLine@2
+  inputs:
+    script: 'python3 build/build.py --project sdk --config ${{parameters.config}} --vcpkgdir ${{parameters.vcpkgdir}}/vcpkg --build-directory /tmp/ --clean'
+    workingDirectory: $(Build.SourcesDirectory)
+  displayName: 'Build sdk-cpp ${{parameters.targetOs}}-${{parameters.config}}'
+
+# TODO(jimson): dosvc not installed on mac agent, tests disabled for now
+# - task: CmdLine@2
+#  condition: eq('${{parameters.skipTests}}', false)
+#  inputs:
+#    script: './sdk-cpp/tests/deliveryoptimization-sdk-tests.exe'
+#    workingDirectory: '/tmp/build-deliveryoptimization-sdk/${{parameters.targetOS}}-${{parameters.targetConfig}}'
+#  displayName: 'Run unit tests'
+
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '/tmp/build-deliveryoptimization-sdk/${{parameters.targetOS}}-${{parameters.config}}/sdk-cpp'
+    Contents: |
+        deliveryoptimization.dylib
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOs}}-${{parameters.config}}'
+    CleanTargetFolder: true
+  displayName: 'Populate artifacts staging dir'
+
+- task: CopyFiles@2
+  inputs:
+    Contents: |
+        do_download.h
+        do_download_property.h
+        do_download_status.h
+        do_exceptions.h
+    SourceFolder: $(Build.SourcesDirectory)/sdk-cpp/include
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/include'
+  displayName: 'Copy public headers to staging dir'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'deliveryoptimization-sdk'
+    publishLocation: 'Container'

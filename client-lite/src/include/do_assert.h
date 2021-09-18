@@ -1,12 +1,13 @@
 #pragma once
 
-#include "trace_src.h"
+#include <cassert>
+#include "do_log.h"
 
 #ifdef DEBUG
 
 #define DO_ASSERTMSG(_msg, _exp) \
     ((!(_exp)) ? \
-        ::LogMessage(EVENT_LEVEL_ERROR, __FUNCTION__, __LINE__, "Assert (%s): %s", #_exp, _msg), \
+        DOLog::Write(EVENT_LEVEL_ERROR, __FUNCTION__, __LINE__, "Assert (%s): %s", #_exp, _msg), \
         assert(_exp), TRUE \
         : TRUE)
 

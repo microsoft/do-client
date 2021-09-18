@@ -2,12 +2,16 @@
 #include "rest_http_controller.h"
 
 #include <boost/asio/ip/address.hpp>
-#include <cpprest/json.h>
-#include <pplx/pplxtasks.h>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 #include "config_manager.h"
+#include "do_http_defines.h"
+#include "do_http_packet.h"
 #include "download_manager.h"
 #include "rest_api_request.h"
+
+namespace msdod = microsoft::deliveryoptimization::details;
 
 RestHttpController::RestHttpController(ConfigManager& config, std::shared_ptr<DownloadManager> downloadManager) :
     _config(config),
@@ -21,11 +25,9 @@ RestHttpController::~RestHttpController()
     (void)_callTracker.Wait();
 }
 
-void RestHttpController::Start()
+void RestHttpController::Start(boost::asio::io_service& ioService)
 {
-    _listener.Start("http://127.0.0.1");
-    _listener.AddHandler(web::http::methods::GET, std::bind(&RestHttpController::_Handler, this, std::placeholders::_1));
-    _listener.AddHandler(web::http::methods::POST, std::bind(&RestHttpController::_Handler, this, std::placeholders::_1));
+    _listener.Start(ioService, std::bind(&RestHttpController::_HttpListenerCallback, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 std::string RestHttpController::ServerEndpoint() const
@@ -38,109 +40,78 @@ uint16_t RestHttpController::Port() const
     return _listener.Port();
 }
 
-void RestHttpController::_Handler(web::http::http_request request)
+void RestHttpController::_HttpListenerCallback(const std::shared_ptr<microsoft::deliveryoptimization::details::HttpPacket>& packet,
+    HttpListenerConnection& conn)
 {
+    auto tracker = _callTracker.Enter();
+
     HRESULT hr = S_OK;
+    std::stringstream responseBodyStream;
     try
     {
-        if (_config.RestControllerValidateRemoteAddr() && !_IsValidRemoteAddress(request.remote_address()))
+        if (_config.RestControllerValidateRemoteAddr())
         {
-            request.reply(web::http::status_codes::BadRequest);
-            return;
+            const auto addr = conn.RemoteEndpoint().address();
+            if (!addr.is_loopback())
+            {
+                DoLogVerbose("Request unexpected from non-loopback address: %s", addr.to_string().c_str());
+                hr = E_INVALIDARG;
+            }
         }
 
-        // shared_ptr because the lambda below needs to be copyable
-        auto apiRequest = std::make_shared<RestApiRequestBase>(request);
-
-        // Handle the request asynchronously and then reply to the client request
-        // Note: the tracker is moved to only the last task-based lambda because it
-        // will always get executed whereas a value-based lambda can be skipped due
-        // to exceptions or cancellations.
-        auto tracker = _callTracker.Enter();
-        pplx::create_task([this, request, apiRequest]()
-            {
-                auto response = web::json::value::object();
-                THROW_IF_FAILED(apiRequest->Process(*_downloadManager, response));
-                (void)request.reply(web::http::status_codes::OK, response);
-            }).then([request, tracker = std::move(tracker)](pplx::task<void> t)
-            {
-                HRESULT hr = S_OK;
-                try
-                {
-                    // get() inside a 'then' handler will re-throw any exception that resulted
-                    // from previous task(s). Thus, it allows exceptions to be seen and handled.
-                    t.get();
-                }
-                catch (...)
-                {
-                    hr = LOG_CAUGHT_EXCEPTION();
-                }
-
-                if (FAILED(hr))
-                {
-                    _OnFailure(request, hr);
-                }
-            });
+        boost::property_tree::ptree responseBody;
+        if (SUCCEEDED(hr))
+        {
+            hr = RestApiRequestBase{packet}.Process(*_downloadManager, responseBody);
+        }
+        if (SUCCEEDED(hr))
+        {
+            std::stringstream ss;
+            boost::property_tree::write_json(responseBodyStream, responseBody, false);
+        }
     }
     catch (...)
     {
         hr = LOG_CAUGHT_EXCEPTION();
     }
 
-    if (FAILED(hr))
+    if (SUCCEEDED(hr))
     {
-        _OnFailure(request, hr);
+        conn.Reply(msdod::http_status_codes::OK, responseBodyStream.str());
+    }
+    else
+    {
+        _OnFailure(conn, hr);
     }
 }
 
-bool RestHttpController::_IsValidRemoteAddress(const std::string& addr)
+void RestHttpController::_OnFailure(HttpListenerConnection& conn, HRESULT hr) try
 {
-    bool fValidAddress = true;
-    try
-    {
-        const auto remoteAddrAsIP = boost::asio::ip::address::from_string(addr);
-        if (!remoteAddrAsIP.is_loopback())
-        {
-            // Log at verbose level to avoid flooding the log (attacker trying to DoS us).
-            DoLogVerbose("Request unexpected from non-loopback address: %s", addr.c_str());
-            fValidAddress = false;
-        }
-    }
-    catch (...)
-    {
-        DoLogVerboseHr(docli::ResultFromCaughtException(), "Exception in trying to validate remote address");
-        fValidAddress = false;
-    }
-    return fValidAddress;
-}
-
-void RestHttpController::_OnFailure(const web::http::http_request& clientRequest, HRESULT hr) try
-{
-    auto response = web::json::value::object();
-    response["ErrorCode"] = web::json::value::number(hr);
-    (void)clientRequest.reply(_HttpStatusFromHRESULT(hr), response);
+    std::stringstream responseBody;
+    responseBody << "{ \"ErrorCode\": " << hr << " }";
+    conn.Reply(_HttpStatusFromHRESULT(hr), responseBody.str());
 } CATCH_LOG()
 
-web::http::status_code RestHttpController::_HttpStatusFromHRESULT(HRESULT hr)
+UINT RestHttpController::_HttpStatusFromHRESULT(HRESULT hr)
 {
-    web::http::status_code status;
+    UINT status;
     switch (hr)
     {
     case S_OK:
     case S_FALSE:
-        status = web::http::status_codes::OK;
+        status = msdod::http_status_codes::OK;
         break;
     case E_NOT_SET:
-        status = web::http::status_codes::NotFound;
+        status = msdod::http_status_codes::NotFound;
         break;
     case E_OUTOFMEMORY:
-        status = web::http::status_codes::ServiceUnavailable;
+        status = msdod::http_status_codes::ServiceUnavailable;
         break;
     case HRESULT_FROM_WIN32(ERROR_UNHANDLED_EXCEPTION):
-        status = web::http::status_codes::InternalError;
+        status = msdod::http_status_codes::InternalError;
         break;
     default:
-        status = web::http::status_codes::BadRequest;
+        status = msdod::http_status_codes::BadRequest;
         break;
     }
     return status;

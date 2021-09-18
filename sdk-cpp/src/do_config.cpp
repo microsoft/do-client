@@ -1,5 +1,7 @@
 #include "do_config.h"
 
+#if defined(DO_CLIENT_AGENT)
+
 #include <cstdio> // popen
 #include <cstdlib> // calloc
 #include <cstring> // strncpy
@@ -20,23 +22,45 @@ const char* const g_doPluginAptBinName = DO_PLUGIN_APT_BIN_NAME;
 
 static int WriteIoTConnectionStringToConfigFile(const char* value) noexcept
 {
-    try
+    int returnValue = 0;
+    // ptree's exceptions do not provide an error code, and SDK has no logging of its own.
+    // Return specific errors as a workaround.
+    boost::filesystem::path filePath{microsoft::deliveryoptimization::details::GetConfigFilePath()};
+    boost::system::error_code ec;
+    if (boost::filesystem::exists(filePath.parent_path(), ec))
     {
-        boost::property_tree::ptree configTree;
-        configTree.put("ADUC_IoTConnectionString", value);
+        try
+        {
+            boost::property_tree::ptree configTree;
+            configTree.put("ADUC_IoTConnectionString", value);
 
-        // No other configs are used at this time so overwrite the whole file here
-        const std::string& filePath = microsoft::deliveryoptimization::details::GetConfigFilePath();
-        boost::property_tree::write_json(filePath, configTree);
+            // No other configs are used at this time so overwrite the whole file here
+            boost::property_tree::write_json(filePath.string(), configTree);
 
-        return 0;
+            return 0;
+        }
+        catch (const boost::property_tree::ptree_bad_data&)
+        {
+            returnValue = -1;
+        }
+        catch (const boost::property_tree::ptree_bad_path&)
+        {
+            returnValue = -2;
+        }
+        catch (const boost::property_tree::ptree_error& pe)
+        {
+            returnValue = -3;
+        }
+        catch (const std::exception&)
+        {
+            returnValue = -4;
+        }
     }
-    catch (const std::exception&)
+    else
     {
+        returnValue = ec.value();
     }
-    // property_tree doesn't seem to offer an exception type that provides an error code.
-    // We do not (yet) log anything from the SDK either, so stick with returning -1 for all failure cases.
-    return -1;
+    return returnValue;
 }
 
 static std::string GetSdkVersion()
@@ -155,3 +179,5 @@ extern "C" void deliveryoptimization_free_version_buf(char** ppBuffer)
         *ppBuffer = NULL;
     }
 }
+
+#endif // DO_CLIENT_AGENT
