@@ -24,6 +24,11 @@ namespace details
 {
 CDownloadImpl::CDownloadImpl(const std::string& uri, const std::string& downloadFilePath)
 {
+    _codeInit = _Initialize(uri, downloadFilePath);
+}
+
+int32_t CDownloadImpl::_Initialize(const std::string& uri, const std::string& downloadFilePath)
+{
     cpprest_web::uri_builder builder(g_downloadUriPart);
     builder.append_path("create");
     builder.append_query("Uri", uri);
@@ -35,7 +40,7 @@ CDownloadImpl::CDownloadImpl(const std::string& uri, const std::string& download
         {
             const auto respBody = CHttpClient::GetInstance().SendRequest(HttpRequest::POST, builder.to_string());
             _id = respBody.get<std::string>("Id");
-            return;
+            return static_cast<int32_t>(msdo::errc:ok);
         }
         catch (const msdo::exception& e)
         {
@@ -44,7 +49,7 @@ CDownloadImpl::CDownloadImpl(const std::string& uri, const std::string& download
             // code path when it is implemented.
             if (e.error_code() != static_cast<int32_t>(msdo::errc::no_service))
             {
-                throw;
+                return e.error_code();
             }
             if (retryAttempts < g_maxNumRetryAttempts - 1)
             {
@@ -52,76 +57,97 @@ CDownloadImpl::CDownloadImpl(const std::string& uri, const std::string& download
             }
         }
     }
-    ThrowException(msdo::errc::no_service);
+    return static_cast<int32_t>(msdo::errc::no_service);
 }
 
-void CDownloadImpl::Start()
+int32_t CDownloadImpl::Start()
 {
-    _DownloadOperationCall("start");
+    RETURN_HR_IF_FAILED(_codeInit);
+    return _DownloadOperationCall("start");
 }
 
-void CDownloadImpl::Pause()
+int32_t CDownloadImpl::Pause()
 {
-    _DownloadOperationCall("pause");
+    RETURN_HR_IF_FAILED(_codeInit);
+    return _DownloadOperationCall("pause");
 }
 
-void CDownloadImpl::Resume()
+int32_t CDownloadImpl::Resume()
 {
-    _DownloadOperationCall("start");
+    RETURN_HR_IF_FAILED(_codeInit);
+    return _DownloadOperationCall("start");
 }
 
-void CDownloadImpl::Finalize()
+int32_t CDownloadImpl::Finalize()
 {
-    _DownloadOperationCall("finalize");
+    RETURN_HR_IF_FAILED(_codeInit);
+    return _DownloadOperationCall("finalize");
 }
 
-void CDownloadImpl::Abort()
+int32_t CDownloadImpl::Abort()
 {
-    _DownloadOperationCall("abort");
+    RETURN_HR_IF_FAILED(_codeInit);
+    return _DownloadOperationCall("abort");
 }
 
-msdo::download_status CDownloadImpl::GetStatus()
+int32_t CDownloadImpl::GetStatus(msdo::download_status& status)
 {
-    cpprest_web::uri_builder builder(g_downloadUriPart);
-    builder.append_path("getstatus");
-    builder.append_query("Id", _id);
+    RETURN_HR_IF_FAILED(_codeInit);
+    try {
+        cpprest_web::uri_builder builder(g_downloadUriPart);
+        builder.append_path("getstatus");
+        builder.append_query("Id", _id);
 
-    const auto respBody = CHttpClient::GetInstance().SendRequest(HttpRequest::GET, builder.to_string());
+        const auto respBody = CHttpClient::GetInstance().SendRequest(HttpRequest::GET, builder.to_string());
 
-    uint64_t bytesTotal = respBody.get<uint64_t>("BytesTotal");
-    uint64_t bytesTransferred = respBody.get<uint64_t>("BytesTransferred");
-    int32_t errorCode = respBody.get<int32_t>("ErrorCode");
-    int32_t extendedErrorCode = respBody.get<int32_t>("ExtendedErrorCode");
+        uint64_t bytesTotal = respBody.get<uint64_t>("BytesTotal");
+        uint64_t bytesTransferred = respBody.get<uint64_t>("BytesTransferred");
+        int32_t errorCode = respBody.get<int32_t>("ErrorCode");
+        int32_t extendedErrorCode = respBody.get<int32_t>("ExtendedErrorCode");
 
-    static const std::map<std::string, download_state> stateMap =
-        {{ "Created", download_state::created },
+        static const std::map<std::string, download_state> stateMap =
+        { { "Created", download_state::created },
         { "Transferring", download_state::transferring },
         { "Transferred", download_state::transferred },
         { "Finalized", download_state::finalized },
         { "Aborted", download_state::aborted },
-        { "Paused", download_state::paused }};
+        { "Paused", download_state::paused } };
 
-    download_state status = download_state::created;
-    auto it = stateMap.find(respBody.get<std::string>("Status"));
-    if (it != stateMap.end())
-    {
-        status = it->second;
+        download_state state = download_state::created;
+        auto it = stateMap.find(respBody.get<std::string>("Status"));
+        if (it != stateMap.end())
+        {
+            state = it->second;
+        }
+        else
+        {
+            return static_cast<int32_t>(msdo::errc::unexpected);
+        }
+
+        status = msdo::download_status(bytesTotal, bytesTransferred, errorCode, extendedErrorCode, state);
     }
-    else
+    catch (const exception& e)
     {
-        ThrowException(msdo::errc::unexpected);
+        return e.error_code();
     }
 
-    msdo::download_status out(bytesTotal, bytesTransferred, errorCode, extendedErrorCode, status);
-    return out;
+    return 0;
 }
 
-void CDownloadImpl::_DownloadOperationCall(const std::string& type)
+int32_t CDownloadImpl::_DownloadOperationCall(const std::string& type)
 {
-    cpprest_web::uri_builder builder(g_downloadUriPart);
-    builder.append_path(type);
-    builder.append_query("Id", _id);
-    (void)CHttpClient::GetInstance().SendRequest(HttpRequest::POST, builder.to_string());
+    try
+    {
+        cpprest_web::uri_builder builder(g_downloadUriPart);
+        builder.append_path(type);
+        builder.append_query("Id", _id);
+        (void)CHttpClient::GetInstance().SendRequest(HttpRequest::POST, builder.to_string());
+    }
+    catch (const exception& e)
+    {
+        return e.error_code();
+    }
+    return 0;
 }
 
 } // namespace details

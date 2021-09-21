@@ -1,21 +1,46 @@
 #ifndef _DELIVERY_OPTIMIZATION_DO_EXCEPTIONS_H
 #define _DELIVERY_OPTIMIZATION_DO_EXCEPTIONS_H
 
+#if (!DO_DISABLE_EXCEPTIONS)
+
 #include <exception>
 #include <stdint.h>
 #include <system_error>
 
-#if defined(DO_INTERFACE_COM)
-#include <winerror.h>   // FAILED macro
-#endif
+#endif // !DO_DISABLE_EXCEPTIONS
 
 namespace microsoft
 {
 namespace deliveryoptimization
 {
 
+// Error Macros
+#ifndef RETURN_HR_IF_FAILED
+#define RETURN_HR_IF_FAILED(hr)  {  \
+    int32_t __hr = (hr);            \
+    if(FAILED(__hr)) return __hr;   \
+}
+#endif
+
+#ifndef FACILITY_DELIVERY_OPTIMIZATION 
+#define FACILITY_DELIVERY_OPTIMIZATION   208
+#endif
+
+#define HRESULT_FROM_SYSTEM_ERROR(x) ((int32_t)(x) <= 0 ? ((int32_t)(x)) : ((int32_t) (((x) & 0x0000FFFF) | (FACILITY_DELIVERY_OPTIMIZATION << 16) | 0x80000000)))
+
+#ifndef FAILED
+#define FAILED(hr) (((int32_t)(hr)) < 0)
+#endif
+
+#ifndef SUCCEEDED
+#define SUCCEEDED(hr) (((int32_t)(hr)) >= 0)
+#endif
+
+#if (!DO_DISABLE_EXCEPTIONS)
+
 enum class errc : int32_t
 {
+    ok                          = 0,
     unexpected                  = -2147418113,
     invalid_arg                 = -2147024809,
     not_found                   = -2147023728,
@@ -51,8 +76,6 @@ private:
     std::string _msg;
 };
 
-#if defined(DO_INTERFACE_COM)
-//TODO: Look into replacing using internal exception class
 inline void throw_if_fail(int32_t hr)
 {
     if (FAILED(hr))
@@ -60,8 +83,8 @@ inline void throw_if_fail(int32_t hr)
         throw exception(hr);
     }
 }
-#endif
+#endif // !DO_DISABLE_EXCEPTIONS
+}
+}
 
-}
-}
 #endif

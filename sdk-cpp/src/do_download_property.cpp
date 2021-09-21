@@ -11,7 +11,7 @@
 
 using namespace microsoft::deliveryoptimization;
 
-std::wstring UTF8toWstr(const char* str, size_t cch = 0)
+int32_t UTF8toWstr(std::wstring& wstr, const char* str, size_t cch = 0)
 {
     if (cch == 0)
     {
@@ -20,28 +20,37 @@ std::wstring UTF8toWstr(const char* str, size_t cch = 0)
 
     if (cch == 0)
     {
-        return std::wstring();
+        wstr = std::wstring();
     }
 
     std::vector<wchar_t> dest(cch * 4);
     const UINT result = MultiByteToWideChar(CP_UTF8, 0, str, static_cast<int>(cch), dest.data(), static_cast<int>(dest.size()));
     if (result == 0)
     {
-        throw std::exception();
+        return E_FAIL;
     }
-    return std::wstring(dest.data(), result);
+    wstr = std::wstring(dest.data(), result);
+    return S_OK;
 }
 
+//TODO(jimson): It's a little awkward for callers to have to init download_property_value since
+// the class is so small, so for now only throw if exceptions are enabled
 download_property_value::download_property_value(const std::string& val)
 {
     V_VT(&_var) = VT_BSTR;
 
-    std::wstring wval = UTF8toWstr(val.c_str());
+    std::wstring wval;
+    const auto res = UTF8toWstr(wval, val.c_str());
+#if (!DO_DISABLE_EXCEPTIONS)
+    throw_if_fail(res);
+#endif
 
     BSTR bstr = SysAllocString(wval.c_str());
     if (bstr == nullptr)
     {
+#if (!DO_DISABLE_EXCEPTIONS)
         throw std::bad_alloc();
+#endif
     }
     V_BSTR(&_var) = bstr;
 };
@@ -77,7 +86,7 @@ download_property_value::download_property_value(std::vector<unsigned char>& val
 download_property_value::~download_property_value()
 {
 #ifdef DEBUG
-    //TODO(jimson): Variant clear fails with DISP_E_BADVARTYPE, so the assertion will terminate the application
+    //TODO(jimson): Variant clear fails with DISP_E_BADVARTYPE when used for callbacks, so the assertion will terminate the application
     //assert(SUCCEEDED(VariantClear(&_var)));
     (void)VariantClear(&_var);
 #else
@@ -87,7 +96,10 @@ download_property_value::~download_property_value()
 
 download_property_value::download_property_value(const download_property_value& rhs)
 {
-    microsoft::deliveryoptimization::throw_if_fail(VariantCopy(&_var, &rhs._var));
+    const auto hr = VariantCopy(&_var, &rhs._var);
+#if (!DO_DISABLE_EXCEPTIONS)
+    microsoft::deliveryoptimization::throw_if_fail(hr);
+#endif
     _callback = rhs._callback;
 };
 

@@ -1,3 +1,4 @@
+#if !(DO_DISABLE_EXCEPTIONS)
 
 #include <exception>
 #include <stdint.h>
@@ -20,3 +21,5 @@ void ThrowException(errc error);
 } // namespace details
 } // namespace deliveryoptimization
 } // namespace microsoft
+
+#endif

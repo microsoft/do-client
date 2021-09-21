@@ -80,7 +80,9 @@ static std::string GetBinaryVersion(const boost::filesystem::path& binaryFilePat
             fp = popen(command.c_str(), "r");
             if (fp == nullptr)
             {
+#if !defined(DO_DISABLE_EXCEPTIONS)
                 throw std::exception();
+#endif
             }
 
             char readBuffer[256];

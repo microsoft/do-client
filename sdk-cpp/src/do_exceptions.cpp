@@ -1,3 +1,4 @@
+#if (!DO_DISABLE_EXCEPTIONS)
 
 #include "do_exceptions.h"
 
@@ -58,3 +59,5 @@ const std::error_code& exception::get_error_code() const
 
 } // namespace deliveryoptimization
 } // namespace microsoft
+
+#endif //!DO_DISABLE_EXCEPTIONS

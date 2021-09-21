@@ -3,6 +3,7 @@
 
 //TODO(jimson): Callers may not have defined these compile definitions, as a result their builds may fail if the definition is not set when using the SDK
 //Look into removing platform specific header files from the SDK installation
+//For this specific header, we will need to support it on the rest interface anyways so we will be removing the ifdef
 #if defined(DO_INTERFACE_COM)
 
 #include <OAIdl.h>

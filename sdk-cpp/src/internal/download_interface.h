@@ -21,20 +21,20 @@ class IDownload
 public:
     virtual ~IDownload() = default;
 
-    virtual void Start() = 0;
-    virtual void Pause() = 0;
-    virtual void Resume() = 0;
-    virtual void Finalize() = 0;
-    virtual void Abort() = 0;
+    virtual int32_t Start() = 0;
+    virtual int32_t Pause() = 0;
+    virtual int32_t Resume() = 0;
+    virtual int32_t Finalize() = 0;
+    virtual int32_t Abort() = 0;
 
-    virtual download_status GetStatus() = 0;
+    virtual int32_t GetStatus(download_status& status) = 0;
 
 #if defined(DO_INTERFACE_COM)
-    virtual download_property_value GetProperty(download_property key) = 0;
+    virtual int32_t GetProperty(download_property key, download_property_value& value) = 0;
 
-    virtual void SetProperty(download_property key, const download_property_value& val) = 0;
+    virtual int32_t SetProperty(download_property key, const download_property_value& val) = 0;
 
-    virtual void SetCallback(const download_property_value::status_callback_t& callback, download& download) = 0;
+    virtual int32_t SetCallback(const download_property_value::status_callback_t& callback, download& download) = 0;
 #endif
 };
 } // namespace details
