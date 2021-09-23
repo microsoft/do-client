@@ -54,6 +54,8 @@ void PortDiscoveryTests::TearDown()
 
 TEST_F(PortDiscoveryTests, DiscoverPortTest)
 {
-    std::string foundPort = msdod::CPortFinder::GetDOPort(false);
+    std::string foundPort;
+    int32_t res = msdod::CPortFinder::GetDOPort(foundPort, false);
+    ASSERT_EQ(res, errc::s_ok);
     ASSERT_EQ(foundPort, samplePortNumber);
 }

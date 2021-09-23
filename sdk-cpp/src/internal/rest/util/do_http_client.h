@@ -20,11 +20,11 @@ class CHttpClient : CDONoncopyable
 public:
     ~CHttpClient();
     static CHttpClient& GetInstance();
-    boost::property_tree::ptree SendRequest(HttpRequest::Method method, const std::string& url, bool retry = true);
+    int32_t SendRequest(boost::property_tree::ptree& tree, HttpRequest::Method method, const std::string& url, bool retry = true);
 
 private:
     CHttpClient();
-    void _InitializeDOConnection(bool launchClientFirst = false);
+    int32_t _InitializeDOConnection(bool launchClientFirst = false);
 
     mutable std::mutex _mutex;
     std::unique_ptr<CHttpClientImpl> _httpClientImpl;

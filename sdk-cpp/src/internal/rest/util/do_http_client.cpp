@@ -10,7 +10,6 @@
 #include <gsl/gsl_util>
 
 #include "do_exceptions.h"
-#include "do_exceptions_internal.h"
 #include "do_http_message.h"
 #include "do_port_finder.h"
 
@@ -70,22 +69,27 @@ CHttpClient& CHttpClient::GetInstance()
     return myInstance;
 }
 
-void CHttpClient::_InitializeDOConnection(bool launchClientFirst)
+int32_t CHttpClient::_InitializeDOConnection(bool launchClientFirst)
 {
-    const auto port = std::strtoul(CPortFinder::GetDOPort(launchClientFirst).data(), nullptr, 10);
+    std::string portStr;
+    int32_t res = CPortFinder::GetDOPort(portStr, launchClientFirst);
+    const auto port = std::strtoul(portStr.data(), nullptr, 10);
+    RETURN_RES_IF_FAILED(res);
     auto spImpl = std::make_unique<CHttpClientImpl>();
     auto ec = spImpl->Connect(gsl::narrow<ushort>(port));
     if (ec)
     {
         // TODO(shishirb) Log the actual error when logging is available
-        ThrowException(microsoft::deliveryoptimization::errc::no_service);
+        return static_cast<int32_t>(microsoft::deliveryoptimization::errc::no_service);
     }
 
     std::unique_lock<std::mutex> lock(_mutex);
     _httpClientImpl = std::move(spImpl);
+
+    return static_cast<int32_t>(microsoft::deliveryoptimization::errc::s_ok);
 }
 
-boost::property_tree::ptree CHttpClient::SendRequest(HttpRequest::Method method, const std::string& url, bool retry)
+int32_t CHttpClient::SendRequest(boost::property_tree::ptree& tree, HttpRequest::Method method, const std::string& url, bool retry)
 {
     auto responseStatusCode = 0u;
     boost::property_tree::ptree responseBodyJson;
@@ -100,19 +104,22 @@ boost::property_tree::ptree CHttpClient::SendRequest(HttpRequest::Method method,
         if (retry)
         {
             _InitializeDOConnection(true);
-            return SendRequest(method, url, false);
+            return SendRequest(tree, method, url, false);
         }
 
-        ThrowException(e.code().value());
+        return static_cast<int32_t>(microsoft::deliveryoptimization::errc::no_service);
     }
 
     if (responseStatusCode != 200)
     {
         auto agentErrorCode = responseBodyJson.get_optional<int32_t>("ErrorCode");
-        ThrowException(agentErrorCode ? *agentErrorCode : -1);
+        if (agentErrorCode)
+        {
+            return agentErrorCode.get();
+        }
     }
 
-    return responseBodyJson;
+    return static_cast<int32_t>(microsoft::deliveryoptimization::errc::s_ok);
 }
 
 CHttpClient::CHttpClient()

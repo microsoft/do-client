@@ -61,6 +61,10 @@ endif()
 # PIC (Position Independent Code) ensures .a files can be linked to executables that have PIE enabled
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+if (DO_DISABLE_EXCEPTIONS)
+    #TODO(jimson): Set cmake flags for disabling exceptions and rtti, there is no cmake setting for this, so we must set the compiler-specific flag
+endif()
+
 # TODO: msvc and gcc support different compiler/linker flags, need to go through all flags and verify what's needed for each platform
 # Certain flags cause build issues because the flag itself isn't supported on msvc
 # Offending CMAKE_CXX_FLAGS: -Wformat

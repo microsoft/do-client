@@ -1,9 +1,10 @@
 #ifndef _DELIVERY_OPTIMIZATION_DO_CONFIG_H
 #define _DELIVERY_OPTIMIZATION_DO_CONFIG_H
 
-//TODO(jimson): Callers may not have defined these compile definitions, as a result their builds may fail if the definition is not set when using the SDK
-//Look into removing platform specific header files from the SDK installation
-#if defined(DO_CLIENT_AGENT)
+/* User Note:
+This file exposes apis for helping set an iot_connection_string for the DO agent, so that an application written in c can supply a Microsoft Connected Cache device's hostname
+While the apis will compile for all platforms, they only serve a purpose for the DeliveryOptimization Agent on linux devices, all other usage will fail and return e_not_impl
+*/
 
 #ifdef __cplusplus
 extern "C"
@@ -30,7 +31,5 @@ void deliveryoptimization_free_version_buf(char** ppBuffer);
 #ifdef __cplusplus
 }
 #endif
-
-#endif // DO_CLIENT_AGENT
 
 #endif // _DELIVERY_OPTIMIZATION_DO_CONFIG_H

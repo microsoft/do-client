@@ -7,7 +7,6 @@
 
 #include <boost/filesystem.hpp>
 
-#include "do_exceptions_internal.h"
 #include "do_exceptions.h"
 #include "do_persistence.h"
 
@@ -52,10 +51,8 @@ static std::string g_DiscoverDOPort()
     return port;
 }
 
-std::string CPortFinder::GetDOPort(bool launchClientFirst)
+int32_t CPortFinder::GetDOPort(std::string& port, bool launchClientFirst)
 {
-    std::string port;
-
     for (int numAttempts = 1; (numAttempts <= g_maxNumPortFileReadAttempts) && port.empty(); numAttempts++)
     {
         // If built as service, then we expect client to already be running.
@@ -72,9 +69,9 @@ std::string CPortFinder::GetDOPort(bool launchClientFirst)
     }
     if (port.empty())
     {
-        ThrowException(errc::no_service);
+        return static_cast<int32_t>(errc::no_service);
     }
-    return port;
+    return static_cast<int32_t>(errc::s_ok);
 }
 
 } // namespace details

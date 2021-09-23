@@ -13,7 +13,7 @@ namespace details
 class CPortFinder
 {
 public:
-    static std::string GetDOPort(bool launchClientFirst = false);
+    static int32_t GetDOPort(std::string& port, bool launchClientFirst = false);
 };
 
 } // namespace details

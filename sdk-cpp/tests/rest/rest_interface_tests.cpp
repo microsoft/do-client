@@ -47,7 +47,9 @@ void VerifyRestInterfaceWithLocalEndpoint(const btcp_t::endpoint& localEndpoint,
 
     auto addr = boost::asio::ip::address::from_string("127.0.0.1");
 
-    const auto restPortStr = microsoft::deliveryoptimization::details::CPortFinder::GetDOPort();
+    std::string resPortStr
+    int32_t res = microsoft::deliveryoptimization::details::CPortFinder::GetDOPort(port);
+    ASSERT_EQ(res, errc::s_ok);
     ASSERT_TRUE(!restPortStr.empty());
 
     const auto restPort = static_cast<unsigned short>(std::stoul(restPortStr));
