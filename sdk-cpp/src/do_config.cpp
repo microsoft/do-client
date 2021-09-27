@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 #include "do_config.h"
 
 #if defined(DO_CLIENT_AGENT)

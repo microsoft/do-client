@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 #include "do_http_parser.h"
 
 #ifdef DO_DEBUG_REST_INTERFACE
