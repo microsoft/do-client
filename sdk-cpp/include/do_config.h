@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 #ifndef _DELIVERY_OPTIMIZATION_DO_CONFIG_H
 #define _DELIVERY_OPTIMIZATION_DO_CONFIG_H
 
