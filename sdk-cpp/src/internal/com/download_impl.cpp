@@ -11,6 +11,7 @@
 
 #include "deliveryoptimization.h"
 #include "do_download_property.h"
+#include "do_download_property_internal.h"
 #include "do_exceptions.h"
 
 namespace msdo = microsoft::deliveryoptimization;
@@ -287,8 +288,7 @@ void CDownloadImpl::_SetPropertyHelper(IDODownload& download, msdo::download_pro
 {
     DODownloadProperty prop = ConvertToComProperty(key);
 
-    // COM API SetProperty() is not declared with const reference for variant argument so need to const_cast
-    throw_if_fail(download.SetProperty(prop, &const_cast<msdo::download_property_value::native_type&>(val.native_value())));
+    throw_if_fail(download.SetProperty(prop, &(val._val->native_value())));
 }
 
 msdo::download_property_value CDownloadImpl::_GetPropertyHelper(msdo::download_property key)

@@ -8,17 +8,19 @@
 #include <stdint.h>
 #include <system_error>
 
-#if defined(DO_INTERFACE_COM)
-#include <winerror.h>   // FAILED macro
-#endif
 
 namespace microsoft
 {
 namespace deliveryoptimization
 {
 
+#ifndef FAILED
+#define FAILED(res) (((int32_t)(res)) < 0)
+#endif
+
 enum class errc : int32_t
 {
+    e_not_impl                  = -2063400958,
     unexpected                  = -2147418113,
     invalid_arg                 = -2147024809,
     not_found                   = -2147023728,
@@ -54,7 +56,6 @@ private:
     std::string _msg;
 };
 
-#if defined(DO_INTERFACE_COM)
 //TODO: Look into replacing using internal exception class
 inline void throw_if_fail(int32_t hr)
 {
@@ -63,8 +64,7 @@ inline void throw_if_fail(int32_t hr)
         throw exception(hr);
     }
 }
-#endif
 
 }
 }
-#endif
+#endif // _DELIVERY_OPTIMIZATION_DO_EXCEPTIONS_H

@@ -7,12 +7,11 @@
 #include <string>
 
 #include "download_interface.h"
+#include "do_download_property.h"
 #include "do_download_status.h"
 
 #if defined(DO_INTERFACE_COM)
 #include <wrl.h>
-
-#include "do_download_property.h"
 
 #include "deliveryoptimization.h" // Fwd declaration of IDODownload doesn't work well w/ chromium builds
 #endif
@@ -35,13 +34,9 @@ public:
     void Abort() override;
 
     download_status GetStatus() override;
-
-#if defined(DO_INTERFACE_COM)
-    void SetCallback(const download_property_value::status_callback_t& callback, download& download) override;
-
     download_property_value GetProperty(download_property key) override;
     void SetProperty(download_property key, const download_property_value& val) override;
-#endif
+    void SetCallback(const download_property_value::status_callback_t& callback, download& download) override;
 
 private:
 #if defined(DO_INTERFACE_COM)

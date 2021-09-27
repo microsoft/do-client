@@ -118,6 +118,21 @@ msdo::download_status CDownloadImpl::GetStatus()
     return out;
 }
 
+download_property_value CDownloadImpl::GetProperty(msdo::download_property key) 
+{
+    throw msdo::errc::e_not_impl;
+}
+
+void CDownloadImpl::SetProperty(msdo::download_property key, const msdo::download_property_value& val)
+{
+    throw msdo::errc::e_not_impl;
+}
+
+void CDownloadImpl::SetCallback(const download_property_value::status_callback_t& callback, download& download)
+{
+    throw msdo::errc::e_not_impl;
+}
+
 void CDownloadImpl::_DownloadOperationCall(const std::string& type)
 {
     cpprest_web::uri_builder builder(g_downloadUriPart);
