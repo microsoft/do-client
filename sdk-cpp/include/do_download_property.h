@@ -21,7 +21,7 @@ class CDownloadPropertyValueInternal;
 class download;
 class download_status;
 
-/* User Note:
+/*
 For REST interface, these download properties are not yet supported
 SDK will throw/return msdo::errc::e_notimpl if attempting to set/get a property
 */
@@ -58,9 +58,11 @@ enum class download_property
 class download_property_value
 {
 
-// CDownloadImpl is declared as a friend class because it needs to access the platform-specific native value for download_property_value
-// The type of the native value is defined in CDownloadPropertyValueInternal, because DO header files are platform agnostic
-// This is so any user of the SDK does not have to worry about supplying platform specific compile definitions to use the SDK
+/*
+CDownloadImpl is declared as a friend class because it needs to access the platform-specific native value for download_property_value
+The type of the native value is defined in CDownloadPropertyValueInternal, because DO header files are platform agnostic
+This is so any user of the SDK does not have to worry about supplying platform specific compile definitions to use the SDK
+*/
 friend class details::CDownloadImpl; 
 
 public:

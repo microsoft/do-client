@@ -76,9 +76,10 @@ CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(const download_pr
 CDownloadPropertyValueInternal::~CDownloadPropertyValueInternal()
 {
 #ifdef DEBUG
-    //TODO(jimson): Variant clear fails with DISP_E_BADVARTYPE when used for callbacks, so the assertion will terminate the application
-    //assert(SUCCEEDED(VariantClear(&_var)));
-    (void)VariantClear(&_var);
+    if (!_callback)
+    {
+        assert(SUCCEEDED(VariantClear(&_var)));
+    }
 #else
     (void)VariantClear(&_var);
 #endif
