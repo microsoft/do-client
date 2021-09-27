@@ -50,7 +50,7 @@ enum class download_property
     integrity_check_mandatory,      // boolean
     total_size_bytes,               // uint64
 
-    // For the COM interface, the following properties are available only in Windows 21H1 and beyond
+    // For the COM interface, the following properties are available only in Windows 21H2 (Build Number 22000) and beyond
     disallow_on_cellular,           // bool
     http_custom_auth_headers,       // std::string
 };
