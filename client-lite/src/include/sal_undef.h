@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 #pragma once
 
 // SAL is not supported with compilers that aren't msvc, this file defs them as nothing so we can compile with gcc.

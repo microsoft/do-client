@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 #ifndef __DELIVERYOPTIMIZATION_ERROR_H__
 #define __DELIVERYOPTIMIZATION_ERROR_H__
 

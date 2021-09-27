@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 #include "do_string_util.h"
 
 #include <boost/algorithm/hex.hpp>
