@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 project (deliveryoptimization_sdk VERSION 0.5.0)
 
 if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)

@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 cmake_minimum_required(VERSION 3.7)
 # The version command, to take effect, must be the first command to execute in the cmake generate step
 

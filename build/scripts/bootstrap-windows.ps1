@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 # NOTE: This script is a sample, partly created to detail all the dependencies required for building do-client components on windows
 
 .\install-vcpkg-deps.ps1 $env:temp\deliveryoptimization_tools

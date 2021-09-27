@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
 
 set(version_lib_name doversion)
 add_library(${version_lib_name} STATIC do_version.cpp)

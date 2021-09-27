@@ -1,5 +1,8 @@
 #! /bin/bash
 
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 ###
 # This script handles provisioning of build environments for the Delivery Optimization client components on supported platforms
 ###

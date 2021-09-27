@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
     add_subdirectory(lib-dohttp)
     if (DO_BUILD_TESTS)

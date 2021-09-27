@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 if [ $# -lt 2 ]; then
   echo "Usage: <script.sh> <expected_size> <one or more file paths>"
   exit 1

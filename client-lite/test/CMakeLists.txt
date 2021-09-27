@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 # Unit tests for DOCS
 
 # Only need program_options here but have to include others required by docs_common.

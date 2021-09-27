@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 ## Tests for DO SDK
 
 find_package(Boost COMPONENTS filesystem program_options REQUIRED)
