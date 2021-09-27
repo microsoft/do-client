@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 macro (set_common_cpack_vars name description)
     set(CPACK_PACKAGE_NAME ${name})
     set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${description})

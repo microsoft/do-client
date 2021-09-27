@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 $vcpkgdir=$args[0] # path to install vcpkgdir, i.e. C:\users\user\appdata\local\temp
 
 Write-Host "Installing vcpkg to $vcpkgdir"

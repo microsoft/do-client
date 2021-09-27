@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 # Use this script to configure/remove DO plugin as the http(s) method for APT
 # Usage: <script.sh> <plugin_bin_path> [<-r|--remove>]
 

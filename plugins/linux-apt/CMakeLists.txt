@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 if (NOT DO_PLUGIN_APT_BIN_NAME)
     message (FATAL_ERROR "APT plugin binary name not defined")
 endif ()

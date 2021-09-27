@@ -1,4 +1,8 @@
 #! /bin/bash
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 # Note: /bin/bash on macOS is very old, this script needs atleast bash 4 to be run
 # bash 4 can be installed to the user directory via homebrew on mac
 # And can be run as '/usr/local/bin/bash ./bootstrap.sh'

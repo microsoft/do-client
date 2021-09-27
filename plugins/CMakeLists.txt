@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 # To build via cmdline we can run the following:
 # mkdir build.d
 # cd build.d

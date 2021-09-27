@@ -1,5 +1,8 @@
 #! /bin/bash
 
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 # $1 = path to vcpkg installation directory
 
 set -e

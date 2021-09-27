@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 if (NOT DOSVC_BIN_NAME)
     message (FATAL_ERROR "Agent daemon name not defined")
 endif ()
