@@ -5,8 +5,8 @@
 #define _DELIVERY_OPTIMIZATION_DO_CONFIG_H
 
 /*
-This file exposes apis for helping set an iot_connection_string for the DO agent, so that an application written in C can supply a Microsoft Connected Cache device's hostname
-While the apis will compile for all platforms, they only serve a purpose for the DeliveryOptimization Agent on linux devices, all other usage will fail and return e_not_impl
+This file exposes apis for helping set an iot_connection_string for the DO agent, so that an application can supply a Microsoft Connected Cache device's hostname
+While this file will compile for all platforms, they only serve a purpose for the DeliveryOptimization Agent on linux devices, all other usage will fail and return e_not_impl
 */
 
 #ifdef __cplusplus
