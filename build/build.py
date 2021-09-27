@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 """Build script for local and azure pipeline builds."""
 
 import datetime

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 do_group_name=@do_group@
 do_user_name=@do_user@
 config_path=@docs_svc_config_dir_path@

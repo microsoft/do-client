@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 // ----------------------------------------------------------------------------
 // The agent is built to run as a daemon (aka service) that starts running as root
 // and then drops permissions to 'do' user+group after runtime setup steps are completed.

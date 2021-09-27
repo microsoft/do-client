@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 macro (fixup_compile_options_for_arm)
     # Special instructions for cross-compiling to arm-linux
     if (CMAKE_CXX_COMPILER MATCHES arm-linux OR CMAKE_CXX_COMPILER MATCHES aarch64-linux)

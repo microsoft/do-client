@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 #pragma once
 
 // Note: Secure C string functions like wcscat_s, swscanf_s require __STDC_WANT_LIB_EXT1__

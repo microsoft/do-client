@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 #include <uuid/uuid.h>
 #include <cerrno>
 #include <cstdio>

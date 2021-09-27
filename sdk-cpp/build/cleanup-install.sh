@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 # Script to manually uninstall the SDK from the system.
 # Use this when not using a package manager to install the SDK.
 

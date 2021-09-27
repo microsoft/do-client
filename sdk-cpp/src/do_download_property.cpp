@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 #if defined(DO_INTERFACE_COM)
 #include "do_download_property.h"

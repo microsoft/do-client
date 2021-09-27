@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 #include "test_data.h"
 
 const uint64_t g_prodFileSizeBytes = 25006511u;
