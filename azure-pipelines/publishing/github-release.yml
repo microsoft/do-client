@@ -6,12 +6,15 @@ trigger:
 pr:
 - none
 
-pool: 1es_hosted_pool_ubuntu_1804
+pool:
+  name: 1es_hosted_pool_ubuntu_1804
+  demands: ImageOverride -equals do-adu-build-$(imageVersion)
 
 variables:
   Release.Version: $(release_version)
   Release.PreviousVersion: $(previous_release_version) # Select the previous version, used to generate changelog
   Release.Title: $(title) # title of the release, following <Release.Version> (YYYY-MM-DD) format i.e. v0.6.0 (2021-03-02)
+  imageVersion: '0.8.0'
 
 parameters:
   - name: SkipPublishing
@@ -47,25 +50,28 @@ stages:
     - template: ../build/linux/du/templates/doclient-lite-docker-steps.yml
       parameters:
         targetOsArch: ubuntu1804_arm64
+        imageVersion: ${{variables.imageVersion}}
         config: minsizerel
   - job: deliveryoptimization_agent_debian10_arm32
     steps:
     - template: ../build/linux/du/templates/doclient-lite-docker-steps.yml
       parameters:
         targetOsArch: debian10_arm32
+        imageVersion: ${{variables.imageVersion}}
         config: minsizerel
   - job: deliveryoptimization_agent_debian9_arm32
     steps:
     - template: ../build/linux/du/templates/doclient-lite-docker-steps.yml
       parameters:
         targetOsArch: debian9_arm32
+        imageVersion: ${{variables.imageVersion}}
         config: minsizerel
 
   - job: libdeliveryoptimization_ubuntu1804_amd64
     steps:
     - template: ../build/linux/du/templates/dosdkcpp-native-steps.yml
       parameters:
-        targetOsArch: 'ubuntu1804_x64'
+        targetOsArch: ubuntu1804_x64
         config: minsizerel
         skipTests: true
   - job: libdeliveryoptimization_ubuntu1804_arm64
@@ -73,43 +79,49 @@ stages:
     - template: ../build/linux/du/templates/dosdkcpp-docker-steps.yml
       parameters:
         targetOsArch: ubuntu1804_arm64
+        imageVersion: ${{variables.imageVersion}}
         config: minsizerel
   - job: libdeliveryoptimization_debian10_arm32
     steps:
     - template: ../build/linux/du/templates/dosdkcpp-docker-steps.yml
       parameters:
         targetOsArch: debian10_arm32
+        imageVersion: ${{variables.imageVersion}}
         config: minsizerel
   - job: libdeliveryoptimization_debian9_arm32
     steps:
     - template: ../build/linux/du/templates/dosdkcpp-docker-steps.yml
       parameters:
         targetOsArch: debian9_arm32
+        imageVersion: ${{variables.imageVersion}}
         config: minsizerel
 
   - job: deliveryoptimization_plugin_apt_ubuntu1804_amd64
     steps:
     - template: ../build/linux/du/templates/dopapt-native-steps.yml
       parameters:
-        targetOsArch: 'ubuntu1804_x64'
+        targetOsArch: ubuntu1804_x64
         config: minsizerel
   - job: deliveryoptimization_plugin_apt_ubuntu1804_arm64
     steps:
     - template: ../build/linux/du/templates/dopapt-docker-steps.yml
       parameters:
         targetOsArch: ubuntu1804_arm64
+        imageVersion: ${{variables.imageVersion}}
         config: minsizerel
   - job: deliveryoptimization_plugin_apt_debian10_arm32
     steps:
     - template: ../build/linux/du/templates/dopapt-docker-steps.yml
       parameters:
         targetOsArch: debian10_arm32
+        imageVersion: ${{variables.imageVersion}}
         config: minsizerel
   - job: deliveryoptimization_plugin_apt_debian9_arm32
     steps:
     - template: ../build/linux/du/templates/dopapt-docker-steps.yml
       parameters:
         targetOsArch: debian9_arm32
+        imageVersion: ${{variables.imageVersion}}
         config: minsizerel
 
 - stage: release
