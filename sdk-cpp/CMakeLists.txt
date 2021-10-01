@@ -15,7 +15,8 @@ if (DO_PLATFORM_LINUX)
     fixup_compile_options_for_arm()
 endif()
 
-if (DO_BUILD_TESTS)
+# Currently tests run off of the throwing interface, enable them only when building for the throwing interface
+if (DO_BUILD_TESTS AND DO_ENABLE_EXCEPTIONS)
     add_subdirectory(tests)
 endif()
 
@@ -124,6 +125,9 @@ target_compile_definitions(${DO_SDK_LIB_NAME}
 if (DO_DEV_DEBUG)
     target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE DO_DEV_DEBUG)
 endif ()
+if (DO_ENABLE_EXCEPTIONS)
+    target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE DO_ENABLE_EXCEPTIONS)
+endif()
 add_platform_interface_definitions(${DO_SDK_LIB_NAME})
 
 target_link_libraries(${DO_SDK_LIB_NAME}

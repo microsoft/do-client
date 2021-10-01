@@ -13,28 +13,33 @@ using namespace microsoft::deliveryoptimization::details;
 
 CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(const std::string& val)
 {
-    throw errc::e_not_impl;
+    _initCode = static_cast<int32_t>(errc::e_not_impl);
 };
 
 CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(uint32_t val)
 {
-    throw errc::e_not_impl;
+    _initCode = static_cast<int32_t>(errc::e_not_impl);
 };
 
 CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(uint64_t val)
 {
-    throw errc::e_not_impl;
+    _initCode = static_cast<int32_t>(errc::e_not_impl);
 };
 
 CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(bool val)
 {
-    throw errc::e_not_impl;
+    _initCode = static_cast<int32_t>(errc::e_not_impl);
 };
 
 CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(std::vector<unsigned char>& val)
 {
-    throw errc::e_not_impl;
+    _initCode = static_cast<int32_t>(errc::e_not_impl);
 };
+
+int32_t CDownloadPropertyValueInternal::init_code() const noexcept
+{
+    return _initCode;
+}
 
 CDownloadPropertyValueInternal::~CDownloadPropertyValueInternal()
 {
@@ -63,34 +68,35 @@ CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(const download_pr
     _callback = val;
 }
 
-void CDownloadPropertyValueInternal::as(bool& val) const
+int32_t CDownloadPropertyValueInternal::as(bool& val) const noexcept
 {
-    throw errc::e_not_impl;
+    return static_cast<int32_t>(errc::e_not_impl);
 };
 
-void CDownloadPropertyValueInternal::as(uint32_t& val) const
+int32_t CDownloadPropertyValueInternal::as(uint32_t& val) const noexcept
 {
-    throw errc::e_not_impl;
+    return static_cast<int32_t>(errc::e_not_impl);
 };
 
-void CDownloadPropertyValueInternal::as(uint64_t& val) const
+int32_t CDownloadPropertyValueInternal::as(uint64_t& val) const noexcept
 {
-    throw errc::e_not_impl;
+    return static_cast<int32_t>(errc::e_not_impl);
 };
 
-void CDownloadPropertyValueInternal::as(std::string& val) const
+int32_t CDownloadPropertyValueInternal::as(std::string& val) const noexcept
 {
-    throw errc::e_not_impl;
+    return static_cast<int32_t>(errc::e_not_impl);
 };
 
-void CDownloadPropertyValueInternal::as(std::vector<unsigned char>& val) const
+int32_t CDownloadPropertyValueInternal::as(std::vector<unsigned char>& val) const noexcept
 {
-    throw errc::e_not_impl;
+    return static_cast<int32_t>(errc::e_not_impl);
 }
 
-void CDownloadPropertyValueInternal::as(download_property_value::status_callback_t& val) const noexcept
+int32_t CDownloadPropertyValueInternal::as(download_property_value::status_callback_t& val) const noexcept
 {
     val = _callback;
+    return 0;
 };
 
 const CDownloadPropertyValueInternal::native_type& CDownloadPropertyValueInternal::native_value() const noexcept

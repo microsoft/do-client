@@ -1,5 +1,6 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
+
+#ifndef _DELIVERY_OPTIMIZATION_DO_EXCEPTIONS_INTERNAL_H
+#define _DELIVERY_OPTIMIZATION_DO_EXCEPTIONS_INTERNAL_H
 
 #include <exception>
 #include <stdint.h>
@@ -22,3 +23,4 @@ void ThrowException(errc error);
 } // namespace details
 } // namespace deliveryoptimization
 } // namespace microsoft
+#endif

@@ -67,25 +67,41 @@ friend class details::CDownloadImpl;
 
 public:
     using status_callback_t = std::function<void(download&, download_status&)>;
+
+    // TODO(jimson): Could make the default constructor private and have static make methods that accept a reference
+    // Callers would need to initialize a pointer to download_property_value, and call make(download_property_value_ptr,val);
     download_property_value() = default;
-
-    explicit download_property_value(const std::string& val);
-    explicit download_property_value(uint32_t val);
-    explicit download_property_value(uint64_t val);
-    explicit download_property_value(bool val);
-    explicit download_property_value(std::vector<unsigned char>& val); // DODownloadProperty_SecurityContext
-
-    explicit download_property_value(const status_callback_t& val);
-
     ~download_property_value() = default;
+
+#if (DO_ENABLE_EXCEPTIONS)
+    void make(const std::string& val);
+    void make(uint32_t val);
+    void make(uint64_t val);
+    void make(bool val);
+    void make(std::vector<unsigned char>& val);
+    void make(const status_callback_t& val);
 
     void as(bool& val) const;
     void as(uint32_t& val) const;
     void as(uint64_t& val) const;
     void as(std::string& val) const;
-
     void as(status_callback_t& val) const;
     void as(std::vector<unsigned char>& val) const;
+#endif
+
+    int32_t make_nothrow(const std::string& val);
+    int32_t make_nothrow(uint32_t val);
+    int32_t make_nothrow(uint64_t val);
+    int32_t make_nothrow(bool val);
+    int32_t make_nothrow(std::vector<unsigned char>& val);
+    int32_t make_nothrow(const status_callback_t& val);
+
+    int32_t as_nothrow(bool& val) const noexcept;
+    int32_t as_nothrow(uint32_t& val) const noexcept;
+    int32_t as_nothrow(uint64_t& val) const noexcept;
+    int32_t as_nothrow(std::string& val) const noexcept;
+    int32_t as_nothrow(status_callback_t& val) const noexcept;
+    int32_t as_nothrow(std::vector<unsigned char>& val) const noexcept;
 
 private:
     std::shared_ptr<details::CDownloadPropertyValueInternal> _val;

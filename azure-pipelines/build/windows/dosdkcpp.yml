@@ -1,10 +1,10 @@
-# Pipeline to build the DO CPP SDK on Windows 10
+# Pipeline to build the DO CPP SDK on Windows 10 
 # Runs tests after build and publishes the binaries as artifacts
 
 trigger:
   branches:
     include:
-      - develop
+      - main
       - feature/xplat_sdk
   paths:
     include:
@@ -14,13 +14,13 @@ trigger:
       - build/build.py
       - CMakeLists.txt
     exclude:
-      - azure-pipelines/*
+      - 'azure-pipelines/*'
       - sdk-cpp/build/cleanup-install.sh
 
 pr:
   branches:
     include:
-      - develop
+      - main
       - feature/xplat_sdk
   paths:
     include:
@@ -30,7 +30,7 @@ pr:
       - build/build.py
       - CMakeLists.txt
     exclude:
-      - azure-pipelines/*
+      - 'azure-pipelines/*'
       - sdk-cpp/build/cleanup-install.sh
 
 pool:

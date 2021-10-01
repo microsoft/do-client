@@ -8,7 +8,7 @@ variables:
 trigger:
   branches:
     include:
-      - develop
+      - main
   paths:
     include:
       - azure-pipelines/build/linux/du/dopapt-native.yml
@@ -24,7 +24,7 @@ trigger:
 pr:
   branches:
     include:
-      - develop
+      - main
   paths:
     include:
       - azure-pipelines/build/linux/du/dopapt-native.yml

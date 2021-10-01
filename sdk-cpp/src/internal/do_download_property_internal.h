@@ -39,6 +39,8 @@ public:
 
     explicit CDownloadPropertyValueInternal(const download_property_value::status_callback_t& val);
 
+    int32_t init_code() const noexcept;
+
     ~CDownloadPropertyValueInternal();
 
     CDownloadPropertyValueInternal(const CDownloadPropertyValueInternal& rhs);
@@ -51,18 +53,20 @@ public:
         std::swap(first._callback, second._callback);
     }
 
-    void as(bool& val) const;
-    void as(uint32_t& val) const;
-    void as(uint64_t& val) const;
-    void as(std::string& val) const;
-    void as(std::vector<unsigned char>& val) const;
-    void as(download_property_value::status_callback_t& val) const noexcept;
-    
+    int32_t as(bool& val) const noexcept;
+    int32_t as(uint32_t& val) const noexcept;
+    int32_t as(uint64_t& val) const noexcept;
+    int32_t as(std::string& val) const noexcept;
+
+    int32_t as(download_property_value::status_callback_t& val) const noexcept;
+    int32_t as(std::vector<unsigned char>& val) const noexcept;
+
     const native_type& native_value() const noexcept;
 
 private:
     native_type _var;
     download_property_value::status_callback_t _callback;
+    int32_t _initCode{ 0 };
 };
 } // namespace details
 } // namespace deliveryoptimization
