@@ -47,6 +47,7 @@ CDownloadPropertyValueInternal::~CDownloadPropertyValueInternal()
 
 CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(const CDownloadPropertyValueInternal& rhs)
 {
+    _var = rhs._var;
     _callback = rhs._callback;
 };
 

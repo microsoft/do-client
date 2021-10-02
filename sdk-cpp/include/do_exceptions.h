@@ -17,6 +17,10 @@ namespace microsoft
 namespace deliveryoptimization
 {
 
+#ifndef FAILED
+#define FAILED(res) (((int32_t)(res)) < 0)
+#endif
+
 enum class errc : int32_t
 {
     e_not_impl                  = -2063400958,
@@ -73,4 +77,4 @@ inline void throw_if_fail(int32_t hr)
 } //namespace deliveryoptimization
 } //namespace microsoft
 
-#endif
+#endif //_DELIVERY_OPTIMIZATION_DO_EXCEPTIONS_H

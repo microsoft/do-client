@@ -8,7 +8,7 @@ variables:
 trigger:
   branches:
     include:
-      - main
+      - develop
   paths:
     include:
       - azure-pipelines/build/linux/du/doclient-lite-native.yml
@@ -23,7 +23,7 @@ trigger:
 pr:
   branches:
     include:
-      - main
+      - develop
   paths:
     include:
       - azure-pipelines/build/linux/du/doclient-lite-native.yml
