@@ -37,7 +37,7 @@ steps:
   inputs:
     scriptSource: 'filePath'
     scriptPath: 'build/build.py'
-    arguments: '--project sdk --config ${{parameters.config}} --vcpkgdir ${{parameters.vcpkgDir}}\vcpkg --clean'
+    arguments: '--project sdk --config ${{parameters.config}} --vcpkgdir ${{parameters.vcpkgDir}}\vcpkg --clean --enable-exceptions'
   displayName: 'Build sdk-cpp ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: CmdLine@2
