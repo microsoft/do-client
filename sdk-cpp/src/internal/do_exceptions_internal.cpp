@@ -1,7 +1,8 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
+#if DO_ENABLE_EXCEPTIONS
 
 #include "do_exceptions_internal.h"
+
+#include <exception>
 
 namespace microsoft
 {
@@ -32,3 +33,4 @@ void ThrowException(errc errorCode)
 } // namespace details
 } // namespace deliveryoptimization
 } // namespace microsoft
+#endif

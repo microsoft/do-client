@@ -4,12 +4,8 @@
 #ifndef _DELIVERY_OPTIMIZATION_DO_DOWNLOAD_PROPERTY_H
 #define _DELIVERY_OPTIMIZATION_DO_DOWNLOAD_PROPERTY_H
 
-//TODO(jimson): Callers may not have defined these compile definitions, as a result their builds may fail if the definition is not set when using the SDK
-//Look into removing platform specific header files from the SDK installation
-#if defined(DO_INTERFACE_COM)
-
-#include <OAIdl.h>
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -17,10 +13,18 @@ namespace microsoft
 {
 namespace deliveryoptimization
 {
-
+namespace details
+{
+class CDownloadImpl;
+class CDownloadPropertyValueInternal;
+}
 class download;
 class download_status;
 
+/*
+For REST interface, these download properties are not yet supported
+SDK will throw/return msdo::errc::e_notimpl if attempting to set/get a property
+*/
 enum class download_property
 {
     id,                             // std::string
@@ -45,7 +49,8 @@ enum class download_property
     integrity_check_info,           // std::string
     integrity_check_mandatory,      // boolean
     total_size_bytes,               // uint64
-    // Fe and beyond
+
+    // For the COM interface, the following properties are available only in Windows 21H2 (Build Number 22000) and beyond
     disallow_on_cellular,           // bool
     http_custom_auth_headers,       // std::string
 };
@@ -53,48 +58,53 @@ enum class download_property
 class download_property_value
 {
 
+/*
+CDownloadImpl is declared as a friend class because it needs to access the platform-specific native value for download_property_value
+The type of the native value is defined in CDownloadPropertyValueInternal, because DO header files are platform agnostic
+This is so any user of the SDK does not have to worry about supplying platform specific compile definitions to use the SDK
+*/
+friend class details::CDownloadImpl; 
+
 public:
-    using native_type = VARIANT;
     using status_callback_t = std::function<void(download&, download_status&)>;
 
-    download_property_value() = default;
+    download_property_value();
+    ~download_property_value() = default;
 
-    explicit download_property_value(const std::string& val);
-    explicit download_property_value(UINT val);
-    explicit download_property_value(UINT64 val);
-    explicit download_property_value(bool val);
-    explicit download_property_value(std::vector<unsigned char>& val); // DODownloadProperty_SecurityContext
-
-    explicit download_property_value(const status_callback_t& val);
-
-    ~download_property_value();
-
-    download_property_value(const download_property_value& rhs);
-    download_property_value& operator=(download_property_value copy);
-    download_property_value(download_property_value&& rhs) noexcept;
-
-    friend void swap(download_property_value& first, download_property_value& second) noexcept
-    {
-        std::swap(first._var, second._var);
-        std::swap(first._callback, second._callback);
-    }
+#if (DO_ENABLE_EXCEPTIONS)
+    static void make(download_property_value& out, const std::string& val);
+    static void make(download_property_value& out, uint32_t val);
+    static void make(download_property_value& out, uint64_t val);
+    static void make(download_property_value& out, bool val);
+    static void make(download_property_value& out, std::vector<unsigned char>& val);
+    static void make(download_property_value& out, const status_callback_t& val);
 
     void as(bool& val) const;
-    void as(UINT& val) const;
-    void as(UINT64& val) const;
+    void as(uint32_t& val) const;
+    void as(uint64_t& val) const;
     void as(std::string& val) const;
-
-    void as(status_callback_t& val) const;
     void as(std::vector<unsigned char>& val) const;
+    void as(status_callback_t& val) const;
+#endif
 
-    const native_type& native_value() const;
+    static int32_t make_nothrow(download_property_value& out, const std::string& val);
+    static int32_t make_nothrow(download_property_value& out, uint32_t val);
+    static int32_t make_nothrow(download_property_value& out, uint64_t val);
+    static int32_t make_nothrow(download_property_value& out, bool val);
+    static int32_t make_nothrow(download_property_value& out, std::vector<unsigned char>& val);
+    static int32_t make_nothrow(download_property_value& out, const status_callback_t& val);
+
+    int32_t as_nothrow(bool& val) const noexcept;
+    int32_t as_nothrow(uint32_t& val) const noexcept;
+    int32_t as_nothrow(uint64_t& val) const noexcept;
+    int32_t as_nothrow(std::string& val) const noexcept;
+    int32_t as_nothrow(std::vector<unsigned char>& val) const noexcept;
+    int32_t as_nothrow(status_callback_t& val) const noexcept;
 
 private:
-    native_type _var;
-    status_callback_t _callback;
+    std::shared_ptr<details::CDownloadPropertyValueInternal> _val;
 };
-}
-}
+} // namespace deliveryoptimization
+} // namespace microsoft
 
-#endif // DO_INTERFACE_COM
 #endif // _DELIVERY_OPTIMIZATION_DO_DOWNLOAD_PROPERTY_H

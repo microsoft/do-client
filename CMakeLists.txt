@@ -15,6 +15,9 @@ option (DO_INCLUDE_PLUGINS "Build subproject plugins" OFF)
 option (DO_INCLUDE_SDK "Build subproject sdk-cpp" OFF)
 
 option (DO_BUILD_TESTS "Set DO_BUILD_TESTS to OFF to skip building tests." ON)
+option (DO_ENABLE_EXCEPTIONS "Set DO_ENABLE_EXCEPTIONS to ON to disable compiling with exceptions" OFF)
+
+message(STATUS "Exceptions Disabled: ${DO_ENABLE_EXCEPTIONS}")
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -63,6 +66,10 @@ endif()
 
 # PIC (Position Independent Code) ensures .a files can be linked to executables that have PIE enabled
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+if (DO_ENABLE_EXCEPTIONS)
+    #TODO(jimson): There is no cmake option for disabling exceptions, so we must set a compiler-specific flag if we want to enforce disabling exceptions
+endif()
 
 # TODO: msvc and gcc support different compiler/linker flags, need to go through all flags and verify what's needed for each platform
 # Certain flags cause build issues because the flag itself isn't supported on msvc

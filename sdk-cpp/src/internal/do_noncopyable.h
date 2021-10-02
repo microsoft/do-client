@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-#ifndef _DELIVERY_OPTIMIZATION_DO_NONCOPYABLE_H
+#ifndef _DELIVERY_OPTIMIZATION_DNONCOPYABLE_H
 #define _DELIVERY_OPTIMIZATION_DO_NONCOPYABLE_H
 
 // Handy base class to create non-copyable classes
