@@ -12,6 +12,7 @@ jobs:
       targetOsArch: ${{parameters.targetOsArch}}
       config: minsizerel
       skiptests: true
+
   - task: CopyFiles@2
     inputs:
       SourceFolder: '/tmp/build-deliveryoptimization-agent/linux-minsizerel'
@@ -26,6 +27,7 @@ jobs:
       targetOsArch: ${{parameters.targetOsArch}}
       config: minsizerel
       skiptests: true
+
   - task: CopyFiles@2
     inputs:
       SourceFolder: '/tmp/build-deliveryoptimization-sdk/linux-minsizerel'
@@ -39,6 +41,7 @@ jobs:
     parameters:
       targetOsArch: ${{parameters.targetOsArch}}
       config: minsizerel
+
   - task: CopyFiles@2
     inputs:
       SourceFolder: '/tmp/build-deliveryoptimization-plugin-apt/linux-minsizerel'

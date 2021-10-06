@@ -18,6 +18,7 @@ jobs:
       targetOsArch: ${{parameters.targetOsArch}}
       imageVersion: ${{parameters.imageVersion}}
       config: minsizerel
+
   - task: CopyFiles@2
     inputs:
       SourceFolder: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-minsizerel'
@@ -25,13 +26,14 @@ jobs:
           *.deb
       TargetFolder: '/tmp/${{parameters.targetOsArch}}'
       CleanTargetFolder: true
-    displayName: 'Copy all agent .deb file'
+    displayName: 'Copy agent .deb file'
 
   - template: ../../build/linux/du/templates/dosdkcpp-docker-steps.yml
     parameters:
       targetOsArch: ${{parameters.targetOsArch}}
       imageVersion: ${{parameters.imageVersion}}
       config: minsizerel
+
   - task: CopyFiles@2
     inputs:
       SourceFolder: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-minsizerel'
@@ -46,6 +48,7 @@ jobs:
       targetOsArch: ${{parameters.targetOsArch}}
       imageVersion: ${{parameters.imageVersion}}
       config: minsizerel
+
   - task: CopyFiles@2
     inputs:
       SourceFolder: '/tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-minsizerel'
@@ -70,5 +73,5 @@ jobs:
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      ArtifactName: '${{parameters.targetOsArch}}'
+      ArtifactName: 'github-release-artifacts'
       publishLocation: 'Container'
