@@ -1,6 +1,6 @@
 #if (DO_ENABLE_EXCEPTIONS)
 
-#include "do_exceptions.h"
+#include "do_errors.h"
 
 namespace microsoft
 {

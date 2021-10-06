@@ -37,7 +37,7 @@ using HRESULT = int32_t;
 #endif
 
 //TODO(jimson) Looks like these conversions are causing test issues with tests
-#define DO_ERROR_FROM_SYSTEM_ERROR(x) (int32_t)(0xC0000000 | (0xD0 << 16) | ((int32_t)(x) & 0x0000FFFF))
+#define DO_ERROR_FROM_SYSTEM_ERROR(x) (int32_t)(0xC0000000 | (FACILITY_DELIVERY_OPTIMIZATION << 16) | ((int32_t)(x) & 0x0000FFFF))
 #define DO_ERROR_FROM_STD_ERROR(x) ((int32_t)(x) <= 0 ? ((int32_t)(x)) : ((int32_t) (((int32_t)(x) & 0x0000FFFF) | (FACILITY_DELIVERY_OPTIMIZATION << 16) | 0x80000000)))
 
 #ifndef FAILED

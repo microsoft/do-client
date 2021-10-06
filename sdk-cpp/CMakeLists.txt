@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+option (DO_ENABLE_EXCEPTIONS "Set DO_ENABLE_EXCEPTIONS to ON to disable compiling with exceptions" ON)
+
 project (deliveryoptimization_sdk VERSION 0.7.0)
 
 if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)

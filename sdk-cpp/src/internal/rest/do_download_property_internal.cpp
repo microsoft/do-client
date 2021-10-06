@@ -7,7 +7,7 @@
 #include <vector>
 #include <string>
 
-#include "do_exceptions.h"
+#include "do_errors.h"
 
 using namespace microsoft::deliveryoptimization::details;
 

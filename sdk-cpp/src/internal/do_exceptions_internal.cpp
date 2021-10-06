@@ -2,8 +2,6 @@
 
 #include "do_exceptions_internal.h"
 
-#include <exception>
-
 namespace microsoft
 {
 namespace deliveryoptimization

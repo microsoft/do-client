@@ -12,7 +12,7 @@
 #include "deliveryoptimization.h"
 #include "do_download_property.h"
 #include "do_download_property_internal.h"
-#include "do_exceptions.h"
+#include "do_errors.h"
 
 namespace msdo = microsoft::deliveryoptimization;
 using namespace microsoft::deliveryoptimization::details;

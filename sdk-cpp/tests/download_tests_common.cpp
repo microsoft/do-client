@@ -14,7 +14,7 @@
 
 #include "do_download.h"
 #include "do_download_status.h"
-#include "do_exceptions.h"
+#include "do_errors.h"
 #if defined(DO_INTERFACE_REST)
 #include "do_test_helpers.h"
 #endif

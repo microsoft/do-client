@@ -77,4 +77,4 @@ private:
 
 } // namespace deliveryoptimization
 } // namespace microsoft
-#endif
+#endif // _DELIVERY_OPTIMIZATION_DO_DOWNLOAD_STATUS_H

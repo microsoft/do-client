@@ -1,7 +1,7 @@
 
 #include "do_config_internal.h"
 
-#include "do_exceptions.h"
+#include "do_errors.h"
 
 namespace msdo = microsoft::deliveryoptimization;
 

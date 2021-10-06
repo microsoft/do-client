@@ -7,7 +7,7 @@
 #include <cassert>
 #include <thread>
 
-#include "do_exceptions.h"
+#include "do_errors.h"
 #include "download_interface.h"
 #include "download_impl.h"
 

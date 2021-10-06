@@ -373,7 +373,7 @@ class BuildRunnerBase(object):
             generate_options.extend(["-DDO_BUILD_TESTS=OFF"])
 
         if self.enable_exceptions:
-            generate_options.extend(["-DDO_ENABLE_EXCEPTIONS=ON"])
+            generate_options.extend(["-DDO_ENABLE_EXCEPTIONS=OFF"])
 
         if self.project:
             generate_options.extend([DOCLIENT_SUBPROJECT_BUILD_MAP[self.project]])

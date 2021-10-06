@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <system_error>
 
-#include "do_exceptions.h"
+#include "do_errors.h"
 
 namespace microsoft
 {

@@ -10,7 +10,7 @@
 #include <boost/filesystem.hpp>
 
 #include "do_download.h"
-#include "do_exceptions.h"
+#include "do_errors.h"
 #include "test_data.h"
 #include "test_helpers.h"
 
@@ -152,9 +152,8 @@ TEST_F(DownloadPropertyTestsDOSVC, InvalidPhfDigestTest)
     ASSERT_TRUE(false);
 }
 
-// For some reason, custom headers are getting rejected and returning E_INVALIDARG now, disabling test
-/*
-TEST_F(DownloadPropertyTestsDOSVC, SmallDownloadWithCustomHeaders)
+// For some reason, custom headers are getting rejected and returning E_INVALIDARG now, disabling test for now
+TEST_F(DownloadPropertyTestsDOSVC, DISABLED_SmallDownloadWithCustomHeaders)
 {
     msdo::download simpleDownload(g_smallFileUrl, g_tmpFileName);
 
@@ -167,7 +166,6 @@ TEST_F(DownloadPropertyTestsDOSVC, SmallDownloadWithCustomHeaders)
 
     ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName));
 }
-*/
 
 TEST_F(DownloadPropertyTestsDOSVC, CallbackTestUseDownload)
 {

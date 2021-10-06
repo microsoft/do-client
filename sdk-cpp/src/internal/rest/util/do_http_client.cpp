@@ -9,7 +9,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <gsl/gsl_util>
 
-#include "do_exceptions.h"
+#include "do_errors.h"
 #include "do_exceptions_internal.h"
 #include "do_http_message.h"
 #include "do_port_finder.h"

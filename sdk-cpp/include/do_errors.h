@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-#ifndef _DELIVERY_OPTIMIZATION_DO_EXCEPTIONS_H
-#define _DELIVERY_OPTIMIZATION_DO_EXCEPTIONS_H
+#ifndef _DELIVERY_OPTIMIZATION_DO_ERRORS_H
+#define _DELIVERY_OPTIMIZATION_DO_ERRORS_H
 
 #if (DO_ENABLE_EXCEPTIONS)
 #include <exception>
@@ -16,10 +16,6 @@ namespace microsoft
 {
 namespace deliveryoptimization
 {
-
-#ifndef FAILED
-#define FAILED(res) (((int32_t)(res)) < 0)
-#endif
 
 enum class errc : int32_t
 {
@@ -77,4 +73,4 @@ inline void throw_if_fail(int32_t hr)
 } //namespace deliveryoptimization
 } //namespace microsoft
 
-#endif //_DELIVERY_OPTIMIZATION_DO_EXCEPTIONS_H
+#endif //_DELIVERY_OPTIMIZATION_DO_ERRORS_H

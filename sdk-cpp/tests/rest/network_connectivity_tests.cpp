@@ -10,7 +10,7 @@
 
 #include "do_download.h"
 #include "do_download_status.h"
-#include "do_exceptions.h"
+#include "do_errors.h"
 #include "test_data.h"
 #include "test_helpers.h"
 

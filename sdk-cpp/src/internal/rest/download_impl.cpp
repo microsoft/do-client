@@ -7,7 +7,7 @@
 #include <thread>
 
 #include "do_cpprest_uri_builder.h"
-#include "do_exceptions.h"
+#include "do_errors.h"
 #include "do_exceptions_internal.h"
 #include "do_http_client.h"
 
