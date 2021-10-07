@@ -1,0 +1,74 @@
+parameters:
+- name: targetOsArch        # example: debian9_arm32
+  type: string
+
+jobs:
+- job: ${{parameters.targetOsArch}}
+  steps:
+  - checkout: self
+    path: 's' # Copy to sources directory (templates do not do this automatically)
+
+  - template: ../../build/linux/du/templates/doclient-lite-native-steps.yml
+    parameters:
+      targetOsArch: ${{parameters.targetOsArch}}
+      config: minsizerel
+      skiptests: true
+
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: '/tmp/build-deliveryoptimization-agent/linux-minsizerel'
+      Contents: |
+          *.deb
+      TargetFolder: '/tmp/${{parameters.targetOsArch}}'
+      CleanTargetFolder: true
+    displayName: 'Copy agent .deb file'
+
+  - template: ../../build/linux/du/templates/dosdkcpp-native-steps.yml
+    parameters:
+      targetOsArch: ${{parameters.targetOsArch}}
+      config: minsizerel
+      skiptests: true
+
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: '/tmp/build-deliveryoptimization-sdk/linux-minsizerel'
+      Contents: |
+          *.deb
+      TargetFolder: '/tmp/${{parameters.targetOsArch}}'
+      CleanTargetFolder: false
+    displayName: 'Copy sdk .deb files'
+
+  - template: ../../build/linux/du/templates/dopapt-native-steps.yml
+    parameters:
+      targetOsArch: ${{parameters.targetOsArch}}
+      config: minsizerel
+
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: '/tmp/build-deliveryoptimization-plugin-apt/linux-minsizerel'
+      Contents: |
+          *.deb
+      TargetFolder: '/tmp/${{parameters.targetOsArch}}'
+      CleanTargetFolder: false
+    displayName: 'Copy plugin .deb file'
+
+  - task: DeleteFiles@1
+    inputs: 
+      SourceFolder: $(Build.ArtifactStagingDirectory)
+      Contents: |
+        **/*
+    displayName: 'Clean build folder before creating tar file folder'
+
+  - task: ArchiveFiles@2
+    inputs: 
+      rootFolderOrFile: /tmp/${{parameters.targetOsArch}}
+      includeRootFolder: False
+      archiveType: tar
+      archiveFile: $(build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-packages.tar
+    displayName: 'Create .tar file'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'github-release-artifacts'
+      publishLocation: 'Container'
