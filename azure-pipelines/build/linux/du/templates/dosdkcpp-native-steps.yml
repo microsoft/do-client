@@ -29,7 +29,7 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization --config ${{parameters.config}} --package-for DEB --enable-exceptions --clean'
+    script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization --config ${{parameters.config}} --package-for DEB --clean'
     workingDirectory: '$(Build.SourcesDirectory)/build'
   displayName: 'Build sdk ${{parameters.targetOsArch}}-${{parameters.config}}'
 
@@ -51,7 +51,7 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization-sdk-tests --config ${{parameters.config}} --enable-exceptions'
+    script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization-sdk-tests --config ${{parameters.config}}'
     workingDirectory: '$(Build.SourcesDirectory)/build'
   displayName: 'Build sdk-cpp tests ${{parameters.targetOsArch}}-${{parameters.config}}'
 
