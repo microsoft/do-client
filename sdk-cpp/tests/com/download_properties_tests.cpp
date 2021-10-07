@@ -64,9 +64,8 @@ TEST_F(DownloadPropertyTestsDOSVC, SmallDownloadSetCallerNameTest)
 {
     msdo::download simpleDownload(g_smallFileUrl, g_tmpFileName);
 
-    msdo::download_property_value callerName;
     std::string strCallerName("dosdkcpp_tests");
-    msdo::download_property_value::make(callerName, strCallerName);
+    msdo::download_property_value callerName = msdo::download_property_value::make(strCallerName);
     simpleDownload.set_property(msdo::download_property::caller_name, callerName);
 
     simpleDownload.start_and_wait_until_completion();
@@ -79,26 +78,23 @@ TEST_F(DownloadPropertyTestsDOSVC, SmallDownloadWithPhfDigestandCvTest)
 
     std::vector<int32_t> expectedErrors = { 0, static_cast<int32_t>(msdo::errc::do_e_unknown_property_id) };
 
-    std::unique_ptr<msdo::download_property_value> integrityCheckMandatory = std::make_unique<msdo::download_property_value>();
-    msdo::download_property_value::make(*integrityCheckMandatory, true);
+    msdo::download_property_value integrityCheckMandatory = msdo::download_property_value::make(true);
     VerifyCallWithExpectedErrors([&]()
         {
-            simpleDownload.set_property(msdo::download_property::integrity_check_mandatory, *integrityCheckMandatory);
+            simpleDownload.set_property(msdo::download_property::integrity_check_mandatory, integrityCheckMandatory);
         }, expectedErrors);
 
-    std::unique_ptr<msdo::download_property_value> integrityCheckInfo = std::make_unique<msdo::download_property_value>();
-    msdo::download_property_value::make(*integrityCheckInfo, g_smallFilePhfInfoJson);
+    msdo::download_property_value integrityCheckInfo = msdo::download_property_value::make(g_smallFilePhfInfoJson);
     VerifyCallWithExpectedErrors([&]()
         {
-            simpleDownload.set_property(msdo::download_property::integrity_check_info, *integrityCheckInfo);
+            simpleDownload.set_property(msdo::download_property::integrity_check_info, integrityCheckInfo);
         }, expectedErrors);
 
-    std::unique_ptr<msdo::download_property_value> correlationVector = std::make_unique<msdo::download_property_value>();
     std::string strCorrelationVector("g+Vo71JZwkmJdYfF.0");
-    msdo::download_property_value::make(*correlationVector, strCorrelationVector);
+    msdo::download_property_value correlationVector = msdo::download_property_value::make(strCorrelationVector);
     VerifyCallWithExpectedErrors([&]()
         {
-            simpleDownload.set_property(msdo::download_property::correlation_vector, *correlationVector);
+            simpleDownload.set_property(msdo::download_property::correlation_vector, correlationVector);
         }, expectedErrors);
 
     simpleDownload.start_and_wait_until_completion();
@@ -112,20 +108,17 @@ TEST_F(DownloadPropertyTestsDOSVC, SmallDownloadWithPhfDigestandCvTestNoThrow)
 
     std::vector<int32_t> expectedErrors = { 0, static_cast<int32_t>(msdo::errc::do_e_unknown_property_id) };
 
-    std::unique_ptr<msdo::download_property_value> integrityCheckMandatory = std::make_unique<msdo::download_property_value>();
-    msdo::download_property_value::make(*integrityCheckMandatory, true);
-    int32_t code = simpleDownload.set_property_nothrow(msdo::download_property::integrity_check_mandatory, *integrityCheckMandatory);
+    msdo::download_property_value integrityCheckMandatory = msdo::download_property_value::make(true);
+    int32_t code = simpleDownload.set_property_nothrow(msdo::download_property::integrity_check_mandatory, integrityCheckMandatory);
     VerifyError(code, expectedErrors);
 
-    std::unique_ptr<msdo::download_property_value> integrityCheckInfo = std::make_unique<msdo::download_property_value>();
-    msdo::download_property_value::make(*integrityCheckInfo, g_smallFilePhfInfoJson);
-    code = simpleDownload.set_property_nothrow(msdo::download_property::integrity_check_info, *integrityCheckInfo);
+    msdo::download_property_value integrityCheckInfo = msdo::download_property_value::make(g_smallFilePhfInfoJson);
+    code = simpleDownload.set_property_nothrow(msdo::download_property::integrity_check_info, integrityCheckInfo);
     VerifyError(code, expectedErrors);
 
-    std::unique_ptr<msdo::download_property_value> correlationVector = std::make_unique<msdo::download_property_value>();
     std::string strCorrelationVector("g+Vo71JZwkmJdYfF.0");
-    msdo::download_property_value::make(*correlationVector, strCorrelationVector);
-    code = simpleDownload.set_property_nothrow(msdo::download_property::correlation_vector, *correlationVector);
+    msdo::download_property_value correlationVector = msdo::download_property_value::make(strCorrelationVector);
+    code = simpleDownload.set_property_nothrow(msdo::download_property::correlation_vector, correlationVector);
     VerifyError(code, expectedErrors);
 
     simpleDownload.start_and_wait_until_completion();
@@ -139,9 +132,8 @@ TEST_F(DownloadPropertyTestsDOSVC, InvalidPhfDigestTest)
 
     try
     {
-        std::unique_ptr<msdo::download_property_value> integrityCheckInfo = std::make_unique<msdo::download_property_value>();
-        msdo::download_property_value::make(*integrityCheckInfo, "blah");
-        simpleDownload.set_property(msdo::download_property::integrity_check_info, *integrityCheckInfo);
+        msdo::download_property_value integrityCheckInfo =  msdo::download_property_value::make("blah");
+        simpleDownload.set_property(msdo::download_property::integrity_check_info, integrityCheckInfo);
     }
     catch (const msdo::exception& e)
     {
@@ -157,10 +149,9 @@ TEST_F(DownloadPropertyTestsDOSVC, DISABLED_SmallDownloadWithCustomHeaders)
 {
     msdo::download simpleDownload(g_smallFileUrl, g_tmpFileName);
 
-    std::unique_ptr<msdo::download_property_value> httpCustomHeaders = std::make_unique<msdo::download_property_value>();
     std::string strHttpCustomHeaders("XCustom1=someData\nXCustom2=moreData");
-    msdo::download_property_value::make(*httpCustomHeaders, strHttpCustomHeaders);
-    simpleDownload.set_property(msdo::download_property::http_custom_headers, *httpCustomHeaders);
+    msdo::download_property_value httpCustomHeaders = msdo::download_property_value::make(strHttpCustomHeaders);
+    simpleDownload.set_property(msdo::download_property::http_custom_headers, httpCustomHeaders);
 
     simpleDownload.start_and_wait_until_completion();
 
@@ -172,8 +163,7 @@ TEST_F(DownloadPropertyTestsDOSVC, CallbackTestUseDownload)
     msdo::download simpleDownload(g_largeFileUrl, g_tmpFileName);
     bool hitError = false;
 
-    std::unique_ptr<msdo::download_property_value> callback = std::make_unique<msdo::download_property_value>();
-    msdo::download_property_value::make(*callback, [&hitError](msdo::download& download, msdo::download_status& status)
+    msdo::download_property_value callback = msdo::download_property_value::make([&hitError](msdo::download& download, msdo::download_status& status)
     {
         char msgBuf[1024];
         snprintf(msgBuf, sizeof(msgBuf), "Received status callback: %llu/%llu, 0x%x, 0x%x, %u",
@@ -188,7 +178,7 @@ TEST_F(DownloadPropertyTestsDOSVC, CallbackTestUseDownload)
         }
     });
 
-    simpleDownload.set_property(msdo::download_property::callback_interface, *callback);
+    simpleDownload.set_property(msdo::download_property::callback_interface, callback);
     simpleDownload.start();
     std::this_thread::sleep_for(5s);
     hitError = true;
@@ -201,8 +191,7 @@ TEST_F(DownloadPropertyTestsDOSVC, SetCallbackTest)
     msdo::download simpleDownload(g_smallFileUrl, g_tmpFileName);
 
     int i= 0;
-    std::unique_ptr<msdo::download_property_value> callback = std::make_unique<msdo::download_property_value>();
-    msdo::download_property_value::make(*callback, [&i](msdo::download& download, msdo::download_status& status)
+    msdo::download_property_value callback = msdo::download_property_value::make([&i](msdo::download& download, msdo::download_status& status)
         {
             char msgBuf[1024];
             snprintf(msgBuf, sizeof(msgBuf), "Received status callback: %llu/%llu, 0x%x, 0x%x, %u",
@@ -211,7 +200,7 @@ TEST_F(DownloadPropertyTestsDOSVC, SetCallbackTest)
             std::cout << msgBuf << std::endl;
             i += 1;
         });
-    simpleDownload.set_property(msdo::download_property::callback_interface, *callback);
+    simpleDownload.set_property(msdo::download_property::callback_interface, callback);
 
     simpleDownload.start_and_wait_until_completion();
 
@@ -223,17 +212,16 @@ TEST_F(DownloadPropertyTestsDOSVC, OverrideCallbackTest)
     msdo::download simpleDownload(g_smallFileUrl, g_tmpFileName);
 
     int i = 0;
-    std::unique_ptr<msdo::download_property_value> callback = std::make_unique<msdo::download_property_value>();
-    msdo::download_property_value::make(*callback, [&i](msdo::download&, msdo::download_status&)
+    msdo::download_property_value callback = msdo::download_property_value::make([&i](msdo::download&, msdo::download_status&)
         {
             i += 1;
         });
-    simpleDownload.set_property(msdo::download_property::callback_interface, *callback);
+    simpleDownload.set_property(msdo::download_property::callback_interface, callback);
 
     msdo::download_property_value::status_callback_t cb2 = [](msdo::download&, msdo::download_status&) {};
 
-    msdo::download_property_value::make(*callback, cb2);
-    simpleDownload.set_property(msdo::download_property::callback_interface, *callback);
+    callback = msdo::download_property_value::make(cb2);
+    simpleDownload.set_property(msdo::download_property::callback_interface, callback);
 
     simpleDownload.start_and_wait_until_completion();
 
@@ -246,9 +234,8 @@ TEST_F(DownloadPropertyTestsDOSVC, ForegroundBackgroundRace)
         {
             msdo::download simpleDownload(g_largeFileUrl, g_tmpFileName);
 
-            std::unique_ptr<msdo::download_property_value> foregroundPriority = std::make_unique<msdo::download_property_value>();
-            msdo::download_property_value::make(*foregroundPriority, false);
-            simpleDownload.set_property(msdo::download_property::use_foreground_priority, *foregroundPriority);
+            msdo::download_property_value foregroundPriority = msdo::download_property_value::make(false);
+            simpleDownload.set_property(msdo::download_property::use_foreground_priority, foregroundPriority);
 
             simpleDownload.start_and_wait_until_completion();
         });
@@ -258,9 +245,8 @@ TEST_F(DownloadPropertyTestsDOSVC, ForegroundBackgroundRace)
         {
             msdo::download simpleDownload(g_largeFileUrl, g_tmpFileName2);
 
-            std::unique_ptr<msdo::download_property_value> foregroundPriority = std::make_unique<msdo::download_property_value>();
-            msdo::download_property_value::make(*foregroundPriority, true);
-            simpleDownload.set_property(msdo::download_property::use_foreground_priority, *foregroundPriority);
+            msdo::download_property_value foregroundPriority = msdo::download_property_value::make(true);
+            simpleDownload.set_property(msdo::download_property::use_foreground_priority, foregroundPriority);
 
             simpleDownload.start_and_wait_until_completion();
         });

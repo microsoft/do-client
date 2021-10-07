@@ -84,9 +84,11 @@ void download::start_and_wait_until_completion(const std::atomic_bool& isCancell
     throw_if_fail(start_and_wait_until_completion_nothrow(isCancelled, timeOut));
 }
 
-void download::get_property(download_property prop, download_property_value& value)
+download_property_value download::get_property(download_property prop)
 {
-    throw_if_fail(_download->GetProperty(prop, value));
+    download_property_value val;
+    throw_if_fail(_download->GetProperty(prop, val));
+    return val;
 }
 
 void download::set_property(download_property prop, const download_property_value& val)

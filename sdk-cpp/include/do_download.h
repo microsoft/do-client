@@ -46,7 +46,7 @@ public:
     Attempting to set a download property on a version of windows earlier than 20H1 will not set the property and throw an exception with error code msdo::errc::do_e_unknown_property_id
     */
     void set_property(download_property key, const download_property_value& value);
-    void get_property(download_property key, download_property_value& value);
+    download_property_value get_property(download_property key);
 #endif
 
     int32_t start_nothrow() noexcept;

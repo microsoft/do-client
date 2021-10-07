@@ -72,12 +72,12 @@ public:
     ~download_property_value() = default;
 
 #if (DO_ENABLE_EXCEPTIONS)
-    static void make(download_property_value& out, const std::string& val);
-    static void make(download_property_value& out, uint32_t val);
-    static void make(download_property_value& out, uint64_t val);
-    static void make(download_property_value& out, bool val);
-    static void make(download_property_value& out, std::vector<unsigned char>& val);
-    static void make(download_property_value& out, const status_callback_t& val);
+    static download_property_value make(const std::string& val);
+    static download_property_value make(uint32_t val);
+    static download_property_value make(uint64_t val);
+    static download_property_value make(bool val);
+    static download_property_value make(std::vector<unsigned char>& val);
+    static download_property_value make(const status_callback_t& val);
 
     void as(bool& val) const;
     void as(uint32_t& val) const;

@@ -19,34 +19,46 @@ download_property_value::download_property_value()
 }
 
 #if (DO_ENABLE_EXCEPTIONS)
-void download_property_value::make(download_property_value& out, const std::string& val)
+download_property_value download_property_value::make(const std::string& val)
 {
+    download_property_value out;
     throw_if_fail(make_nothrow(out, val));
+    return out;
 }
 
-void download_property_value::make(download_property_value& out, uint32_t val)
+download_property_value download_property_value::make(uint32_t val)
 {
+    download_property_value out;
     throw_if_fail(make_nothrow(out, val));
+    return out;
 }
 
-void download_property_value::make(download_property_value& out, uint64_t val)
+download_property_value download_property_value::make(uint64_t val)
 {
+    download_property_value out;
     throw_if_fail(make_nothrow(out, val));
+    return out;
 }
 
-void download_property_value::make(download_property_value& out, bool val)
+download_property_value download_property_value::make(bool val)
 {
+    download_property_value out;
     throw_if_fail(make_nothrow(out, val));
+    return out;
 }
 
-void download_property_value::make(download_property_value& out, std::vector<unsigned char>& val)
+download_property_value download_property_value::make(std::vector<unsigned char>& val)
 {
+    download_property_value out;
     throw_if_fail(make_nothrow(out, val));
+    return out;
 }
 
-void download_property_value::make(download_property_value& out, const status_callback_t& val)
+download_property_value download_property_value::make(const status_callback_t& val)
 {
+    download_property_value out;
     throw_if_fail(make_nothrow(out, val));
+    return out;
 }
 
 void download_property_value::as(bool& val) const
