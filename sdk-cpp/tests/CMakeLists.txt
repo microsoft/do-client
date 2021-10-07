@@ -71,6 +71,9 @@ endif() # Windows
 
 add_executable(deliveryoptimization-sdk-tests ${test_source})
 add_platform_interface_definitions(deliveryoptimization-sdk-tests)
+if (DO_ENABLE_EXCEPTIONS)
+    target_compile_definitions(deliveryoptimization-sdk-tests PRIVATE DO_ENABLE_EXCEPTIONS)
+endif()
 
 target_include_directories(deliveryoptimization-sdk-tests
     PRIVATE

@@ -48,7 +48,7 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: 'python3 build/build.py --project sdk --config ${{parameters.config}} --vcpkgdir ${{parameters.vcpkgdir}}/vcpkg --build-directory /tmp/ --clean'
+    script: 'python3 build/build.py --project sdk --config ${{parameters.config}} --vcpkgdir ${{parameters.vcpkgdir}}/vcpkg --build-directory /tmp/ --clean --enable-exceptions'
     workingDirectory: $(Build.SourcesDirectory)
   displayName: 'Build sdk-cpp ${{parameters.targetOs}}-${{parameters.config}}'
 
@@ -75,7 +75,7 @@ steps:
         do_download.h
         do_download_property.h
         do_download_status.h
-        do_exceptions.h
+        do_errors.h
     SourceFolder: $(Build.SourcesDirectory)/sdk-cpp/include
     TargetFolder: '$(Build.ArtifactStagingDirectory)/include'
   displayName: 'Copy public headers to staging dir'

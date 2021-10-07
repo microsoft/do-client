@@ -14,7 +14,7 @@
 #include <unordered_map>
 
 #include <deliveryoptimization/do_download.h>
-#include <deliveryoptimization/do_exceptions.h>
+#include <deliveryoptimization/do_errors.h>
 namespace msdo = microsoft::deliveryoptimization;
 
 #include "do_hash.h"

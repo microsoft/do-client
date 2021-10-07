@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-#include "do_exceptions.h"
+#if defined(DO_ENABLE_EXCEPTIONS)
+
+#include "do_errors.h"
 
 namespace microsoft
 {
@@ -60,3 +62,5 @@ const std::error_code& exception::get_error_code() const
 
 } // namespace deliveryoptimization
 } // namespace microsoft
+
+#endif //DO_ENABLE_EXCEPTIONS

@@ -37,7 +37,7 @@ steps:
   inputs:
     scriptSource: 'filePath'
     scriptPath: 'build/build.py'
-    arguments: '--project sdk --config ${{parameters.config}} --vcpkgdir ${{parameters.vcpkgDir}}\vcpkg --clean'
+    arguments: '--project sdk --config ${{parameters.config}} --vcpkgdir ${{parameters.vcpkgDir}}\vcpkg --clean --enable-exceptions'
   displayName: 'Build sdk-cpp ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: CmdLine@2
@@ -81,7 +81,7 @@ steps:
         do_download.h
         do_download_property.h
         do_download_status.h
-        do_exceptions.h
+        do_errors.h
     SourceFolder: $(Build.SourcesDirectory)\sdk-cpp\include
     TargetFolder: '$(Build.ArtifactStagingDirectory)/include'
   displayName: 'Copy public headers to staging dir'
