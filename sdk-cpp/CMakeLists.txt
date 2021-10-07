@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 
 option (DO_ENABLE_EXCEPTIONS "Set DO_ENABLE_EXCEPTIONS to ON to disable compiling with exceptions" ON)
+message(STATUS "Exceptions Disabled: ${DO_ENABLE_EXCEPTIONS}")
 
 project (deliveryoptimization_sdk VERSION 0.7.0)
 

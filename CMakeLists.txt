@@ -15,9 +15,6 @@ option (DO_INCLUDE_PLUGINS "Build subproject plugins" OFF)
 option (DO_INCLUDE_SDK "Build subproject sdk-cpp" OFF)
 
 option (DO_BUILD_TESTS "Set DO_BUILD_TESTS to OFF to skip building tests." ON)
-option (DO_ENABLE_EXCEPTIONS "Set DO_ENABLE_EXCEPTIONS to ON to disable compiling with exceptions" ON)
-
-message(STATUS "Exceptions Disabled: ${DO_ENABLE_EXCEPTIONS}")
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
