@@ -1,4 +1,5 @@
-
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 #include "do_download_property_internal.h"
 
@@ -10,13 +11,9 @@
 
 using namespace microsoft::deliveryoptimization::details;
 
-int32_t UTF8toWstr(std::wstring& wstr, const char* str, size_t cch = 0)
+int32_t UTF8toWstr(const char* str, std::wstring& wstr)
 {
-    if (cch == 0)
-    {
-        cch = strlen(str);
-    }
-
+    size_t cch = strlen(str);
     if (cch == 0)
     {
         wstr = std::wstring();
@@ -37,7 +34,7 @@ int32_t CDownloadPropertyValueInternal::Init(const std::string& val) noexcept
     V_VT(&_var) = VT_BSTR;
 
     std::wstring wval;
-    auto hr = UTF8toWstr(wval, val.c_str());
+    auto hr = UTF8toWstr(val.c_str(), wval);
     RETURN_IF_FAILED(hr);
 
     BSTR bstr = SysAllocString(wval.c_str());

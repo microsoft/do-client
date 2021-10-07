@@ -1,4 +1,5 @@
-
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 #include "do_download_property_internal.h"
 

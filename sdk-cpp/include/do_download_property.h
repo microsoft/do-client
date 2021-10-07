@@ -87,12 +87,12 @@ public:
     void as(status_callback_t& val) const;
 #endif
 
-    static int32_t make_nothrow(download_property_value& out, const std::string& val);
-    static int32_t make_nothrow(download_property_value& out, uint32_t val);
-    static int32_t make_nothrow(download_property_value& out, uint64_t val);
-    static int32_t make_nothrow(download_property_value& out, bool val);
-    static int32_t make_nothrow(download_property_value& out, std::vector<unsigned char>& val);
-    static int32_t make_nothrow(download_property_value& out, const status_callback_t& val);
+    static int32_t make_nothrow(const std::string& val, download_property_value& out);
+    static int32_t make_nothrow(uint32_t val, download_property_value& out);
+    static int32_t make_nothrow(uint64_t val, download_property_value& out);
+    static int32_t make_nothrow(bool val, download_property_value& out);
+    static int32_t make_nothrow(std::vector<unsigned char>& val, download_property_value& out);
+    static int32_t make_nothrow(const status_callback_t& val, download_property_value& out);
 
     int32_t as_nothrow(bool& val) const noexcept;
     int32_t as_nothrow(uint32_t& val) const noexcept;

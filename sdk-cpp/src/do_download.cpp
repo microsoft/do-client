@@ -27,7 +27,7 @@ download::download(const std::string& uri, const std::string& downloadFilePath)
 
 download::~download() = default;
 
-#if (DO_ENABLE_EXCEPTIONS)
+#if defined(DO_ENABLE_EXCEPTIONS)
 void download::start()
 {
     throw_if_fail(_download->Start());
@@ -93,17 +93,7 @@ download_property_value download::get_property(download_property prop)
 
 void download::set_property(download_property prop, const download_property_value& val)
 {
-    if (prop == download_property::callback_interface)
-    {
-        download_property_value::status_callback_t userCallback;
-        val.as(userCallback);
-
-        throw_if_fail(_download->SetCallback(userCallback, *this));
-    }
-    else
-    {
-        throw_if_fail(_download->SetProperty(prop, val));
-    }
+    throw_if_fail(set_property_nothrow(prop, val));
 }
 
 #endif //DO_ENABLE_EXCEPTIONS

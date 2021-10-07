@@ -242,8 +242,8 @@ int32_t CDownloadImpl::Init(const std::string& uri, const std::string& downloadF
 
     download_property_value propUri;
     download_property_value propDownloadFilePath;
-    RETURN_IF_FAILED(download_property_value::make_nothrow(propUri, uri));
-    RETURN_IF_FAILED(download_property_value::make_nothrow(propDownloadFilePath, downloadFilePath));
+    RETURN_IF_FAILED(download_property_value::make_nothrow(uri, propUri));
+    RETURN_IF_FAILED(download_property_value::make_nothrow(downloadFilePath, propDownloadFilePath));
 
     RETURN_IF_FAILED(_SetPropertyHelper(*spDownload.Get(), download_property::uri, propUri));
     RETURN_IF_FAILED(_SetPropertyHelper(*spDownload.Get(), download_property::download_file_path, propDownloadFilePath));

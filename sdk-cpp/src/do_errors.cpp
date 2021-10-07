@@ -1,4 +1,7 @@
-#if (DO_ENABLE_EXCEPTIONS)
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+#if defined(DO_ENABLE_EXCEPTIONS)
 
 #include "do_errors.h"
 
