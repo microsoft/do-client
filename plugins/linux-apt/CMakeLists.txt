@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+option (DO_ENABLE_EXCEPTIONS "Set DO_ENABLE_EXCEPTIONS to ON to disable compiling with exceptions" ON)
+
 if (NOT DO_PLUGIN_APT_BIN_NAME)
     message (FATAL_ERROR "APT plugin binary name not defined")
 endif ()
@@ -23,7 +25,9 @@ target_compile_definitions(${DO_PLUGIN_APT_BIN_NAME}
     PRIVATE
         DO_PLUGIN_APT_CACHE_PATH="${dopapt_cache_path}"
         DO_PLUGIN_APT_LOG_PATH="${dopapt_log_path}"
+        DO_ENABLE_EXCEPTIONS
 )
+
 add_platform_interface_definitions(${DO_PLUGIN_APT_BIN_NAME})
 add_do_version_lib(${DO_PLUGIN_APT_BIN_NAME} ${PROJECT_VERSION})
 
