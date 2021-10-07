@@ -86,7 +86,7 @@ class ArgParserBase(object):
 
         '''SDK only'''
         self.parser.add_argument(
-            '--enable-exceptions', dest='enable_exceptions', action='store_true',
+            '--disable-exceptions', dest='disable_exceptions', action='store_true',
             help='Builds libdeliveryoptimization without compiling exception throwing code into the binary'
         )
 
@@ -181,7 +181,7 @@ class BuildRunnerBase(object):
 
         self.skip_tests = script_args.skip_tests
 
-        self.enable_exceptions = script_args.enable_exceptions
+        self.disable_exceptions = script_args.disable_exceptions
 
         self.source_path = self.project_root_path
 
@@ -372,7 +372,7 @@ class BuildRunnerBase(object):
         if self.skip_tests:
             generate_options.extend(["-DDO_BUILD_TESTS=OFF"])
 
-        if self.enable_exceptions:
+        if self.disable_exceptions:
             generate_options.extend(["-DDO_ENABLE_EXCEPTIONS=OFF"])
 
         if self.project:
