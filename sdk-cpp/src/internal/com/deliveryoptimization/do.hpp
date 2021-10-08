@@ -80,10 +80,8 @@ typedef enum _DODownloadProperty
     DODownloadProperty_IntegrityCheckInfo,
     DODownloadProperty_IntegrityCheckMandatory,
     DODownloadProperty_TotalSizeBytes,
-    DODownloadProperty_DisallowOnCellular,
-    DODownloadProperty_HttpCustomAuthHeaders,
-    DODownloadProperty_HttpAllowSecureToNonSecureRedirect,
-    DODownloadProperty_NonVolatile
+    DODownloadProperty_DisallowOnCellular,                  // Windows 21H2 (Build Number 22000)
+    DODownloadProperty_HttpCustomAuthHeaders,               // Windows 21H2 (Build Number 22000)
 } DODownloadProperty;
 
 // https://docs.microsoft.com/en-us/windows/win32/delivery_optimization/do/ns-do-do_download_enum_category
