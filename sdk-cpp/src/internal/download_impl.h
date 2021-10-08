@@ -13,7 +13,7 @@
 #if defined(DO_INTERFACE_COM)
 #include <wrl.h>
 
-#include "deliveryoptimization.h" // Fwd declaration of IDODownload doesn't work well w/ chromium builds
+#include "do.hpp" // Fwd declaration of IDODownload doesn't work well w/ all build systems
 #endif
 
 namespace microsoft

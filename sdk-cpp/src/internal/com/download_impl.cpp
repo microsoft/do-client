@@ -9,7 +9,6 @@
 #include <wrl/client.h>
 #include <wrl/implements.h>
 
-#include "deliveryoptimization.h"
 #include "do_download_property.h"
 #include "do_download_property_internal.h"
 #include "do_errors.h"
@@ -190,7 +189,7 @@ public:
         return S_OK;
     }
 
-#if (DO_ENABLE_EXCEPTIONS)
+#if defined(DO_ENABLE_EXCEPTIONS)
     IFACEMETHODIMP OnStatusChange(IDODownload* download, const DO_DOWNLOAD_STATUS* comStatus)
     {
         try
