@@ -46,11 +46,11 @@ int main(int argc, char** argv)
         } while (std::cin.get() != '\n');
     }
 
-    int res = RUN_ALL_TESTS();
+    int hr = RUN_ALL_TESTS();
 
 #if defined(DO_INTERFACE_COM)
     CoUninitialize();
 #endif
 
-    return res;
+    return hr;
 }

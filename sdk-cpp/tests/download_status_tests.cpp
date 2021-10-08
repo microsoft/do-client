@@ -4,7 +4,7 @@
 #include "tests_common.h"
 
 #include "do_download_status.h"
-#include "do_exceptions.h"
+#include "do_errors.h"
 
 namespace msdo = microsoft::deliveryoptimization;
 

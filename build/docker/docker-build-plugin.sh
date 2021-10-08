@@ -12,7 +12,7 @@ echo "Building apt plugin within Docker on Linux container"
 
 echo "Building & Installing sdk from source"
 cd $1
-python3 build/build.py --project sdk --cmaketarget deliveryoptimization --config $2 --clean
+python3 build/build.py --project sdk --cmaketarget deliveryoptimization --config $2 --enable-exceptions --clean
 cd /tmp/build-deliveryoptimization-sdk/linux-$2/
 cmake --build . --target install
 
