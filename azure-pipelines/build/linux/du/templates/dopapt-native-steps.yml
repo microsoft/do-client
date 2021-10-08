@@ -72,17 +72,3 @@ steps:
     ArtifactName: 'deliveryoptimization-plugin-apt'
     publishLocation: 'Container'
 
-# TODO(jimson) Azure artifacts are no longer free to publish to, this task will fail as a result, bug to resolve issue here:
-# https://microsoft.visualstudio.com/OS/_workitems/edit/30317524
-#
-#  - task: UniversalPackages@0
-#    inputs:
-#      command: 'publish'
-#      publishDirectory: '$(Build.ArtifactStagingDirectory)'
-#      feedsToUsePublish: 'internal'
-#      vstsFeedPublish: 'a6e08e1f-d299-4d2f-aaa5-db7ddde849e0'
-#      publishPackageMetadata: false
-#      vstsFeedPackagePublish: 'deliveryoptimization-plugin-apt'
-#      versionOption: 'custom'
-#      versionPublish: '$(test.package.version)'
-#    displayName: 'Publish artifacts to test feed'
