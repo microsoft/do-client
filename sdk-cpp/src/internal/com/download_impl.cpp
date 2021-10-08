@@ -9,7 +9,6 @@
 #include <wrl/client.h>
 #include <wrl/implements.h>
 
-#include "do.hpp"
 #include "do_download_property.h"
 #include "do_download_property_internal.h"
 #include "do_errors.h"
