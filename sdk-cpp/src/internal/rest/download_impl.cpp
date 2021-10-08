@@ -7,8 +7,8 @@
 #include <thread>
 
 #include "do_cpprest_uri_builder.h"
+#include "do_errors.h"
 #include "do_exceptions_internal.h"
-#include "do_exceptions.h"
 #include "do_http_client.h"
 
 namespace msdo = microsoft::deliveryoptimization;
@@ -24,121 +24,145 @@ namespace deliveryoptimization
 {
 namespace details
 {
-CDownloadImpl::CDownloadImpl(const std::string& uri, const std::string& downloadFilePath)
+int32_t CDownloadImpl::Init(const std::string& uri, const std::string& downloadFilePath) noexcept
 {
-    cpprest_web::uri_builder builder(g_downloadUriPart);
-    builder.append_path("create");
-    builder.append_query("Uri", uri);
-    builder.append_query("DownloadFilePath", downloadFilePath);
-
-    for (int retryAttempts = 0; retryAttempts < g_maxNumRetryAttempts; retryAttempts++)
+    try
     {
-        try
+        cpprest_web::uri_builder builder(g_downloadUriPart);
+        builder.append_path("create");
+        builder.append_query("Uri", uri);
+        builder.append_query("DownloadFilePath", downloadFilePath);
+
+        for (int retryAttempts = 0; retryAttempts < g_maxNumRetryAttempts; retryAttempts++)
         {
-            const auto respBody = CHttpClient::GetInstance().SendRequest(HttpRequest::POST, builder.to_string());
-            _id = respBody.get<std::string>("Id");
-            return;
-        }
-        catch (const msdo::exception& e)
-        {
-            // Handle DOCS in Shutdown state while Create request was issued, client will restart and this loop will break
-            // TODO(jimson): SDK doesn't have the capability to start do-client-lite.service if not running already. Test this
-            // code path when it is implemented.
-            if (e.error_code() != static_cast<int32_t>(msdo::errc::no_service))
+            try
             {
-                throw;
+                const auto respBody = CHttpClient::GetInstance().SendRequest(HttpRequest::POST, builder.to_string());
+                _id = respBody.get<std::string>("Id");
+                return S_OK;
             }
-            if (retryAttempts < g_maxNumRetryAttempts - 1)
+            catch (const msdo::exception& e)
             {
-                std::this_thread::sleep_for(1s);
+                // Handle DOCS in Shutdown state while Create request was issued, client will restart and this loop will break
+                // TODO(jimson): SDK doesn't have the capability to start do-client-lite.service if not running already. Test this
+                // code path when it is implemented.
+                if (e.error_code() != static_cast<int32_t>(msdo::errc::no_service))
+                {
+                    return e.error_code();
+                }
+                if (retryAttempts < g_maxNumRetryAttempts - 1)
+                {
+                    std::this_thread::sleep_for(1s);
+                }
             }
         }
+        return static_cast<int32_t>(msdo::errc::no_service);
     }
-    ThrowException(msdo::errc::no_service);
+    catch (msdo::exception& e)
+    {
+        return e.error_code();
+    }
 }
 
-void CDownloadImpl::Start()
+int32_t CDownloadImpl::Start() noexcept
 {
-    _DownloadOperationCall("start");
+    return _DownloadOperationCall("start");
 }
 
-void CDownloadImpl::Pause()
+int32_t CDownloadImpl::Pause() noexcept
 {
-    _DownloadOperationCall("pause");
+    return _DownloadOperationCall("pause");
 }
 
-void CDownloadImpl::Resume()
+int32_t CDownloadImpl::Resume() noexcept
 {
-    _DownloadOperationCall("start");
+    return _DownloadOperationCall("start");
 }
 
-void CDownloadImpl::Finalize()
+int32_t CDownloadImpl::Finalize() noexcept
 {
-    _DownloadOperationCall("finalize");
+    return _DownloadOperationCall("finalize");
 }
 
-void CDownloadImpl::Abort()
+int32_t CDownloadImpl::Abort() noexcept
 {
-    _DownloadOperationCall("abort");
+    return _DownloadOperationCall("abort");
 }
 
-msdo::download_status CDownloadImpl::GetStatus()
+int32_t CDownloadImpl::GetStatus(msdo::download_status& outStatus) noexcept
 {
-    cpprest_web::uri_builder builder(g_downloadUriPart);
-    builder.append_path("getstatus");
-    builder.append_query("Id", _id);
+    try
+    {
+        cpprest_web::uri_builder builder(g_downloadUriPart);
+        builder.append_path("getstatus");
+        builder.append_query("Id", _id);
 
-    const auto respBody = CHttpClient::GetInstance().SendRequest(HttpRequest::GET, builder.to_string());
+        const auto respBody = CHttpClient::GetInstance().SendRequest(HttpRequest::GET, builder.to_string());
 
-    uint64_t bytesTotal = respBody.get<uint64_t>("BytesTotal");
-    uint64_t bytesTransferred = respBody.get<uint64_t>("BytesTransferred");
-    int32_t errorCode = respBody.get<int32_t>("ErrorCode");
-    int32_t extendedErrorCode = respBody.get<int32_t>("ExtendedErrorCode");
+        uint64_t bytesTotal = respBody.get<uint64_t>("BytesTotal");
+        uint64_t bytesTransferred = respBody.get<uint64_t>("BytesTransferred");
+        int32_t errorCode = respBody.get<int32_t>("ErrorCode");
+        int32_t extendedErrorCode = respBody.get<int32_t>("ExtendedErrorCode");
 
-    static const std::map<std::string, download_state> stateMap =
-        {{ "Created", download_state::created },
+        static const std::map<std::string, download_state> stateMap =
+        { { "Created", download_state::created },
         { "Transferring", download_state::transferring },
         { "Transferred", download_state::transferred },
         { "Finalized", download_state::finalized },
         { "Aborted", download_state::aborted },
-        { "Paused", download_state::paused }};
+        { "Paused", download_state::paused } };
 
-    download_state status = download_state::created;
-    auto it = stateMap.find(respBody.get<std::string>("Status"));
-    if (it != stateMap.end())
-    {
-        status = it->second;
+        download_state status = download_state::created;
+        auto it = stateMap.find(respBody.get<std::string>("Status"));
+        if (it != stateMap.end())
+        {
+            status = it->second;
+        }
+        else
+        {
+            ThrowException(msdo::errc::unexpected);
+        }
+
+        msdo::download_status out(bytesTotal, bytesTransferred, errorCode, extendedErrorCode, status);
+        outStatus = out;
+        return S_OK;
     }
-    else
+    catch (msdo::exception& e)
     {
-        ThrowException(msdo::errc::unexpected);
+        return e.error_code();
+    }
+}
+
+int32_t CDownloadImpl::GetProperty(msdo::download_property key, msdo::download_property_value& value) noexcept
+{
+    return static_cast<int32_t>(msdo::errc::e_not_impl);
+}
+
+int32_t CDownloadImpl::SetProperty(msdo::download_property key, const msdo::download_property_value& val) noexcept
+{
+    return static_cast<int32_t>(msdo::errc::e_not_impl);
+}
+
+int32_t CDownloadImpl::SetCallback(const download_property_value::status_callback_t& callback, download& download) noexcept
+{
+    return static_cast<int32_t>(msdo::errc::e_not_impl);
+}
+
+int32_t CDownloadImpl::_DownloadOperationCall(const std::string& type) noexcept
+{
+    try 
+    {
+        cpprest_web::uri_builder builder(g_downloadUriPart);
+        builder.append_path(type);
+        builder.append_query("Id", _id);
+        (void)CHttpClient::GetInstance().SendRequest(HttpRequest::POST, builder.to_string());
+        return S_OK;
+    }
+    catch (msdo::exception& e)
+    {
+        return e.error_code();
     }
 
-    msdo::download_status out(bytesTotal, bytesTransferred, errorCode, extendedErrorCode, status);
-    return out;
-}
-
-download_property_value CDownloadImpl::GetProperty(msdo::download_property key) 
-{
-    throw msdo::errc::e_not_impl;
-}
-
-void CDownloadImpl::SetProperty(msdo::download_property key, const msdo::download_property_value& val)
-{
-    throw msdo::errc::e_not_impl;
-}
-
-void CDownloadImpl::SetCallback(const download_property_value::status_callback_t& callback, download& download)
-{
-    throw msdo::errc::e_not_impl;
-}
-
-void CDownloadImpl::_DownloadOperationCall(const std::string& type)
-{
-    cpprest_web::uri_builder builder(g_downloadUriPart);
-    builder.append_path(type);
-    builder.append_query("Id", _id);
-    (void)CHttpClient::GetInstance().SendRequest(HttpRequest::POST, builder.to_string());
 }
 
 } // namespace details

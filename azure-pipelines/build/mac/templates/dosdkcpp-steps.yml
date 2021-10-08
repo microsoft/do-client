@@ -75,7 +75,7 @@ steps:
         do_download.h
         do_download_property.h
         do_download_status.h
-        do_exceptions.h
+        do_errors.h
     SourceFolder: $(Build.SourcesDirectory)/sdk-cpp/include
     TargetFolder: '$(Build.ArtifactStagingDirectory)/include'
   displayName: 'Copy public headers to staging dir'

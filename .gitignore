@@ -1,6 +1,3 @@
-# Private Source
-sdk-cpp/src/internal/com/deliveryoptimization/*
-
 # Prerequisites
 *.d
 

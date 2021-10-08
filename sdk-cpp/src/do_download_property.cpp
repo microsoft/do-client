@@ -1,12 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-
 #include "do_download_property.h"
 
 #include "do_download_property_internal.h"
-
-#include "do_exceptions.h"
+#include "do_errors.h"
 
 namespace msdod = microsoft::deliveryoptimization::details;
 
@@ -15,65 +13,168 @@ namespace microsoft
 namespace deliveryoptimization
 {
 
-download_property_value::download_property_value(const std::string& val)
+download_property_value::download_property_value()
 {
-    _val = std::make_shared<msdod::CDownloadPropertyValueInternal>(val);
-};
+    _val = std::make_shared<msdod::CDownloadPropertyValueInternal>();
+}
 
-download_property_value::download_property_value(uint32_t val)
+#if defined(DO_ENABLE_EXCEPTIONS)
+download_property_value download_property_value::make(const std::string& val)
 {
-    _val = std::make_shared<msdod::CDownloadPropertyValueInternal>(val);
-};
+    download_property_value out;
+    throw_if_fail(make_nothrow(val, out));
+    return out;
+}
 
-download_property_value::download_property_value(uint64_t val)
+download_property_value download_property_value::make(uint32_t val)
 {
-    _val = std::make_shared<msdod::CDownloadPropertyValueInternal>(val);
-};
+    download_property_value out;
+    throw_if_fail(make_nothrow(val, out));
+    return out;
+}
 
-download_property_value::download_property_value(bool val)
+download_property_value download_property_value::make(uint64_t val)
 {
-    _val = std::make_shared<msdod::CDownloadPropertyValueInternal>(val);
-};
+    download_property_value out;
+    throw_if_fail(make_nothrow(val, out));
+    return out;
+}
 
-download_property_value::download_property_value(std::vector<unsigned char>& val)
+download_property_value download_property_value::make(bool val)
 {
-    _val = std::make_shared<msdod::CDownloadPropertyValueInternal>(val);
-};
+    download_property_value out;
+    throw_if_fail(make_nothrow(val, out));
+    return out;
+}
 
-download_property_value::download_property_value(const status_callback_t& val)
+download_property_value download_property_value::make(std::vector<unsigned char>& val)
 {
-    _val = std::make_shared<msdod::CDownloadPropertyValueInternal>(val);
+    download_property_value out;
+    throw_if_fail(make_nothrow(val, out));
+    return out;
+}
+
+download_property_value download_property_value::make(const status_callback_t& val)
+{
+    download_property_value out;
+    throw_if_fail(make_nothrow(val, out));
+    return out;
 }
 
 void download_property_value::as(bool& val) const
 {
-    _val->as(val);
+    throw_if_fail(_val->As(val));
 };
 
 void download_property_value::as(uint32_t& val) const
 {
-    _val->as(val);
+    throw_if_fail(_val->As(val));
 };
 
 void download_property_value::as(uint64_t& val) const
 {
-    _val->as(val);
+    throw_if_fail(_val->As(val));
 };
 
 void download_property_value::as(std::string& val) const
 {
-    _val->as(val);
+    throw_if_fail(_val->As(val));
 };
 
 void download_property_value::as(status_callback_t& val) const
 {
-    _val->as(val);
+    throw_if_fail(_val->As(val));
 };
 
 void download_property_value::as(std::vector<unsigned char>& val) const
 {
-    _val->as(val);
+    throw_if_fail(_val->As(val));
 }
+#endif
+
+int32_t download_property_value::make_nothrow(const std::string& val, download_property_value& out)
+{
+    download_property_value temp;
+    RETURN_IF_FAILED(temp._val->Init(val));
+
+    out = temp;
+    return S_OK;
+}
+
+int32_t download_property_value::make_nothrow(uint32_t val, download_property_value& out)
+{
+    download_property_value temp;
+    RETURN_IF_FAILED(temp._val->Init(val));
+
+    out = temp;
+    return S_OK;
+}
+
+int32_t download_property_value::make_nothrow(uint64_t val, download_property_value& out)
+{
+    download_property_value temp;
+    RETURN_IF_FAILED(temp._val->Init(val));
+
+    out = temp;
+    return S_OK;
+}
+
+int32_t download_property_value::make_nothrow(bool val, download_property_value& out)
+{
+    download_property_value temp;
+    RETURN_IF_FAILED(temp._val->Init(val));
+
+    out = temp;
+    return S_OK;
+}
+
+int32_t download_property_value::make_nothrow(std::vector<unsigned char>& val, download_property_value& out)
+{
+    download_property_value temp;
+    RETURN_IF_FAILED(temp._val->Init(val));
+
+    out = temp;
+    return S_OK;
+}
+
+int32_t download_property_value::make_nothrow(const status_callback_t& val, download_property_value& out)
+{
+    download_property_value temp;
+    RETURN_IF_FAILED(temp._val->Init(val));
+
+    out = temp;
+    return S_OK;
+}
+
+int32_t download_property_value::as_nothrow(bool& val) const noexcept
+{
+    return _val->As(val);
+};
+
+int32_t download_property_value::as_nothrow(uint32_t& val) const noexcept
+{
+    return _val->As(val);
+};
+
+int32_t download_property_value::as_nothrow(uint64_t& val) const noexcept
+{
+    return _val->As(val);
+};
+
+int32_t download_property_value::as_nothrow(std::string& val) const noexcept
+{
+    return _val->As(val);
+};
+
+int32_t download_property_value::as_nothrow(std::vector<unsigned char>& val) const noexcept
+{
+    return _val->As(val);
+}
+
+int32_t download_property_value::as_nothrow(status_callback_t& val) const noexcept
+{
+    return _val->As(val);
+};
 
 } // deliveryoptimization
 } // microsoft
