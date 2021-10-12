@@ -1,10 +1,8 @@
 #include "do_config_internal.h"
 
-//TODO(jimson): This file throws exceptions, but will not be used by a caller that requires exceptions disabled -leave as is for now but revisit if this changes.
-#if defined(DO_CLIENT_AGENT)
-
 #include <cstdio> // popen
 #include <cstdlib> // calloc
+#if defined(DO_CLIENT_AGENT)
 #include <cstring> // strncpy
 #include <sstream>
 #include <string>
@@ -16,8 +14,13 @@
 #include <boost/property_tree/json_parser.hpp>
 #include "do_persistence.h"
 #include "do_version.h"
+#elif defined(DO_CLIENT_DOSVC)
+#include "do_errors.h"
+#endif
 
 namespace msdo = microsoft::deliveryoptimization;
+
+#if defined(DO_CLIENT_AGENT)
 namespace msdoutil = microsoft::deliveryoptimization::util::details;
 
 const char* const g_dosvcBinName = DOSVC_BIN_NAME;
