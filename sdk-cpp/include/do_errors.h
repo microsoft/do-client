@@ -29,16 +29,78 @@ enum class errc : int32_t
     do_e_unknown_property_id    = -2133843951
 };
 
-#if (DO_ENABLE_EXCEPTIONS)
-
+// Error category can denote different types of error - useful for our purposes
 class error_category : public std::error_category
 {
 public:
     const char* name() const noexcept override;
 
-    std::string message(int code) const override;
+    std::string message(int32_t code) const override;
 };
 
+// std::error_condition is platform independent
+class error_condition : public std::error_condition
+{
+public:
+    error_condition() noexcept;
+
+    error_condition(int32_t val, const error_category& cat) noexcept
+    {
+        _value = val;
+    }
+
+    void assign(int32_t val, const error_category& cat) noexcept 
+    {
+        _value = val;
+    }
+
+    int32_t value() const noexcept
+    {
+        return _value;
+    }
+
+    const error_category& category() const noexcept
+    {
+        return _category;
+    }
+
+    std::string message() const
+    {
+        return category().message(value());
+    }
+
+private:
+    int32_t _value;
+    error_category _category;
+};
+
+// std::error_code is platform dependent
+class error_code : public std::error_code
+{
+public:
+    error_code() = default;
+    
+    error_code(int32_t code) : _code(code)
+    {
+        
+    }
+
+    int32_t value() const noexcept
+    {
+        return _code;
+    }
+
+    const error_category& category() const noexcept
+    {
+        return _category;
+    }
+
+private:
+    int32_t _code;
+    error_category _category;
+};
+
+#if (DO_ENABLE_EXCEPTIONS)
 class exception : public std::exception
 {
 public:

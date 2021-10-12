@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-#if defined(DO_ENABLE_EXCEPTIONS)
+
 
 #include "do_errors.h"
 
@@ -20,7 +20,7 @@ const char* error_category::name() const noexcept
 {
     return "delivery optimization error";
 }
-std::string error_category::message(int code) const
+std::string error_category::message(int32_t code) const
 {
     switch (static_cast<errc>(code))
     {
@@ -28,6 +28,8 @@ std::string error_category::message(int code) const
         return "unrecognized error";
     }
 }
+
+#if defined(DO_ENABLE_EXCEPTIONS)
 
 exception::exception(std::error_code code) :
     _code(std::move(code)),
