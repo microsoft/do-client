@@ -15,7 +15,7 @@
 #include "do_persistence.h"
 #include "do_version.h"
 #elif defined(DO_CLIENT_DOSVC)
-#include "do_errors.h"
+#include "do_errors.h" // msdo::errc::e_not_impl
 #endif
 
 namespace msdo = microsoft::deliveryoptimization;
@@ -86,9 +86,7 @@ static std::string GetBinaryVersion(const boost::filesystem::path& binaryFilePat
             fp = popen(command.c_str(), "r");
             if (fp == nullptr)
             {
-#if !defined(DO_ENABLE_EXCEPTIONS)
                 throw std::exception();
-#endif
             }
 
             char readBuffer[256];
