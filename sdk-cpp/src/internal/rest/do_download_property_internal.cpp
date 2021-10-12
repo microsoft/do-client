@@ -12,6 +12,8 @@
 
 using namespace microsoft::deliveryoptimization::details;
 
+CDownloadPropertyValueInternal::CDownloadPropertyValueInternal() = default;
+
 int32_t CDownloadPropertyValueInternal::Init(const std::string& val) noexcept
 {
     return static_cast<int32_t>(errc::e_not_impl);

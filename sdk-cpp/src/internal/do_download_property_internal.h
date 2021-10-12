@@ -30,7 +30,7 @@ public:
 #else
     using native_type = boost::variant<std::string, uint32_t, uint64_t, bool, std::vector<unsigned char>>;
 #endif
-    CDownloadPropertyValueInternal() = default;
+    CDownloadPropertyValueInternal();
 
     int32_t Init(const std::string& val) noexcept;
     int32_t Init(uint32_t val) noexcept;

@@ -29,6 +29,11 @@ int32_t UTF8toWstr(const char* str, std::wstring& wstr)
     return S_OK;
 }
 
+CDownloadPropertyValueInternal::CDownloadPropertyValueInternal()
+{
+    VariantInit(&_var);
+}
+
 int32_t CDownloadPropertyValueInternal::Init(const std::string& val) noexcept
 {
     V_VT(&_var) = VT_BSTR;
@@ -75,7 +80,6 @@ int32_t CDownloadPropertyValueInternal::Init(std::vector<unsigned char>& val) no
 
 int32_t CDownloadPropertyValueInternal::Init(const download_property_value::status_callback_t& val) noexcept
 {
-    V_VT(&_var) = VT_EMPTY;
     _callback = val;
     return S_OK;
 }
@@ -91,11 +95,18 @@ CDownloadPropertyValueInternal::~CDownloadPropertyValueInternal()
 
 CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(const CDownloadPropertyValueInternal& rhs)
 {
-#ifdef DEBUG
-    assert(SUCCEEDED(VariantCopy(&_var, &rhs._var)));
-#else:
-    (void)VariantCopy(&_var, &rhs._var);
+    int32_t res = VariantCopy(&_var, &rhs._var);
+#if DEBUG
+    assert(SUCCEEDED(res));
 #endif
+    if FAILED(res)
+    {
+#if defined(DO_ENABLE_EXCEPTIONS)
+        throw std::bad_alloc();
+#else
+        std::terminate()
+#endif
+    }
     _callback = rhs._callback;
 };
 
