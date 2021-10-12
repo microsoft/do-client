@@ -62,7 +62,7 @@ public:
 //At the moment, these tests are essentially just verifying that these properties can be set and download succeeds
 TEST_F(DownloadPropertyTestsDOSVC, SmallDownloadSetCallerNameTest)
 {
-    msdo::download simpleDownload(g_smallFileUrl, g_tmpFileName);
+    msdo::download simpleDownload = msdo::download::make(g_smallFileUrl, g_tmpFileName);
 
     std::string strCallerName("dosdkcpp_tests");
     msdo::download_property_value callerName = msdo::download_property_value::make(strCallerName);
@@ -74,7 +74,7 @@ TEST_F(DownloadPropertyTestsDOSVC, SmallDownloadSetCallerNameTest)
 
 TEST_F(DownloadPropertyTestsDOSVC, SmallDownloadWithPhfDigestandCvTest)
 {
-    msdo::download simpleDownload(g_smallFileUrl, g_tmpFileName);
+    msdo::download simpleDownload = msdo::download::make(g_smallFileUrl, g_tmpFileName);
 
     std::vector<int32_t> expectedErrors = { 0, static_cast<int32_t>(msdo::errc::do_e_unknown_property_id) };
 
@@ -104,7 +104,7 @@ TEST_F(DownloadPropertyTestsDOSVC, SmallDownloadWithPhfDigestandCvTest)
 
 TEST_F(DownloadPropertyTestsDOSVC, SmallDownloadWithPhfDigestandCvTestNoThrow)
 {
-    msdo::download simpleDownload(g_smallFileUrl, g_tmpFileName);
+    msdo::download simpleDownload = msdo::download::make(g_smallFileUrl, g_tmpFileName);
 
     std::vector<int32_t> expectedErrors = { 0, static_cast<int32_t>(msdo::errc::do_e_unknown_property_id) };
 
@@ -128,7 +128,7 @@ TEST_F(DownloadPropertyTestsDOSVC, SmallDownloadWithPhfDigestandCvTestNoThrow)
 
 TEST_F(DownloadPropertyTestsDOSVC, InvalidPhfDigestTest)
 {
-    msdo::download simpleDownload(g_smallFileUrl, g_tmpFileName);
+    msdo::download simpleDownload = msdo::download::make(g_smallFileUrl, g_tmpFileName);
 
     try
     {
@@ -147,7 +147,7 @@ TEST_F(DownloadPropertyTestsDOSVC, InvalidPhfDigestTest)
 // For some reason, custom headers are getting rejected and returning E_INVALIDARG now, disabling test for now
 TEST_F(DownloadPropertyTestsDOSVC, DISABLED_SmallDownloadWithCustomHeaders)
 {
-    msdo::download simpleDownload(g_smallFileUrl, g_tmpFileName);
+    msdo::download simpleDownload = msdo::download::make(g_smallFileUrl, g_tmpFileName);
 
     std::string strHttpCustomHeaders("XCustom1=someData\nXCustom2=moreData");
     msdo::download_property_value httpCustomHeaders = msdo::download_property_value::make(strHttpCustomHeaders);
@@ -160,7 +160,7 @@ TEST_F(DownloadPropertyTestsDOSVC, DISABLED_SmallDownloadWithCustomHeaders)
 
 TEST_F(DownloadPropertyTestsDOSVC, CallbackTestUseDownload)
 {
-    msdo::download simpleDownload(g_largeFileUrl, g_tmpFileName);
+    msdo::download simpleDownload = msdo::download::make(g_largeFileUrl, g_tmpFileName);
     bool hitError = false;
 
     msdo::download_property_value callback = msdo::download_property_value::make([&hitError](msdo::download& download, msdo::download_status& status)
@@ -188,7 +188,7 @@ TEST_F(DownloadPropertyTestsDOSVC, CallbackTestUseDownload)
 
 TEST_F(DownloadPropertyTestsDOSVC, SetCallbackTest)
 {
-    msdo::download simpleDownload(g_smallFileUrl, g_tmpFileName);
+    msdo::download simpleDownload = msdo::download::make(g_smallFileUrl, g_tmpFileName);
 
     int i= 0;
     msdo::download_property_value callback = msdo::download_property_value::make([&i](msdo::download& download, msdo::download_status& status)
@@ -209,7 +209,7 @@ TEST_F(DownloadPropertyTestsDOSVC, SetCallbackTest)
 
 TEST_F(DownloadPropertyTestsDOSVC, OverrideCallbackTest)
 {
-    msdo::download simpleDownload(g_smallFileUrl, g_tmpFileName);
+    msdo::download simpleDownload = msdo::download::make(g_smallFileUrl, g_tmpFileName);
 
     int i = 0;
     msdo::download_property_value callback = msdo::download_property_value::make([&i](msdo::download&, msdo::download_status&)
@@ -232,7 +232,7 @@ TEST_F(DownloadPropertyTestsDOSVC, ForegroundBackgroundRace)
 {
     double backgroundDuration = TimeOperation([&]()
         {
-            msdo::download simpleDownload(g_largeFileUrl, g_tmpFileName);
+            msdo::download simpleDownload = msdo::download::make(g_largeFileUrl, g_tmpFileName);
 
             msdo::download_property_value foregroundPriority = msdo::download_property_value::make(false);
             simpleDownload.set_property(msdo::download_property::use_foreground_priority, foregroundPriority);
@@ -243,7 +243,7 @@ TEST_F(DownloadPropertyTestsDOSVC, ForegroundBackgroundRace)
     printf("Time for background download: %f ms\n", backgroundDuration);
     double foregroundDuration = TimeOperation([&]()
         {
-            msdo::download simpleDownload(g_largeFileUrl, g_tmpFileName2);
+            msdo::download simpleDownload = msdo::download::make(g_largeFileUrl, g_tmpFileName2);
 
             msdo::download_property_value foregroundPriority = msdo::download_property_value::make(true);
             simpleDownload.set_property(msdo::download_property::use_foreground_priority, foregroundPriority);

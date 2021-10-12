@@ -73,7 +73,7 @@ TEST_F(MCCDownloadTests, DownloadWithInvalidHostAndUrl)
     const auto invalidUrl = "http://" + std::to_string(gen()) + ".com";
     std::cout << "Using invalid URL: " << invalidUrl << std::endl;
 
-    msdo::download download{invalidUrl, g_tmpFileName};
+    msdo::download download = msdo::download::make(invalidUrl, g_tmpFileName);
     download.start();
 
     // Wait enough time to exercise the agent code that attempts both MCC and CDN in a loop.

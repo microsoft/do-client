@@ -57,7 +57,7 @@ public:
 
 TEST_F(DownloadTests, SimpleDownloadTest)
 {
-    msdo::download simpleDownload(g_smallFileUrl, g_tmpFileName);
+    msdo::download simpleDownload = msdo::download::make(g_smallFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload.get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
@@ -187,7 +187,7 @@ TEST_F(DownloadTests, SimpleDownloadTest_With404UrlAndMalformedPath)
 TEST_F(DownloadTests, Download1PausedDownload2SameDestTest)
 {
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-    msdo::download simpleDownload(g_largeFileUrl, g_tmpFileName);
+    msdo::download = msdo::download::makesimpleDownload(g_largeFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload.get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
@@ -226,7 +226,7 @@ TEST_F(DownloadTests, Download1PausedDownload2SameDestTest)
 TEST_F(DownloadTests, Download1PausedDownload2SameFileDownload1Resume)
 {
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-    msdo::download simpleDownload(g_largeFileUrl, g_tmpFileName);
+    msdo::download simpleDownload = msdo::download::make(g_largeFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload.get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
@@ -248,12 +248,12 @@ TEST_F(DownloadTests, Download1PausedDownload2SameFileDownload1Resume)
 TEST_F(DownloadTests, Download1NeverStartedDownload2CancelledSameFileTest)
 {
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-    msdo::download simpleDownload(g_largeFileUrl, g_tmpFileName);
+    msdo::download simpleDownload = msdo::download::make(g_largeFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload.get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
 
-    msdo::download simpleDownload2(g_largeFileUrl, g_tmpFileName);
+    msdo::download simpleDownload2 = msdo::download::make(g_largeFileUrl, g_tmpFileName);
     try
     {
         simpleDownload2.abort();
@@ -267,7 +267,7 @@ TEST_F(DownloadTests, Download1NeverStartedDownload2CancelledSameFileTest)
 
 TEST_F(DownloadTests, ResumeOnAlreadyDownloadedFileTest)
 {
-    msdo::download simpleDownload(g_smallFileUrl, g_tmpFileName);
+    msdo::download simpleDownload = msdo::download::make(g_smallFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload.get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
@@ -298,7 +298,7 @@ TEST_F(DownloadTests, ResumeOnAlreadyDownloadedFileTest)
 
 TEST_F(DownloadTests, CancelDownloadOnCompletedState)
 {
-    msdo::download simpleDownload(g_smallFileUrl, g_tmpFileName);
+    msdo::download simpleDownload = msdo::download::make(g_smallFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload.get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
@@ -330,7 +330,7 @@ TEST_F(DownloadTests, CancelDownloadOnCompletedState)
 
 TEST_F(DownloadTests, CancelDownloadInTransferredState)
 {
-    msdo::download simpleDownload(g_smallFileUrl, g_tmpFileName);
+    msdo::download simpleDownload = msdo::download::make(g_smallFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload.get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
@@ -362,7 +362,7 @@ TEST_F(DownloadTests, CancelDownloadInTransferredState)
 
 static void _PauseResumeTest(bool delayAfterStart = false)
 {
-    msdo::download simpleDownload(g_largeFileUrl, g_tmpFileName);
+    msdo::download simpleDownload = msdo::download::make(g_largeFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload.get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);

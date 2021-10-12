@@ -19,15 +19,22 @@ namespace microsoft
 namespace deliveryoptimization
 {
 
-download::download(const std::string& uri, const std::string& downloadFilePath)
+download::download()
 {
     _download = std::make_shared<msdod::CDownloadImpl>();
-    _download->Init(uri, downloadFilePath);
 }
 
 download::~download() = default;
 
 #if defined(DO_ENABLE_EXCEPTIONS)
+download download::make(const std::string& uri, const std::string& downloadFilePath)
+{
+    download out;
+    out._download = std::make_shared<msdod::CDownloadImpl>();
+    throw_if_fail(out._download->Init(uri, downloadFilePath));
+    return out;
+}
+
 void download::start()
 {
     throw_if_fail(_download->Start());
@@ -69,13 +76,13 @@ void download::start_and_wait_until_completion(std::chrono::seconds timeOut)
 
 void download::download_url_to_path(const std::string& uri, const std::string& downloadFilePath, std::chrono::seconds timeOut)
 {
-    download oneShotDownload(uri, downloadFilePath);
+    download oneShotDownload = download::make(uri, downloadFilePath);
     oneShotDownload.start_and_wait_until_completion(timeOut);
 }
 
 void download::download_url_to_path(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeOut)
 {
-    download oneShotDownload(uri, downloadFilePath);
+    download oneShotDownload = download::make(uri, downloadFilePath);
     oneShotDownload.start_and_wait_until_completion(isCancelled, timeOut);
 }
 
@@ -97,6 +104,14 @@ void download::set_property(download_property prop, const download_property_valu
 }
 
 #endif //DO_ENABLE_EXCEPTIONS
+
+int32_t download::make_nothrow(const std::string& uri, const std::string& downloadFilePath, download& out) noexcept
+{
+    download tmp;
+    tmp._download = std::make_shared<msdod::CDownloadImpl>();
+    RETURN_IF_FAILED(tmp._download->Init(uri, downloadFilePath));
+    out = tmp;
+}
 
 int32_t download::start_nothrow() noexcept
 {
@@ -188,13 +203,13 @@ int32_t download::start_and_wait_until_completion_nothrow(const std::atomic_bool
 
 int32_t download::download_url_to_path_nothrow(const std::string& uri, const std::string& downloadFilePath, std::chrono::seconds timeOut) noexcept
 {
-    download oneShotDownload(uri, downloadFilePath);
+    download oneShotDownload = download::make(uri, downloadFilePath);
     return oneShotDownload.start_and_wait_until_completion_nothrow(timeOut);
 }
 
 int32_t download::download_url_to_path_nothrow(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeOut) noexcept
 {
-    download oneShotDownload(uri, downloadFilePath);
+    download oneShotDownload = download::make(uri, downloadFilePath);
     return oneShotDownload.start_and_wait_until_completion_nothrow(timeOut);
 }
 

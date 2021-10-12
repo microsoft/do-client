@@ -26,7 +26,7 @@ class CDownloadImpl : public IDownload
 {
 public:
     CDownloadImpl() = default;
-    
+
     int32_t Init(const std::string& uri, const std::string& downloadFilePath) noexcept;
 
     int32_t Start() noexcept override;

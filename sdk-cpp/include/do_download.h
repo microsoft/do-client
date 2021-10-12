@@ -24,10 +24,12 @@ class IDownload;
 class download
 {
 public:
-    download(const std::string& uri, const std::string& downloadFilePath);
+    download();
     ~download();
 
 #if (DO_ENABLE_EXCEPTIONS)
+    static download make(const std::string& uri, const std::string& downloadFilePath);
+    
     void start();
     void pause();
     void resume();
@@ -48,6 +50,8 @@ public:
     void set_property(download_property key, const download_property_value& value);
     download_property_value get_property(download_property key);
 #endif
+
+    int32_t make_nothrow(const std::string& uri, const std::string& downloadFilePath, download& out) noexcept;
 
     int32_t start_nothrow() noexcept;
     int32_t pause_nothrow() noexcept;
