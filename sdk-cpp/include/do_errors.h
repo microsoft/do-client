@@ -131,17 +131,9 @@ private:
     std::string _msg;
 };
 
-inline void throw_if_fail(int32_t hr)
-{
-    if (FAILED(hr))
-    {
-        throw exception(hr);
-    }
-}
-
 inline void throw_if_fail(error_code code)
 {
-    if FAILED(code.value())
+    if (DO_FAILED(code))
     {
         throw exception(code.value());
     }

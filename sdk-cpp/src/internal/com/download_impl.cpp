@@ -17,6 +17,17 @@ namespace msdo = microsoft::deliveryoptimization;
 using namespace microsoft::deliveryoptimization::details;
 using namespace Microsoft::WRL;
 
+#ifndef RETURN_IF_FAILED
+#define RETURN_IF_FAILED(hr)  {  \
+    int32_t __hr = (hr);            \
+    if(FAILED(__hr)) return __hr;   \
+}
+#endif
+
+#ifndef FAILED
+#define FAILED(hr) (((int32_t)(hr)) < 0)
+#endif
+
 static msdo::download_state ConvertFromComState(DODownloadState platformState)
 {
     msdo::download_state state;

@@ -10,7 +10,7 @@
 namespace msdo = microsoft::deliveryoptimization;
 using namespace microsoft::deliveryoptimization::details;
 
-int32_t UTF8toWstr(const char* str, std::wstring& wstr)
+msdo::error_code UTF8toWstr(const char* str, std::wstring& wstr)
 {
     size_t cch = strlen(str);
     if (cch == 0)
@@ -25,7 +25,7 @@ int32_t UTF8toWstr(const char* str, std::wstring& wstr)
         return E_FAIL;
     }
     wstr = std::wstring(dest.data(), result);
-    return S_OK;
+    return msdo::DO_OK;
 }
 
 CDownloadPropertyValueInternal::CDownloadPropertyValueInternal()
@@ -39,12 +39,12 @@ msdo::error_code CDownloadPropertyValueInternal::Init(const std::string& val) no
 
     std::wstring wval;
     auto hr = UTF8toWstr(val.c_str(), wval);
-    RETURN_IF_FAILED(hr);
+    DO_RETURN_IF_FAILED(hr);
 
     BSTR bstr = SysAllocString(wval.c_str());
     if (bstr == nullptr)
     {
-        hr = DO_ERROR_FROM_STD_ERROR(std::errc::not_enough_memory);
+        return msdo::error_code(DO_ERROR_FROM_STD_ERROR(std::errc::not_enough_memory));
     }
     V_BSTR(&_var) = bstr;
 

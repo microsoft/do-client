@@ -101,6 +101,6 @@ msdo::error_code CDownloadPropertyValueInternal::As(std::vector<unsigned char>& 
 msdo::error_code CDownloadPropertyValueInternal::As(download_property_value::status_callback_t& val) const noexcept
 {
     val = _callback;
-    return S_OK;
+    return msdo::DO_OK;
 };
 
