@@ -85,20 +85,29 @@ public:
         
     }
 
+    error_code(errc code)
+    {
+        _code = static_cast<int32_t>(code);
+    }
+
     int32_t value() const noexcept
     {
         return _code;
     }
 
+    /*
     const error_category& category() const noexcept
     {
         return _category;
     }
+    */
 
 private:
     int32_t _code;
-    error_category _category;
+    //error_category _category;
 };
+
+// TODO(jimson): Provide helpers for checking if error code is a failure or not
 
 #if (DO_ENABLE_EXCEPTIONS)
 class exception : public std::exception
@@ -127,6 +136,14 @@ inline void throw_if_fail(int32_t hr)
     if (FAILED(hr))
     {
         throw exception(hr);
+    }
+}
+
+inline void throw_if_fail(error_code& code)
+{
+    if FAILED(code.value())
+    {
+        throw exception(code.value());
     }
 }
 

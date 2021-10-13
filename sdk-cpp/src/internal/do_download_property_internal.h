@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "do_download_property.h"
+#include "do_errors.h"
 
 namespace microsoft
 {
@@ -32,12 +33,12 @@ public:
 #endif
     CDownloadPropertyValueInternal();
 
-    int32_t Init(const std::string& val) noexcept;
-    int32_t Init(uint32_t val) noexcept;
-    int32_t Init(uint64_t val) noexcept;
-    int32_t Init(bool val) noexcept;
-    int32_t Init(std::vector<unsigned char>& val) noexcept;
-    int32_t Init(const download_property_value::status_callback_t& val) noexcept;
+    error_code Init(const std::string& val) noexcept;
+    error_code Init(uint32_t val) noexcept;
+    error_code Init(uint64_t val) noexcept;
+    error_code Init(bool val) noexcept;
+    error_code Init(std::vector<unsigned char>& val) noexcept;
+    error_code Init(const download_property_value::status_callback_t& val) noexcept;
 
     ~CDownloadPropertyValueInternal();
 
@@ -51,12 +52,12 @@ public:
         std::swap(first._callback, second._callback);
     }
 
-    int32_t As(bool& val) const noexcept;
-    int32_t As(uint32_t& val) const noexcept;
-    int32_t As(uint64_t& val) const noexcept;
-    int32_t As(std::string& val) const noexcept;
-    int32_t As(download_property_value::status_callback_t& val) const noexcept;
-    int32_t As(std::vector<unsigned char>& val) const noexcept;
+    error_code As(bool& val) const noexcept;
+    error_code As(uint32_t& val) const noexcept;
+    error_code As(uint64_t& val) const noexcept;
+    error_code As(std::string& val) const noexcept;
+    error_code As(download_property_value::status_callback_t& val) const noexcept;
+    error_code As(std::vector<unsigned char>& val) const noexcept;
 
     const native_type& native_value() const noexcept;
 

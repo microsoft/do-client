@@ -92,86 +92,92 @@ void download_property_value::as(std::vector<unsigned char>& val) const
 }
 #endif
 
-int32_t download_property_value::make_nothrow(const std::string& val, download_property_value& out)
+error_code download_property_value::make_nothrow(const std::string& val, download_property_value& out)
 {
     download_property_value temp;
-    RETURN_IF_FAILED(temp._val->Init(val));
+    error_code code = temp._val->Init(val);
+    DO_RETURN_IF_FAILED(code);
 
     out = temp;
-    return S_OK;
+    return DO_OK;
 }
 
-int32_t download_property_value::make_nothrow(uint32_t val, download_property_value& out)
+error_code download_property_value::make_nothrow(uint32_t val, download_property_value& out)
 {
     download_property_value temp;
-    RETURN_IF_FAILED(temp._val->Init(val));
+    error_code code = temp._val->Init(val);
+    DO_RETURN_IF_FAILED(code);
 
     out = temp;
-    return S_OK;
+    return DO_OK;
 }
 
-int32_t download_property_value::make_nothrow(uint64_t val, download_property_value& out)
+error_code download_property_value::make_nothrow(uint64_t val, download_property_value& out)
 {
     download_property_value temp;
-    RETURN_IF_FAILED(temp._val->Init(val));
+    error_code code = temp._val->Init(val);
+    DO_RETURN_IF_FAILED(code);
 
     out = temp;
-    return S_OK;
+    return DO_OK;
 }
 
-int32_t download_property_value::make_nothrow(bool val, download_property_value& out)
+error_code download_property_value::make_nothrow(bool val, download_property_value& out)
 {
     download_property_value temp;
-    RETURN_IF_FAILED(temp._val->Init(val));
+    error_code code = temp._val->Init(val);
+    DO_RETURN_IF_FAILED(code);
 
     out = temp;
-    return S_OK;
+    return DO_OK;
 }
 
-int32_t download_property_value::make_nothrow(std::vector<unsigned char>& val, download_property_value& out)
+error_code download_property_value::make_nothrow(std::vector<unsigned char>& val, download_property_value& out)
 {
     download_property_value temp;
-    RETURN_IF_FAILED(temp._val->Init(val));
+    error_code code = temp._val->Init(val);
+    DO_RETURN_IF_FAILED(code);
 
     out = temp;
-    return S_OK;
+    return DO_OK;
 }
 
-int32_t download_property_value::make_nothrow(const status_callback_t& val, download_property_value& out)
+error_code download_property_value::make_nothrow(const status_callback_t& val, download_property_value& out)
 {
     download_property_value temp;
-    RETURN_IF_FAILED(temp._val->Init(val));
+    error_code code = temp._val->Init(val);
+    DO_RETURN_IF_FAILED(code);
 
     out = temp;
-    return S_OK;
+    return DO_OK;
 }
 
-int32_t download_property_value::as_nothrow(bool& val) const noexcept
+error_code download_property_value::as_nothrow(bool& val) const noexcept
 {
     return _val->As(val);
 };
 
-int32_t download_property_value::as_nothrow(uint32_t& val) const noexcept
+error_code download_property_value::as_nothrow(uint32_t& val) const noexcept
 {
     return _val->As(val);
 };
 
-int32_t download_property_value::as_nothrow(uint64_t& val) const noexcept
+error_code download_property_value::as_nothrow(uint64_t& val) const noexcept
 {
     return _val->As(val);
 };
 
-int32_t download_property_value::as_nothrow(std::string& val) const noexcept
+error_code download_property_value::as_nothrow(std::string& val) const noexcept
 {
     return _val->As(val);
 };
 
-int32_t download_property_value::as_nothrow(std::vector<unsigned char>& val) const noexcept
+error_code download_property_value::as_nothrow(std::vector<unsigned char>& val) const noexcept
 {
     return _val->As(val);
 }
 
-int32_t download_property_value::as_nothrow(status_callback_t& val) const noexcept
+error_code download_property_value::as_nothrow(status_callback_t& val) const noexcept
 {
     return _val->As(val);
 };

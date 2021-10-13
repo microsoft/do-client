@@ -4,6 +4,8 @@
 #ifndef _DELIVERY_OPTIMIZATION_DO_ERROR_MACROS_H
 #define _DELIVERY_OPTIMIZATION_DO_ERROR_MACROS_H
 
+#include "do_errors.h"
+
 /*
 TODO(jimson): Move these error macros into a shared header for this project
 These error macros are defined behind guards so that they do not redefine the macro for for platforms/toolchains in which they already exist
@@ -47,6 +49,21 @@ using HRESULT = int32_t;
 #ifndef SUCCEEDED
 #define SUCCEEDED(hr) (((int32_t)(hr)) >= 0)
 #endif
+
+#define RETURN_CODE_IF_HR_FAILED(hr)  {  \
+    int32_t __hr = (hr);    \
+    if(FAILED(__hr)) return error_code(__hr);   \
+}
+
+#define DO_RETURN_IF_FAILED(code)  {  \
+    if(DO_FAILED(code)) return code;   \
+}
+
+#define DO_OK error_code(0)
+
+#define DO_SUCCEEDED(code) (((int32_t)(code.value())) < 0)
+
+#define DO_FAILED(code) (((int32_t)(code.value())) < 0)
 
 } //namespace deliveryoptimization
 } //namespace microsoft

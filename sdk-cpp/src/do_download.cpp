@@ -105,60 +105,62 @@ void download::set_property(download_property prop, const download_property_valu
 
 #endif //DO_ENABLE_EXCEPTIONS
 
-int32_t download::make_nothrow(const std::string& uri, const std::string& downloadFilePath, download& out) noexcept
+error_code download::make_nothrow(const std::string& uri, const std::string& downloadFilePath, download& out) noexcept
 {
     download tmp;
     tmp._download = std::make_shared<msdod::CDownloadImpl>();
-    RETURN_IF_FAILED(tmp._download->Init(uri, downloadFilePath));
+    error_code code = tmp._download->Init(uri, downloadFilePath);
+    DO_RETURN_IF_FAILED(code);
     out = tmp;
+    return DO_OK;
 }
 
-int32_t download::start_nothrow() noexcept
+error_code download::start_nothrow() noexcept
 {
-    return _download->Start();
+    return error_code(_download->Start());
 }
 
-int32_t download::pause_nothrow() noexcept
+error_code download::pause_nothrow() noexcept
 {
-    return _download->Pause();
+    return error_code(_download->Pause());
 }
 
-int32_t download::resume_nothrow() noexcept
+error_code download::resume_nothrow() noexcept
 {
-    return _download->Resume();
+    return error_code(_download->Resume());
 }
 
-int32_t download::finalize_nothrow() noexcept
+error_code download::finalize_nothrow() noexcept
 {
-    return _download->Finalize();
+    return error_code(_download->Finalize());
 }
 
-int32_t download::abort_nothrow() noexcept
+error_code download::abort_nothrow() noexcept
 {
-    return _download->Abort();
+    return error_code(_download->Abort());
 }
 
-int32_t download::get_status_nothrow(download_status& status) noexcept
+error_code download::get_status_nothrow(download_status& status) noexcept
 {
-    return _download->GetStatus(status);
+    return error_code(_download->GetStatus(status));
 }
 
-int32_t download::start_and_wait_until_completion_nothrow(std::chrono::seconds timeOut) noexcept
+error_code download::start_and_wait_until_completion_nothrow(std::chrono::seconds timeOut) noexcept
 {
     std::atomic_bool isCancelled{ false };
     return start_and_wait_until_completion_nothrow(isCancelled, timeOut);
 }
 
-int32_t download::start_and_wait_until_completion_nothrow(const std::atomic_bool& isCancelled, std::chrono::seconds timeOut) noexcept
+error_code download::start_and_wait_until_completion_nothrow(const std::atomic_bool& isCancelled, std::chrono::seconds timeOut) noexcept
 {
     constexpr std::chrono::seconds maxPollTime = 5s;
     std::chrono::milliseconds pollTime = 500ms;
     const auto endTime = std::chrono::system_clock::now() + timeOut;
 
-    RETURN_IF_FAILED(start_nothrow());
+    DO_RETURN_IF_FAILED(start_nothrow());
     download_status status;
 
-    RETURN_IF_FAILED(get_status_nothrow(status));
+    DO_RETURN_IF_FAILED(get_status_nothrow(status));
 
     bool timedOut = false;
     do
@@ -172,65 +174,65 @@ int32_t download::start_and_wait_until_completion_nothrow(const std::atomic_bool
         {
             pollTime += 500ms;
         }
-        RETURN_IF_FAILED(get_status_nothrow(status));
+        DO_RETURN_IF_FAILED(get_status_nothrow(status));
         timedOut = std::chrono::system_clock::now() >= endTime;
     } while ((status.state() == download_state::created || status.state() == download_state::transferring || status.is_transient_error())
         && !timedOut);
 
     if (status.state() == download_state::transferred)
     {
-        RETURN_IF_FAILED(finalize_nothrow());
+        DO_RETURN_IF_FAILED(finalize_nothrow());
     }
     else
     {
-        RETURN_IF_FAILED(abort_nothrow());
+        DO_RETURN_IF_FAILED(abort_nothrow());
         if (isCancelled)
         {
-            return DO_ERROR_FROM_STD_ERROR(std::errc::operation_canceled);
+            return error_code(DO_ERROR_FROM_STD_ERROR(std::errc::operation_canceled));
         }
         else if (timedOut)
         {
-            return DO_ERROR_FROM_STD_ERROR(std::errc::timed_out);
+            return error_code(DO_ERROR_FROM_STD_ERROR(std::errc::timed_out));
         }
         else if (status.state() == download_state::paused && !status.is_transient_error())
         {
             assert(status.error_code() != 0);
-            return status.error_code();
+            return error_code(status.error_code());
         }
     }
-    return S_OK;
+    return DO_OK;
 }
 
-int32_t download::download_url_to_path_nothrow(const std::string& uri, const std::string& downloadFilePath, std::chrono::seconds timeOut) noexcept
+error_code download::download_url_to_path_nothrow(const std::string& uri, const std::string& downloadFilePath, std::chrono::seconds timeOut) noexcept
 {
     download oneShotDownload = download::make(uri, downloadFilePath);
     return oneShotDownload.start_and_wait_until_completion_nothrow(timeOut);
 }
 
-int32_t download::download_url_to_path_nothrow(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeOut) noexcept
+error_code download::download_url_to_path_nothrow(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeOut) noexcept
 {
     download oneShotDownload = download::make(uri, downloadFilePath);
     return oneShotDownload.start_and_wait_until_completion_nothrow(timeOut);
 }
 
-int32_t download::set_property_nothrow(download_property prop, const download_property_value& val) noexcept
+error_code download::set_property_nothrow(download_property prop, const download_property_value& val) noexcept
 {
     if (prop == download_property::callback_interface)
     {
         download_property_value::status_callback_t userCallback;
-        RETURN_IF_FAILED(val.as_nothrow(userCallback));
+        DO_RETURN_IF_FAILED(val.as_nothrow(userCallback));
 
-        return _download->SetCallback(userCallback, *this);
+        return error_code(_download->SetCallback(userCallback, *this));
     }
     else
     {
-        return _download->SetProperty(prop, val);
+        return error_code(_download->SetProperty(prop, val));
     }
 }
 
-int32_t download::get_property_nothrow(download_property prop, download_property_value& val) noexcept
+error_code download::get_property_nothrow(download_property prop, download_property_value& val) noexcept
 {
-    return _download->GetProperty(prop, val);
+    return error_code(_download->GetProperty(prop, val));
 }
 
 } // namespace deliveryoptimization

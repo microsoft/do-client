@@ -109,16 +109,16 @@ TEST_F(DownloadPropertyTestsDOSVC, SmallDownloadWithPhfDigestandCvTestNoThrow)
     std::vector<int32_t> expectedErrors = { 0, static_cast<int32_t>(msdo::errc::do_e_unknown_property_id) };
 
     msdo::download_property_value integrityCheckMandatory = msdo::download_property_value::make(true);
-    int32_t code = simpleDownload.set_property_nothrow(msdo::download_property::integrity_check_mandatory, integrityCheckMandatory);
+    int32_t code = simpleDownload.set_property_nothrow(msdo::download_property::integrity_check_mandatory, integrityCheckMandatory).value();
     VerifyError(code, expectedErrors);
 
     msdo::download_property_value integrityCheckInfo = msdo::download_property_value::make(g_smallFilePhfInfoJson);
-    code = simpleDownload.set_property_nothrow(msdo::download_property::integrity_check_info, integrityCheckInfo);
+    code = simpleDownload.set_property_nothrow(msdo::download_property::integrity_check_info, integrityCheckInfo).value();
     VerifyError(code, expectedErrors);
 
     std::string strCorrelationVector("g+Vo71JZwkmJdYfF.0");
     msdo::download_property_value correlationVector = msdo::download_property_value::make(strCorrelationVector);
-    code = simpleDownload.set_property_nothrow(msdo::download_property::correlation_vector, correlationVector);
+    code = simpleDownload.set_property_nothrow(msdo::download_property::correlation_vector, correlationVector).value();
     VerifyError(code, expectedErrors);
 
     simpleDownload.start_and_wait_until_completion();
