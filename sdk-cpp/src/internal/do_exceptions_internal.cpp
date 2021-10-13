@@ -11,7 +11,7 @@ namespace deliveryoptimization
 {
 namespace details
 {
-void ThrowException(int32_t errorCode)
+void ThrowException(error_code errorCode)
 {
     throw exception(errorCode);
 }

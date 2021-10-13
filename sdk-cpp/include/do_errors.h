@@ -139,7 +139,7 @@ inline void throw_if_fail(int32_t hr)
     }
 }
 
-inline void throw_if_fail(error_code& code)
+inline void throw_if_fail(error_code code)
 {
     if FAILED(code.value())
     {

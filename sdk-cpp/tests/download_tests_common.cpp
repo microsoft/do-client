@@ -187,7 +187,7 @@ TEST_F(DownloadTests, SimpleDownloadTest_With404UrlAndMalformedPath)
 TEST_F(DownloadTests, Download1PausedDownload2SameDestTest)
 {
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-    msdo::download = msdo::download::makesimpleDownload(g_largeFileUrl, g_tmpFileName);
+    msdo::download simpleDownload = msdo::download::make(g_largeFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload.get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
@@ -199,7 +199,7 @@ TEST_F(DownloadTests, Download1PausedDownload2SameDestTest)
     ASSERT_EQ(status.state(), msdo::download_state::paused);
     ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName));
 
-    msdo::download simpleDownload2(g_smallFileUrl, g_tmpFileName);
+    msdo::download simpleDownload2 = msdo::download::make(g_smallFileUrl, g_tmpFileName);
     try
     {
         simpleDownload2.start();
@@ -216,7 +216,6 @@ TEST_F(DownloadTests, Download1PausedDownload2SameDestTest)
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
 
     // download2 should now succeed
-    simpleDownload2 = msdo::download{g_smallFileUrl, g_tmpFileName};
     simpleDownload2.start();
     WaitForDownloadCompletion(simpleDownload2);
     ASSERT_EQ(boost::filesystem::file_size(g_tmpFileName), g_smallFileSizeBytes);
