@@ -30,7 +30,6 @@ download::~download() = default;
 download download::make(const std::string& uri, const std::string& downloadFilePath)
 {
     download out;
-    out._download = std::make_shared<msdod::CDownloadImpl>();
     throw_if_fail(out._download->Init(uri, downloadFilePath));
     return out;
 }
@@ -117,32 +116,32 @@ error_code download::make_nothrow(const std::string& uri, const std::string& dow
 
 error_code download::start_nothrow() noexcept
 {
-    return error_code(_download->Start());
+    return _download->Start();
 }
 
 error_code download::pause_nothrow() noexcept
 {
-    return error_code(_download->Pause());
+    return _download->Pause();
 }
 
 error_code download::resume_nothrow() noexcept
 {
-    return error_code(_download->Resume());
+    return _download->Resume();
 }
 
 error_code download::finalize_nothrow() noexcept
 {
-    return error_code(_download->Finalize());
+    return _download->Finalize();
 }
 
 error_code download::abort_nothrow() noexcept
 {
-    return error_code(_download->Abort());
+    return _download->Abort();
 }
 
 error_code download::get_status_nothrow(download_status& status) noexcept
 {
-    return error_code(_download->GetStatus(status));
+    return _download->GetStatus(status);
 }
 
 error_code download::start_and_wait_until_completion_nothrow(std::chrono::seconds timeOut) noexcept
@@ -222,17 +221,17 @@ error_code download::set_property_nothrow(download_property prop, const download
         download_property_value::status_callback_t userCallback;
         DO_RETURN_IF_FAILED(val.as_nothrow(userCallback));
 
-        return error_code(_download->SetCallback(userCallback, *this));
+        return _download->SetCallback(userCallback, *this);
     }
     else
     {
-        return error_code(_download->SetProperty(prop, val));
+        return _download->SetProperty(prop, val);
     }
 }
 
 error_code download::get_property_nothrow(download_property prop, download_property_value& val) noexcept
 {
-    return error_code(_download->GetProperty(prop, val));
+    return _download->GetProperty(prop, val);
 }
 
 } // namespace deliveryoptimization

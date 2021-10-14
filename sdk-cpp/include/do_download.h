@@ -24,7 +24,6 @@ class IDownload;
 class download
 {
 public:
-    download();
     ~download();
 
 #if (DO_ENABLE_EXCEPTIONS)
@@ -69,6 +68,8 @@ public:
     error_code get_property_nothrow(download_property key, download_property_value& value) noexcept;
 
 private:
+    download();
+
     std::shared_ptr<details::IDownload> _download;
 };
 

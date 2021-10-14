@@ -53,7 +53,7 @@ public:
         }
         catch (const msdo::exception& e)
         {
-            VerifyError(e.error_code(), expectedErrors);
+            VerifyError(e.error_code().value(), expectedErrors);
         }
     }
 };
@@ -138,7 +138,7 @@ TEST_F(DownloadPropertyTestsDOSVC, InvalidPhfDigestTest)
     catch (const msdo::exception& e)
     {
         std::vector<int32_t> expectedErrors = { static_cast<int32_t>(msdo::errc::invalid_arg), static_cast<int32_t>(msdo::errc::do_e_unknown_property_id) };
-        VerifyError(e.error_code(), expectedErrors);
+        VerifyError(e.error_code().value(), expectedErrors);
         return;
     }
     ASSERT_TRUE(false);

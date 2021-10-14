@@ -81,9 +81,7 @@ public:
 
     const char* what() const noexcept override;
 
-    int32_t error_code() const;
-
-    const std::error_code& get_error_code() const;
+    const std::error_code& error_code() const;
 
 private:
     std::error_code _code;

@@ -52,12 +52,7 @@ const char* exception::what() const noexcept
     return _msg.c_str();
 }
 
-int32_t exception::error_code() const
-{
-    return _code.value();
-}
-
-const std::error_code& exception::get_error_code() const
+const std::error_code& exception::error_code() const
 {
     return _code;
 }

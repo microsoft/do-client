@@ -46,9 +46,9 @@ msdo::error_code CDownloadImpl::Init(const std::string& uri, const std::string& 
                 // Handle DOCS in Shutdown state while Create request was issued, client will restart and this loop will break
                 // TODO(jimson): SDK doesn't have the capability to start do-client-lite.service if not running already. Test this
                 // code path when it is implemented.
-                if (e.error_code() != static_cast<int32_t>(msdo::errc::no_service))
+                if (e.error_code().value() != static_cast<int32_t>(msdo::errc::no_service))
                 {
-                    return e.error_code();
+                    return e.error_code().value();
                 }
                 if (retryAttempts < g_maxNumRetryAttempts - 1)
                 {
@@ -60,7 +60,7 @@ msdo::error_code CDownloadImpl::Init(const std::string& uri, const std::string& 
     }
     catch (msdo::exception& e)
     {
-        return e.error_code();
+        return e.error_code().value();
     }
 }
 
@@ -129,7 +129,7 @@ msdo::error_code CDownloadImpl::GetStatus(msdo::download_status& outStatus) noex
     }
     catch (msdo::exception& e)
     {
-        return e.error_code();
+        return e.error_code().value();
     }
 }
 
@@ -160,7 +160,7 @@ msdo::error_code CDownloadImpl::_DownloadOperationCall(const std::string& type) 
     }
     catch (msdo::exception& e)
     {
-        return msdo::error_code(e.error_code());
+        return msdo::error_code(e.error_code().value());
     }
 
 }
