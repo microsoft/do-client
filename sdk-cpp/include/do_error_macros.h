@@ -21,7 +21,8 @@ namespace deliveryoptimization
 #define DO_ERROR_FROM_STD_ERROR(x) ((int32_t)(x) <= 0 ? ((int32_t)(x)) : ((int32_t) (((int32_t)(x) & 0x0000FFFF) | (FACILITY_DELIVERY_OPTIMIZATION << 16) | 0x80000000)))
 
 #define DO_RETURN_IF_FAILED(code)  {  \
-    if(DO_FAILED(code)) return code;   \
+    error_code __code = (code);            \
+    if(DO_FAILED(__code)) return __code;   \
 }
 
 #define DO_OK error_code(0)
