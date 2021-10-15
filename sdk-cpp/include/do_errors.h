@@ -17,6 +17,8 @@ namespace microsoft
 namespace deliveryoptimization
 {
 
+
+
 enum class errc : int32_t
 {
     e_not_impl                  = -2063400958,
@@ -29,8 +31,7 @@ enum class errc : int32_t
     do_e_unknown_property_id    = -2133843951
 };
 
-// Error category can denote different types of error - may be useful for categorizing whether error code is DO error/posix error/std::error
-// Problem is it has a deleted copy constructor which makes using it
+// Category error type for Delivery Optimization errors
 class error_category : public std::error_category
 {
 public:
@@ -59,16 +60,10 @@ public:
         return _code;
     }
 
-    /*
-    const error_category& category() const noexcept
-    {
-        return _category;
-    }
-    */
+    const std::error_category& category() const noexcept;
 
 private:
     int32_t _code;
-    //error_category _category;
 };
 
 #if (DO_ENABLE_EXCEPTIONS)

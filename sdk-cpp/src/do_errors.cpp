@@ -10,7 +10,7 @@ namespace microsoft
 namespace deliveryoptimization
 {
 
-const error_category& error_category_instance()
+const error_category& do_category()
 {
     static error_category instance;
     return instance;
@@ -38,12 +38,12 @@ exception::exception(std::error_code code) :
 }
 
 exception::exception(int32_t code) :
-    exception(std::error_code(code, error_category_instance()))
+    exception(std::error_code(code, do_category()))
 {
 }
 
 exception::exception(errc code) :
-    exception(std::error_code(static_cast<int32_t>(code), error_category_instance()))
+    exception(std::error_code(static_cast<int32_t>(code), do_category()))
 {
 }
 
@@ -55,6 +55,11 @@ const char* exception::what() const noexcept
 const std::error_code& exception::error_code() const
 {
     return _code;
+}
+
+const std::error_category& error_code::category() const noexcept
+{
+    return do_category();
 }
 
 } // namespace deliveryoptimization
