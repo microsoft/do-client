@@ -24,7 +24,7 @@ namespace deliveryoptimization
     if(DO_FAILED(__code)) return __code;   \
 }
 
-#define DO_SUCCEEDED(code) (((int32_t)(code.value())) < 0)
+#define DO_SUCCEEDED(code) (((int32_t)(code.value())) >= 0)
 #define DO_FAILED(code) (((int32_t)(code.value())) < 0)
 
 } //namespace deliveryoptimization

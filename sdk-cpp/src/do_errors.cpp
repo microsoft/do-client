@@ -14,6 +14,11 @@ const error_category& do_category()
     return instance;
 }
 
+std::error_code make_error_code(std::errc e)
+{
+    return std::error_code(DO_ERROR_FROM_STD_ERROR(e), do_category());
+}
+
 std::error_code make_error_code(errc e)
 {
     return std::error_code(static_cast<int>(e), do_category());

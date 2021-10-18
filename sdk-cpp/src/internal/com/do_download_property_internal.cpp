@@ -44,7 +44,7 @@ std::error_code CDownloadPropertyValueInternal::Init(const std::string& val) noe
     BSTR bstr = SysAllocString(wval.c_str());
     if (bstr == nullptr)
     {
-        return std::make_error_code(std::errc::not_enough_memory);
+        return msdo::make_error_code(std::errc::not_enough_memory);
     }
     V_BSTR(&_var) = bstr;
 
