@@ -195,8 +195,8 @@ std::error_code download::start_and_wait_until_completion_nothrow(const std::ato
         }
         else if (status.state() == download_state::paused && !status.is_transient_error())
         {
-            assert(status.error_code() != 0);
-            return std::error_code(status.error_code(), do_category());
+            assert(status.error_code().value() != 0);
+            return status.error_code();
         }
     }
     return DO_OK;
