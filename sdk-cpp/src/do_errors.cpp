@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-
-
 #include "do_errors.h"
 
 namespace microsoft
@@ -14,6 +12,15 @@ const error_category& do_category()
 {
     static error_category instance;
     return instance;
+}
+
+std::error_code make_error_code(errc e)
+{
+    return std::error_code(static_cast<int>(e), do_category());
+}
+std::error_code make_error_code(int32_t e)
+{
+    return std::error_code(e, do_category());
 }
 
 const char* error_category::name() const noexcept
@@ -55,11 +62,6 @@ const char* exception::what() const noexcept
 const std::error_code& exception::error_code() const
 {
     return _code;
-}
-
-const std::error_category& error_code::category() const noexcept
-{
-    return do_category();
 }
 
 } // namespace deliveryoptimization

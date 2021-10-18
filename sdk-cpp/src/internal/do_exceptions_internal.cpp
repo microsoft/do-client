@@ -11,7 +11,7 @@ namespace deliveryoptimization
 {
 namespace details
 {
-void ThrowException(error_code errorCode)
+void ThrowException(std::error_code errorCode)
 {
     throw exception(errorCode);
 }
@@ -21,9 +21,9 @@ void ThrowException(std::errc error)
     ThrowException(std::make_error_code(error));
 }
 
-void ThrowException(std::error_code error)
+void ThrowException(int32_t error)
 {
-    throw exception(error);
+    ThrowException(microsoft::deliveryoptimization::make_error_code(error));
 }
 
 void ThrowException(errc errorCode)

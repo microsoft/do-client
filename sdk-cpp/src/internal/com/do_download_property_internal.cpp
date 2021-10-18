@@ -10,7 +10,7 @@
 namespace msdo = microsoft::deliveryoptimization;
 using namespace microsoft::deliveryoptimization::details;
 
-msdo::error_code UTF8toWstr(const char* str, std::wstring& wstr)
+std::error_code UTF8toWstr(const char* str, std::wstring& wstr)
 {
     size_t cch = strlen(str);
     if (cch == 0)
@@ -22,10 +22,10 @@ msdo::error_code UTF8toWstr(const char* str, std::wstring& wstr)
     const uint32_t result = MultiByteToWideChar(CP_UTF8, 0, str, static_cast<int>(cch), dest.data(), static_cast<int>(dest.size()));
     if (result == 0)
     {
-        return E_FAIL;
+        return std::error_code(E_FAIL, msdo::do_category());
     }
     wstr = std::wstring(dest.data(), result);
-    return msdo::DO_OK;
+    return DO_OK;
 }
 
 CDownloadPropertyValueInternal::CDownloadPropertyValueInternal()
@@ -33,7 +33,7 @@ CDownloadPropertyValueInternal::CDownloadPropertyValueInternal()
     VariantInit(&_var);
 }
 
-msdo::error_code CDownloadPropertyValueInternal::Init(const std::string& val) noexcept
+std::error_code CDownloadPropertyValueInternal::Init(const std::string& val) noexcept
 {
     V_VT(&_var) = VT_BSTR;
 
@@ -44,40 +44,40 @@ msdo::error_code CDownloadPropertyValueInternal::Init(const std::string& val) no
     BSTR bstr = SysAllocString(wval.c_str());
     if (bstr == nullptr)
     {
-        return msdo::error_code(DO_ERROR_FROM_STD_ERROR(std::errc::not_enough_memory));
+        return std::make_error_code(std::errc::not_enough_memory);
     }
     V_BSTR(&_var) = bstr;
 
     return DO_OK;
 };
 
-msdo::error_code CDownloadPropertyValueInternal::Init(uint32_t val) noexcept
+std::error_code CDownloadPropertyValueInternal::Init(uint32_t val) noexcept
 {
     V_VT(&_var) = VT_UI4;
     V_UI4(&_var) = val;
     return DO_OK;
 };
 
-msdo::error_code CDownloadPropertyValueInternal::Init(uint64_t val) noexcept
+std::error_code CDownloadPropertyValueInternal::Init(uint64_t val) noexcept
 {
     V_VT(&_var) = VT_UI8;
     V_UI8(&_var) = val;
     return DO_OK;
 };
 
-msdo::error_code CDownloadPropertyValueInternal::Init(bool val) noexcept
+std::error_code CDownloadPropertyValueInternal::Init(bool val) noexcept
 {
     V_VT(&_var) = VT_BOOL;
     V_BOOL(&_var) = val ? VARIANT_TRUE : VARIANT_FALSE;
     return DO_OK;
 };
 
-msdo::error_code CDownloadPropertyValueInternal::Init(std::vector<unsigned char>& val) noexcept
+std::error_code CDownloadPropertyValueInternal::Init(std::vector<unsigned char>& val) noexcept
 {
-    return error_code(errc::e_not_impl);
+    return msdo::make_error_code(errc::e_not_impl);
 };
 
-msdo::error_code CDownloadPropertyValueInternal::Init(const download_property_value::status_callback_t& val) noexcept
+std::error_code CDownloadPropertyValueInternal::Init(const download_property_value::status_callback_t& val) noexcept
 {
     _callback = val;
     return DO_OK;
@@ -128,32 +128,32 @@ const CDownloadPropertyValueInternal::native_type& CDownloadPropertyValueInterna
     return _var;
 };
 
-msdo::error_code CDownloadPropertyValueInternal::As(bool& val) const noexcept
+std::error_code CDownloadPropertyValueInternal::As(bool& val) const noexcept
 {
-    return error_code(errc::e_not_impl);
+    return make_error_code(errc::e_not_impl);
 };
 
-msdo::error_code CDownloadPropertyValueInternal::As(uint32_t& val) const noexcept
+std::error_code CDownloadPropertyValueInternal::As(uint32_t& val) const noexcept
 {
-    return error_code(errc::e_not_impl);
+    return make_error_code(errc::e_not_impl);
 };
 
-msdo::error_code CDownloadPropertyValueInternal::As(uint64_t& val) const noexcept
+std::error_code CDownloadPropertyValueInternal::As(uint64_t& val) const noexcept
 {
-    return error_code(errc::e_not_impl);
+    return make_error_code(errc::e_not_impl);
 };
 
-msdo::error_code CDownloadPropertyValueInternal::As(std::string& val) const noexcept
+std::error_code CDownloadPropertyValueInternal::As(std::string& val) const noexcept
 {
-    return error_code(errc::e_not_impl);
+    return make_error_code(errc::e_not_impl);
 };
 
-msdo::error_code CDownloadPropertyValueInternal::As(std::vector<unsigned char>& val) const noexcept
+std::error_code CDownloadPropertyValueInternal::As(std::vector<unsigned char>& val) const noexcept
 {
-    return error_code(errc::e_not_impl);
+    return make_error_code(errc::e_not_impl);
 }
 
-msdo::error_code CDownloadPropertyValueInternal::As(download_property_value::status_callback_t& val) const noexcept
+std::error_code CDownloadPropertyValueInternal::As(download_property_value::status_callback_t& val) const noexcept
 {
     val = _callback;
     return DO_OK;

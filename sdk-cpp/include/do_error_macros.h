@@ -21,16 +21,16 @@ namespace deliveryoptimization
 #define DO_ERROR_FROM_STD_ERROR(x) ((int32_t)(x) <= 0 ? ((int32_t)(x)) : ((int32_t) (((int32_t)(x) & 0x0000FFFF) | (FACILITY_DELIVERY_OPTIMIZATION << 16) | 0x80000000)))
 
 #define DO_RETURN_IF_FAILED(code)  {  \
-    error_code __code = (code);            \
+    std::error_code __code = (code);            \
     if(DO_FAILED(__code)) return __code;   \
 }
-
-#define DO_OK error_code(0)
 
 #define DO_SUCCEEDED(code) (((int32_t)(code.value())) < 0)
 #define DO_FAILED(code) (((int32_t)(code.value())) < 0)
 
 } //namespace deliveryoptimization
 } //namespace microsoft
+
+#define DO_OK std::error_code(0, microsoft::deliveryoptimization::do_category())
 
 #endif

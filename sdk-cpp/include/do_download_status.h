@@ -51,6 +51,7 @@ public:
         return _bytesTransferred;
     }
 
+    //TODO: Return these as std::error_code
     int32_t error_code() const noexcept
     {
         return _errorCode;

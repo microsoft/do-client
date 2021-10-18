@@ -24,7 +24,7 @@ namespace deliveryoptimization
 {
 namespace details
 {
-msdo::error_code CDownloadImpl::Init(const std::string& uri, const std::string& downloadFilePath) noexcept
+std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& downloadFilePath) noexcept
 {
     try
     {
@@ -46,9 +46,9 @@ msdo::error_code CDownloadImpl::Init(const std::string& uri, const std::string& 
                 // Handle DOCS in Shutdown state while Create request was issued, client will restart and this loop will break
                 // TODO(jimson): SDK doesn't have the capability to start do-client-lite.service if not running already. Test this
                 // code path when it is implemented.
-                if (e.error_code().value() != static_cast<int32_t>(msdo::errc::no_service))
+                if (e.error_code().value() != static_cast<int>(msdo::errc::no_service))
                 {
-                    return e.error_code().value();
+                    return e.error_code();
                 }
                 if (retryAttempts < g_maxNumRetryAttempts - 1)
                 {
@@ -56,40 +56,40 @@ msdo::error_code CDownloadImpl::Init(const std::string& uri, const std::string& 
                 }
             }
         }
-        return msdo::error_code(msdo::errc::no_service);
+        return msdo::make_error_code(msdo::errc::no_service);
     }
     catch (msdo::exception& e)
     {
-        return e.error_code().value();
+        return e.error_code();
     }
 }
 
-msdo::error_code CDownloadImpl::Start() noexcept
+std::error_code CDownloadImpl::Start() noexcept
 {
     return _DownloadOperationCall("start");
 }
 
-msdo::error_code CDownloadImpl::Pause() noexcept
+std::error_code CDownloadImpl::Pause() noexcept
 {
     return _DownloadOperationCall("pause");
 }
 
-msdo::error_code CDownloadImpl::Resume() noexcept
+std::error_code CDownloadImpl::Resume() noexcept
 {
     return _DownloadOperationCall("start");
 }
 
-msdo::error_code CDownloadImpl::Finalize() noexcept
+std::error_code CDownloadImpl::Finalize() noexcept
 {
     return _DownloadOperationCall("finalize");
 }
 
-msdo::error_code CDownloadImpl::Abort() noexcept
+std::error_code CDownloadImpl::Abort() noexcept
 {
     return _DownloadOperationCall("abort");
 }
 
-msdo::error_code CDownloadImpl::GetStatus(msdo::download_status& outStatus) noexcept
+std::error_code CDownloadImpl::GetStatus(msdo::download_status& outStatus) noexcept
 {
     try
     {
@@ -129,26 +129,26 @@ msdo::error_code CDownloadImpl::GetStatus(msdo::download_status& outStatus) noex
     }
     catch (msdo::exception& e)
     {
-        return e.error_code().value();
+        return e.error_code();
     }
 }
 
-msdo::error_code CDownloadImpl::GetProperty(msdo::download_property key, msdo::download_property_value& value) noexcept
+std::error_code CDownloadImpl::GetProperty(msdo::download_property key, msdo::download_property_value& value) noexcept
 {
-    return msdo::error_code(msdo::errc::e_not_impl);
+    return msdo::make_error_code(msdo::errc::e_not_impl);
 }
 
-msdo::error_code CDownloadImpl::SetProperty(msdo::download_property key, const msdo::download_property_value& val) noexcept
+std::error_code CDownloadImpl::SetProperty(msdo::download_property key, const msdo::download_property_value& val) noexcept
 {
-    return msdo::error_code(msdo::errc::e_not_impl);
+    return msdo::make_error_code(msdo::errc::e_not_impl);
 }
 
-msdo::error_code CDownloadImpl::SetCallback(const download_property_value::status_callback_t& callback, download& download) noexcept
+std::error_code CDownloadImpl::SetCallback(const download_property_value::status_callback_t& callback, download& download) noexcept
 {
-    return msdo::error_code(msdo::errc::e_not_impl);
+    return msdo::make_error_code(msdo::errc::e_not_impl);
 }
 
-msdo::error_code CDownloadImpl::_DownloadOperationCall(const std::string& type) noexcept
+std::error_code CDownloadImpl::_DownloadOperationCall(const std::string& type) noexcept
 {
     try 
     {
@@ -160,7 +160,7 @@ msdo::error_code CDownloadImpl::_DownloadOperationCall(const std::string& type) 
     }
     catch (msdo::exception& e)
     {
-        return msdo::error_code(e.error_code().value());
+        return msdo::make_error_code(e.error_code().value());
     }
 
 }

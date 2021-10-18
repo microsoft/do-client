@@ -89,19 +89,19 @@ public:
     void as(status_callback_t& val) const;
 #endif
 
-    static error_code make_nothrow(const std::string& val, download_property_value& out);
-    static error_code make_nothrow(uint32_t val, download_property_value& out);
-    static error_code make_nothrow(uint64_t val, download_property_value& out);
-    static error_code make_nothrow(bool val, download_property_value& out);
-    static error_code make_nothrow(std::vector<unsigned char>& val, download_property_value& out);
-    static error_code make_nothrow(const status_callback_t& val, download_property_value& out);
+    static std::error_code make_nothrow(const std::string& val, download_property_value& out);
+    static std::error_code make_nothrow(uint32_t val, download_property_value& out);
+    static std::error_code make_nothrow(uint64_t val, download_property_value& out);
+    static std::error_code make_nothrow(bool val, download_property_value& out);
+    static std::error_code make_nothrow(std::vector<unsigned char>& val, download_property_value& out);
+    static std::error_code make_nothrow(const status_callback_t& val, download_property_value& out);
 
-    error_code as_nothrow(bool& val) const noexcept;
-    error_code as_nothrow(uint32_t& val) const noexcept;
-    error_code as_nothrow(uint64_t& val) const noexcept;
-    error_code as_nothrow(std::string& val) const noexcept;
-    error_code as_nothrow(std::vector<unsigned char>& val) const noexcept;
-    error_code as_nothrow(status_callback_t& val) const noexcept;
+    std::error_code as_nothrow(bool& val) const noexcept;
+    std::error_code as_nothrow(uint32_t& val) const noexcept;
+    std::error_code as_nothrow(uint64_t& val) const noexcept;
+    std::error_code as_nothrow(std::string& val) const noexcept;
+    std::error_code as_nothrow(std::vector<unsigned char>& val) const noexcept;
+    std::error_code as_nothrow(status_callback_t& val) const noexcept;
 
 private:
     std::shared_ptr<details::CDownloadPropertyValueInternal> _val;

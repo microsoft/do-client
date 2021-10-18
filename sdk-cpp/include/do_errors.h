@@ -17,8 +17,6 @@ namespace microsoft
 namespace deliveryoptimization
 {
 
-
-
 enum class errc : int32_t
 {
     e_not_impl                  = -2063400958,
@@ -40,31 +38,10 @@ public:
     std::string message(int32_t code) const override;
 };
 
-class error_code : public std::error_code
-{
-public:
-    error_code() = default;
-    
-    error_code(int32_t code) : _code(code)
-    {
-        
-    }
+const error_category& do_category();
 
-    error_code(errc code)
-    {
-        _code = static_cast<int32_t>(code);
-    }
-
-    int32_t value() const noexcept
-    {
-        return _code;
-    }
-
-    const std::error_category& category() const noexcept;
-
-private:
-    int32_t _code;
-};
+std::error_code make_error_code(errc e);
+std::error_code make_error_code(int32_t e);
 
 #if (DO_ENABLE_EXCEPTIONS)
 class exception : public std::exception
@@ -83,7 +60,7 @@ private:
     std::string _msg;
 };
 
-inline void throw_if_fail(error_code code)
+inline void throw_if_fail(std::error_code code)
 {
     if (DO_FAILED(code))
     {
