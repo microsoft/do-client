@@ -187,11 +187,11 @@ std::error_code download::start_and_wait_until_completion_nothrow(const std::ato
         DO_RETURN_IF_FAILED(abort_nothrow());
         if (isCancelled)
         {
-            return make_error_code(std::errc::operation_canceled);
+            return microsoft::deliveryoptimization::make_error_code(std::errc::operation_canceled);
         }
         else if (timedOut)
         {
-            return make_error_code(std::errc::timed_out);
+            return microsoft::deliveryoptimization::make_error_code(std::errc::timed_out);
         }
         else if (status.state() == download_state::paused && !status.is_transient_error())
         {

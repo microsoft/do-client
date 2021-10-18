@@ -40,6 +40,7 @@ public:
 
 const error_category& do_category();
 
+std::error_code make_error_code(std::errc e);
 std::error_code make_error_code(errc e);
 std::error_code make_error_code(int32_t e);
 

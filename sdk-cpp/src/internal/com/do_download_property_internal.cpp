@@ -7,6 +7,8 @@
 #include <vector>
 #include <string>
 
+#include "do_errors.h"
+
 namespace msdo = microsoft::deliveryoptimization;
 using namespace microsoft::deliveryoptimization::details;
 

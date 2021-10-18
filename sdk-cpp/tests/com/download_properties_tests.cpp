@@ -167,7 +167,7 @@ TEST_F(DownloadPropertyTestsDOSVC, CallbackTestUseDownload)
     {
         char msgBuf[1024];
         snprintf(msgBuf, sizeof(msgBuf), "Received status callback: %llu/%llu, 0x%x, 0x%x, %u",
-            status.bytes_transferred(), status.bytes_total(), status.error_code(), status.extended_error_code(),
+            status.bytes_transferred(), status.bytes_total(), status.error_code().value(), status.extended_error_code().value(),
             static_cast<unsigned int>(status.state()));
         std::cout << msgBuf << std::endl;
 
@@ -195,7 +195,7 @@ TEST_F(DownloadPropertyTestsDOSVC, SetCallbackTest)
         {
             char msgBuf[1024];
             snprintf(msgBuf, sizeof(msgBuf), "Received status callback: %llu/%llu, 0x%x, 0x%x, %u",
-                status.bytes_transferred(), status.bytes_total(), status.error_code(), status.extended_error_code(),
+                status.bytes_transferred(), status.bytes_total(), status.error_code().value(), status.extended_error_code().value(),
                 static_cast<unsigned int>(status.state()));
             std::cout << msgBuf << std::endl;
             i += 1;
