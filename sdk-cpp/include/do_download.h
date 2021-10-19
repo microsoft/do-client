@@ -24,10 +24,11 @@ class IDownload;
 class download
 {
 public:
-    download(const std::string& uri, const std::string& downloadFilePath);
     ~download();
 
 #if (DO_ENABLE_EXCEPTIONS)
+    static download make(const std::string& uri, const std::string& downloadFilePath);
+    
     void start();
     void pause();
     void resume();
@@ -49,22 +50,26 @@ public:
     download_property_value get_property(download_property key);
 #endif
 
-    int32_t start_nothrow() noexcept;
-    int32_t pause_nothrow() noexcept;
-    int32_t resume_nothrow() noexcept;
-    int32_t finalize_nothrow() noexcept;
-    int32_t abort_nothrow() noexcept;
-    int32_t get_status_nothrow(download_status& status) noexcept;
+    std::error_code make_nothrow(const std::string& uri, const std::string& downloadFilePath, download& out) noexcept;
 
-    int32_t start_and_wait_until_completion_nothrow(std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;
-    int32_t start_and_wait_until_completion_nothrow(const std::atomic_bool& isCancelled, std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;
-    static int32_t download_url_to_path_nothrow(const std::string& uri, const std::string& downloadFilePath, std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;
-    static int32_t download_url_to_path_nothrow(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;
+    std::error_code start_nothrow() noexcept;
+    std::error_code pause_nothrow() noexcept;
+    std::error_code resume_nothrow() noexcept;
+    std::error_code finalize_nothrow() noexcept;
+    std::error_code abort_nothrow() noexcept;
+    std::error_code get_status_nothrow(download_status& status) noexcept;
 
-    int32_t set_property_nothrow(download_property key, const download_property_value& value) noexcept;
-    int32_t get_property_nothrow(download_property key, download_property_value& value) noexcept;
+    std::error_code start_and_wait_until_completion_nothrow(std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;
+    std::error_code start_and_wait_until_completion_nothrow(const std::atomic_bool& isCancelled, std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;
+    static std::error_code download_url_to_path_nothrow(const std::string& uri, const std::string& downloadFilePath, std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;
+    static std::error_code download_url_to_path_nothrow(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;
+
+    std::error_code set_property_nothrow(download_property key, const download_property_value& value) noexcept;
+    std::error_code get_property_nothrow(download_property key, download_property_value& value) noexcept;
 
 private:
+    download();
+
     std::shared_ptr<details::IDownload> _download;
 };
 

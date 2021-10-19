@@ -42,7 +42,7 @@ public:
 TEST_F(DownloadTestsDOSVC, Download1PausedDownload2SameDestTest)
 {
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-    msdo::download simpleDownload(g_largeFileUrl, g_tmpFileName);
+    msdo::download simpleDownload = msdo::download::make(g_largeFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload.get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
