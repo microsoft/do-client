@@ -25,13 +25,13 @@ pool:
 jobs:
 - template: ../templates/do-docker-jobs.yml
   parameters:
-    targetOsArch: 'debian10_arm32'
+    targetOsArch: 'debian9_arm32'
     imageVersion: ${{variables.imageVersion}}
     stepsTemplate: 'dopapt-docker-steps.yml'
 
 - template: ../templates/do-docker-jobs.yml
   parameters:
-    targetOsArch: 'debian9_arm32'
+    targetOsArch: 'debian10_arm32'
     imageVersion: ${{variables.imageVersion}}
     stepsTemplate: 'dopapt-docker-steps.yml'
 

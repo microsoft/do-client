@@ -7,22 +7,11 @@
 # Example:
 # docker run -ti --rm --entrypoint=/bin/bash -v D:\do-client-lite:/code -v D:\temp\build_client_lite\arm-linux-debug:/build custom-ubuntu2004-arm64
 
-FROM arm64v8/ubuntu:20.04
+FROM amd64/ubuntu:20.04
 
 SHELL [ "/bin/bash", "-c"]
 
-# QEMU is a Linux emulator which enables cross-arch support in docker
-# In order to build this image on a Linux host, need to install QEMU:
-#
-# sudo apt-get install qemu-user
-# update-binfmts --display
-# sudo apt install qemu binfmt-support qemu-user-static
-# cp /usr/bin/qemu-aarch64-static <src root>/build/docker/ubuntu2004/arm64
-#
-# Then copy the build script to the build directory
-# cp <src root>/build/bootstrap.sh <src root>build/docker/ubuntu2004/arm64
-#
-# After running the above, you can build the image by running in the current dockerfile directory
+# You can build the image by running in the current dockerfile directory
 # sudo docker build -t <your image name> . --no-cache --network=host
 
 # Ubuntu 20.04 requires user prompt for apt-get update command, docker has issues handling this input
