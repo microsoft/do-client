@@ -40,3 +40,15 @@ jobs:
     targetOsArch: 'ubuntu1804_arm64'
     imageVersion: ${{variables.imageVersion}}
     stepsTemplate: 'dosdkcpp-docker-steps.yml'
+
+- template: templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'ubuntu2004_arm64'
+    imageVersion: ${{variables.imageVersion}}
+    stepsTemplate: 'dosdkcpp-docker-steps.yml'
+
+- template: templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'ubuntu2004_x64'
+    imageVersion: ${{variables.imageVersion}}
+    stepsTemplate: 'dosdkcpp-docker-steps.yml'
