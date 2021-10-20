@@ -89,6 +89,7 @@ function installBuildDependencies
 
         if [[ "$PLATFORM" == "debian9" ]];
         then
+            # TODO(jimson): Determine if the earlier version of cmake now works with cpprestsdk removal
             # Cpprestsdk below requires min cmake version of 3.9, while 3.7 is the latest available on Debian9
             # So build & install cmake from source
             cd /tmp
@@ -121,20 +122,6 @@ function installBuildDependencies
         # Install cpprest dependencies
         # libssl-dev also required but installed above because plugin uses libssl-dev directly
         apt-get install -y zlib1g-dev
-
-        # Most target platforms do not natively have a version of cpprest that supports url-redirection
-        # Build and install v2.10.16 as it's the earliest version which supports url-redirection
-        rm -rf /tmp/cpprestsdk
-        mkdir /tmp/cpprestsdk
-        cd /tmp/cpprestsdk
-        git clone https://github.com/microsoft/cpprestsdk.git .
-        git checkout tags/v2.10.16
-        git submodule update --init
-        mkdir /tmp/cpprestsdk/build
-        cd /tmp/cpprestsdk/build
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=minsizerel -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DBUILD_SAMPLES=OFF -Wno-dev -DWERROR=OFF ..
-        ninja
-        ninja install
 
         rm -rf /tmp/gtest
         mkdir /tmp/gtest
@@ -171,7 +158,12 @@ function installDeveloperTools
         brew install cpplint
     elif isSupportedLinux
     then
-        apt-get install -y python-pip
+        if [[ "$PLATFORM" == "ubuntu2004" ]];
+        then
+            apt-get install -y python3-pip
+        else
+            apt-get install python-pip
+        fi
         pip install cpplint
 
         # Installs to a non-standard location so add to PATH manually
