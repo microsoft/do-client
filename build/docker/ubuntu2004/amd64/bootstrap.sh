@@ -72,8 +72,6 @@ function installBuildDependencies
         exit 1
     fi
 
-    echo "[INFO] Installing build dependencies"
-
     if [[ "$PLATFORM" == "osx" ]];
     then
         # Need to install homebrew to get all the above stuff
@@ -238,4 +236,3 @@ main()
 }
 
 main "$@"
-
