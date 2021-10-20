@@ -1,4 +1,4 @@
-# Pipeline to build DO Plugins targeting x86-64 architecture.
+# Pipeline to build DO Agent targeting x86-64 architecture.
 # Publishes the binaries + packages as artifacts.
 
 variables:
@@ -11,15 +11,14 @@ trigger:
       - develop
   paths:
     include:
-      - azure-pipelines/build/linux/du/dopapt-native.yml
-      - azure-pipelines/build/linux/du/templates/dopapt-native-steps.yml
+      - azure-pipelines/build/linux/du/doclient-lite-native.yml
+      - azure-pipelines/build/linux/du/templates/doclient-lite-native-steps.yml
+      - client-lite/*
       - common/*
-      - plugins/*
       - build/build.py
       - CMakeLists.txt
     exclude:
-      - 'azure-pipelines/*'
-      - 'plugins/linux-apt/scripts/configure-apt-method.sh'
+      - azure-pipelines/*
 
 pr:
   branches:
@@ -27,15 +26,14 @@ pr:
       - develop
   paths:
     include:
-      - azure-pipelines/build/linux/du/dopapt-native.yml
-      - azure-pipelines/build/linux/du/templates/dopapt-native-steps.yml
+      - azure-pipelines/build/linux/du/doclient-lite-native.yml
+      - azure-pipelines/build/linux/du/templates/doclient-lite-native-steps.yml
+      - client-lite/*
       - common/*
-      - plugins/*
       - build/build.py
       - CMakeLists.txt
     exclude:
-      - 'azure-pipelines/*'
-      - 'plugins/linux-apt/scripts/configure-apt-method.sh'
+      - azure-pipelines/*
 
 pool:
   name: 1es_hosted_pool_ubuntu_1804
@@ -44,14 +42,15 @@ pool:
 jobs:
 - job: Debug
   steps:
-  - template: templates/dopapt-native-steps.yml
+  - template: ../templates/doclient-lite-native-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804_x64'
       config: debug
 
 - job: Release
   steps:
-  - template: templates/dopapt-native-steps.yml
+  - template: ../templates/doclient-lite-native-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804_x64'
       config: minsizerel
+      skipTests: true

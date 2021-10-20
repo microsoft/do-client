@@ -36,21 +36,21 @@ pr:
       - azure-pipelines/*
 
 pool:
-  name: 1es_hosted_pool_ubuntu_1804
+  name: 1es_hosted_pool_ubuntu_2004
   demands: ImageOverride -equals do-adu-build-$(imageVersion)
 
 jobs:
 - job: Debug
   steps:
-  - template: templates/doclient-lite-native-steps.yml
+  - template: ../templates/doclient-lite-native-steps.yml
     parameters:
-      targetOsArch: 'ubuntu1804_x64'
+      targetOsArch: 'ubuntu2004_x64'
       config: debug
 
 - job: Release
   steps:
-  - template: templates/doclient-lite-native-steps.yml
+  - template: ../templates/doclient-lite-native-steps.yml
     parameters:
-      targetOsArch: 'ubuntu1804_x64'
+      targetOsArch: 'ubuntu2004_x64'
       config: minsizerel
       skipTests: true
