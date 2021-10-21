@@ -42,14 +42,14 @@ pool:
 jobs:
 - job: Debug
   steps:
-  - template: templates/doclient-lite-native-steps.yml
+  - template: ../templates/doclient-lite-native-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804_x64'
       config: debug
 
 - job: Release
   steps:
-  - template: templates/doclient-lite-native-steps.yml
+  - template: ../templates/doclient-lite-native-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804_x64'
       config: minsizerel
