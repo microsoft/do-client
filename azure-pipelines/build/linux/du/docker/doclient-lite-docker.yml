@@ -23,20 +23,33 @@ pool:
   demands: ImageOverride -equals do-adu-build-$(imageVersion)
 
 jobs:
-- template: templates/do-docker-jobs.yml
+- template: ../templates/do-docker-jobs.yml
   parameters:
     targetOsArch: 'debian9_arm32'
     imageVersion: ${{variables.imageVersion}}
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 
-- template: templates/do-docker-jobs.yml
+- template: ../templates/do-docker-jobs.yml
   parameters:
     targetOsArch: 'debian10_arm32'
     imageVersion: ${{variables.imageVersion}}
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 
-- template: templates/do-docker-jobs.yml
+- template: ../templates/do-docker-jobs.yml
   parameters:
     targetOsArch: 'ubuntu1804_arm64' # azure pipelines does not support '.' in display names
     imageVersion: ${{variables.imageVersion}}
     stepsTemplate: 'doclient-lite-docker-steps.yml'
+
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'ubuntu2004_arm64' # azure pipelines does not support '.' in display names
+    imageVersion: ${{variables.imageVersion}}
+    stepsTemplate: 'doclient-lite-docker-steps.yml'
+
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'ubuntu2004_x64' # azure pipelines does not support '.' in display names
+    imageVersion: ${{variables.imageVersion}}
+    stepsTemplate: 'doclient-lite-docker-steps.yml'
+
