@@ -44,14 +44,14 @@ pool:
 jobs:
 - job: Debug
   steps:
-  - template: templates/dopapt-native-steps.yml
+  - template: ../templates/dopapt-native-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804_x64'
       config: debug
 
 - job: Release
   steps:
-  - template: templates/dopapt-native-steps.yml
+  - template: ../templates/dopapt-native-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804_x64'
       config: minsizerel
