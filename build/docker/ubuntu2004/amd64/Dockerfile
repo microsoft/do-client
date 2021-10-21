@@ -1,4 +1,4 @@
-# Dockerfile for building DO apt plugin for linux-arm (64bit).
+# Dockerfile for building DO client components for Ubuntu 20.04 amd64
 # First, install the docker extension for VSCode. Then you can right-click on this file
 # and choose Build Image. Give it a name and it will build the image.
 #

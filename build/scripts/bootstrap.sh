@@ -64,7 +64,7 @@ function parseArgs {
 
 function installBuildDependencies
 {
-    if [[ $"PLATFORM" != "unknown" ]]
+    if [[ "$PLATFORM" != "unknown" ]]
     then
         echo "[INFO] Platform check succesful"
     else
@@ -84,7 +84,6 @@ function installBuildDependencies
     elif isSupportedLinux
     then
 
-        echo "[INFO] Installing build dependencies"
         apt-get install -y make build-essential g++ gdb gdbserver gcc git wget
         apt-get install -y python3 ninja-build
 
