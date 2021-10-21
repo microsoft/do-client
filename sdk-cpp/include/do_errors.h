@@ -29,42 +29,43 @@ enum class errc : int32_t
     do_e_unknown_property_id    = -2133843951
 };
 
-#if (DO_ENABLE_EXCEPTIONS)
-
+// Category error type for Delivery Optimization errors
 class error_category : public std::error_category
 {
 public:
     const char* name() const noexcept override;
 
-    std::string message(int code) const override;
+    std::string message(int32_t code) const override;
 };
 
+const error_category& do_category();
+
+std::error_code make_error_code(std::errc e);
+std::error_code make_error_code(errc e);
+std::error_code make_error_code(int32_t e);
+
+#if (DO_ENABLE_EXCEPTIONS)
 class exception : public std::exception
 {
 public:
-    // TODO(jimson): With the error macro above, std::error_code is always transformed into an int32_t before throwing
-    // Another option could have been creating an error code class which accepts std::error_code, int32_t, and errc as constructor args
-    // Look into deprecating this interface when we publish a new MajorVersion
     exception(std::error_code code);
     exception(int32_t code);
     exception(errc code);
 
     const char* what() const noexcept override;
 
-    int32_t error_code() const;
-
-    const std::error_code& get_error_code() const;
+    const std::error_code& error_code() const;
 
 private:
     std::error_code _code;
     std::string _msg;
 };
 
-inline void throw_if_fail(int32_t hr)
+inline void throw_if_fail(std::error_code code)
 {
-    if (FAILED(hr))
+    if (DO_FAILED(code))
     {
-        throw exception(hr);
+        throw exception(code.value());
     }
 }
 

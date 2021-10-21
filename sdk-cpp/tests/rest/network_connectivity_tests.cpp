@@ -49,7 +49,7 @@ TEST_F(NetworkConnectivityTests, DISABLED_SimpleBlockingDownloadNetworkDisconnec
             }
             catch (const msdo::exception& e)
             {
-                ASSERT_EQ(e.error_code(), DO_ERROR_FROM_STD_ERROR(std::errc::timed_out));
+                ASSERT_EQ(e.error_code().value(), DO_ERROR_FROM_STD_ERROR(std::errc::timed_out));
             }
         });
     TestHelpers::DisableNetwork();

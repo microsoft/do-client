@@ -1,4 +1,4 @@
-# Dockerfile for building DO apt plugin for linux-arm (32bit).
+# Dockerfile for building DO client components for Debian 10 arm32
 # First, install the docker extension for VSCode. Then you can right-click on this file
 # and choose Build Image. Give it a name and it will build the image.
 #

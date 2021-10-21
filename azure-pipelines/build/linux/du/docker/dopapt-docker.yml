@@ -1,0 +1,55 @@
+# Pipeline to build DO Plugins using docker to target non-native OS and/or architecture.
+# Publishes the binaries + packages as artifacts.
+
+variables:
+- name: imageVersion
+  value: 0.8.0
+
+# Disable branch and pr triggers - currently run this manually to avoid hogging build machine resources
+# Rely on Ubuntu x64 pipeline for CI/CD
+trigger:
+- none
+pr:
+- none
+schedules:
+- cron: "0 0 * * *"
+  displayName: Daily midnight build
+  branches:
+    include:
+    - main
+
+pool:
+  name: 1es_hosted_pool_ubuntu_1804
+  demands: ImageOverride -equals do-adu-build-$(imageVersion)
+
+jobs:
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'debian9_arm32'
+    imageVersion: ${{variables.imageVersion}}
+    stepsTemplate: 'dopapt-docker-steps.yml'
+
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'debian10_arm32'
+    imageVersion: ${{variables.imageVersion}}
+    stepsTemplate: 'dopapt-docker-steps.yml'
+
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'ubuntu1804_arm64'
+    imageVersion: ${{variables.imageVersion}}
+    stepsTemplate: 'dopapt-docker-steps.yml'
+
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'ubuntu2004_arm64'
+    imageVersion: ${{variables.imageVersion}}
+    stepsTemplate: 'dopapt-docker-steps.yml'
+
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'ubuntu2004_x64'
+    imageVersion: ${{variables.imageVersion}}
+    stepsTemplate: 'dopapt-docker-steps.yml'
+

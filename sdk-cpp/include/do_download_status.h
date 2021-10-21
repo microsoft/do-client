@@ -5,6 +5,9 @@
 #define _DELIVERY_OPTIMIZATION_DO_DOWNLOAD_STATUS_H
 
 #include <stdint.h>
+#include <system_error>
+
+#include "do_errors.h"
 
 namespace microsoft
 {
@@ -51,14 +54,14 @@ public:
         return _bytesTransferred;
     }
 
-    int32_t error_code() const noexcept
+    std::error_code error_code() const noexcept
     {
-        return _errorCode;
+        return make_error_code(_errorCode);
     }
 
-    int32_t extended_error_code() const noexcept
+    std::error_code extended_error_code() const noexcept
     {
-        return _extendedErrorCode;
+        return make_error_code(_extendedErrorCode);
     }
 
     download_state state() const noexcept

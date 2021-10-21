@@ -13,15 +13,15 @@ TEST(DownloadStatusTests, TestAccessors)
     msdo::download_status status;
     ASSERT_EQ(status.bytes_total(), 0);
     ASSERT_EQ(status.bytes_transferred(), 0);
-    ASSERT_EQ(status.error_code(), 0);
-    ASSERT_EQ(status.extended_error_code(), 0);
+    ASSERT_EQ(status.error_code().value(), 0);
+    ASSERT_EQ(status.extended_error_code().value(), 0);
     ASSERT_EQ(status.state(), msdo::download_state::created);
 
     status = msdo::download_status(100, 50, -1, -1, msdo::download_state::transferring);
     ASSERT_EQ(status.bytes_total(), 100);
     ASSERT_EQ(status.bytes_transferred(), 50);
-    ASSERT_EQ(status.error_code(), -1);
-    ASSERT_EQ(status.extended_error_code(), -1);
+    ASSERT_EQ(status.error_code().value(), -1);
+    ASSERT_EQ(status.extended_error_code().value(), -1);
     ASSERT_EQ(status.state(), msdo::download_state::transferring);
 }
 

@@ -19,9 +19,9 @@ namespace deliveryoptimization
 namespace details
 {
 
-void ThrowException(int32_t errorCode);
+void ThrowException(std::error_code errorCode);
 void ThrowException(std::errc error);
-void ThrowException(std::error_code error);
+void ThrowException(int32_t error);
 void ThrowException(errc error);
 
 } // namespace details

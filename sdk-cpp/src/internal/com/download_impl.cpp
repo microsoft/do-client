@@ -17,6 +17,17 @@ namespace msdo = microsoft::deliveryoptimization;
 using namespace microsoft::deliveryoptimization::details;
 using namespace Microsoft::WRL;
 
+#ifndef RETURN_IF_FAILED
+#define RETURN_IF_FAILED(hr)  {  \
+    int32_t __hr = (hr);            \
+    if(FAILED(__hr)) return std::error_code(__hr, msdo::do_category());   \
+}
+#endif
+
+#ifndef FAILED
+#define FAILED(hr) (((int32_t)(hr)) < 0)
+#endif
+
 static msdo::download_state ConvertFromComState(DODownloadState platformState)
 {
     msdo::download_state state;
@@ -62,118 +73,118 @@ static msdo::download_status ConvertFromComStatus(const DO_DOWNLOAD_STATUS& plat
         platformStatus.ExtendedError, ConvertFromComState(platformStatus.State));
 }
 
-static int32_t ConvertToComProperty(msdo::download_property key, DODownloadProperty& comProperty)
+static std::error_code ConvertToComProperty(msdo::download_property key, DODownloadProperty& comProperty)
 {
     switch (key)
     {
     case msdo::download_property::blocking_mode:
     {
         comProperty = DODownloadProperty_BlockingMode;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::callback_interface:
     {
         comProperty = DODownloadProperty_CallbackInterface;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::disallow_on_cellular:
     {
         comProperty = DODownloadProperty_DisallowOnCellular;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::caller_name:
     {
         comProperty = DODownloadProperty_DisplayName;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::catalog_id:
     {
         comProperty = DODownloadProperty_ContentId;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::correlation_vector:
     {
         comProperty = DODownloadProperty_CorrelationVector;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::cost_policy:
     {
         comProperty = DODownloadProperty_CostPolicy;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::decryption_info:
     {
         comProperty = DODownloadProperty_DecryptionInfo;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::download_file_path:
     {
         comProperty = DODownloadProperty_LocalPath;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::http_custom_auth_headers:
     {
         comProperty = DODownloadProperty::DODownloadProperty_HttpCustomAuthHeaders;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::http_custom_headers:
     {
         comProperty = DODownloadProperty_HttpCustomHeaders;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::id:
     {
         comProperty = DODownloadProperty_Id;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::integrity_check_info:
     {
         comProperty = DODownloadProperty_IntegrityCheckInfo;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::integrity_check_mandatory:
     {
         comProperty = DODownloadProperty_IntegrityCheckMandatory;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::network_token:
     {
         comProperty = DODownloadProperty_NetworkToken;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::no_progress_timeout_seconds:
     {
         comProperty = DODownloadProperty_NoProgressTimeoutSeconds;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::stream_interface:
     {
         comProperty = DODownloadProperty_StreamInterface;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::security_context:
     {
         comProperty = DODownloadProperty_SecurityContext;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::total_size_bytes:
     {
         comProperty = DODownloadProperty_TotalSizeBytes;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::uri:
     {
         comProperty = DODownloadProperty_Uri;
-        return S_OK;
+        return DO_OK;
     }
     case msdo::download_property::use_foreground_priority:
     {
         comProperty = DODownloadProperty_ForegroundPriority;
-        return S_OK;
+        return DO_OK;
     }
     default:
     {
-        return E_INVALIDARG;
+        return msdo::make_error_code(E_INVALIDARG);
     }
     }
 }
@@ -228,7 +239,7 @@ private:
     msdo::download* _download;
 };
 
-int32_t CDownloadImpl::Init(const std::string& uri, const std::string& downloadFilePath) noexcept
+std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& downloadFilePath) noexcept
 {
     Microsoft::WRL::ComPtr<IDOManager> manager;
     RETURN_IF_FAILED(CoCreateInstance(__uuidof(DeliveryOptimization), nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&manager)));
@@ -241,64 +252,64 @@ int32_t CDownloadImpl::Init(const std::string& uri, const std::string& downloadF
 
     download_property_value propUri;
     download_property_value propDownloadFilePath;
-    RETURN_IF_FAILED(download_property_value::make_nothrow(uri, propUri));
-    RETURN_IF_FAILED(download_property_value::make_nothrow(downloadFilePath, propDownloadFilePath));
+    DO_RETURN_IF_FAILED(download_property_value::make_nothrow(uri, propUri));
+    DO_RETURN_IF_FAILED(download_property_value::make_nothrow(downloadFilePath, propDownloadFilePath));
 
-    RETURN_IF_FAILED(_SetPropertyHelper(*spDownload.Get(), download_property::uri, propUri));
-    RETURN_IF_FAILED(_SetPropertyHelper(*spDownload.Get(), download_property::download_file_path, propDownloadFilePath));
+    DO_RETURN_IF_FAILED(_SetPropertyHelper(*spDownload.Get(), download_property::uri, propUri));
+    DO_RETURN_IF_FAILED(_SetPropertyHelper(*spDownload.Get(), download_property::download_file_path, propDownloadFilePath));
 
     _spDownload = std::move(spDownload);
-    return S_OK;;
+    return DO_OK;;
 }
 
 // Support only full file downloads for now
-int32_t CDownloadImpl::Start() noexcept
+std::error_code CDownloadImpl::Start() noexcept
 {
     _DO_DOWNLOAD_RANGES_INFO emptyRanges = {};
     emptyRanges.RangeCount = 0;
-    return _spDownload->Start(&emptyRanges);
+    return make_error_code(_spDownload->Start(&emptyRanges));
 }
 
-int32_t CDownloadImpl::Pause() noexcept
+std::error_code CDownloadImpl::Pause() noexcept
 {
-    return _spDownload->Pause();
+    return msdo::make_error_code(_spDownload->Pause());
 }
 
-int32_t CDownloadImpl::Resume() noexcept
+std::error_code CDownloadImpl::Resume() noexcept
 {
-    return _spDownload->Start(nullptr);
+    return msdo::make_error_code(_spDownload->Start(nullptr));
 }
 
-int32_t CDownloadImpl::Finalize() noexcept
+std::error_code CDownloadImpl::Finalize() noexcept
 {
-    return _spDownload->Finalize();
+    return msdo::make_error_code(_spDownload->Finalize());
 }
 
-int32_t CDownloadImpl::Abort() noexcept
+std::error_code CDownloadImpl::Abort() noexcept
 {
-    return _spDownload->Abort();
+    return msdo::make_error_code(_spDownload->Abort());
 }
 
-int32_t CDownloadImpl::GetStatus(msdo::download_status& status) noexcept
+std::error_code CDownloadImpl::GetStatus(msdo::download_status& status) noexcept
 {
     DO_DOWNLOAD_STATUS comStatus;
     RETURN_IF_FAILED(_spDownload->GetStatus(&comStatus));
     status = ConvertFromComStatus(comStatus);
-    return S_OK;
+    return DO_OK;
 }
 
-int32_t CDownloadImpl::GetProperty(msdo::download_property key, msdo::download_property_value& value) noexcept
+std::error_code CDownloadImpl::GetProperty(msdo::download_property key, msdo::download_property_value& value) noexcept
 {
     return _GetPropertyHelper(key, value);
 }
 
-int32_t CDownloadImpl::SetProperty(msdo::download_property key, const msdo::download_property_value& val) noexcept
+std::error_code CDownloadImpl::SetProperty(msdo::download_property key, const msdo::download_property_value& val) noexcept
 {
     assert(key != msdo::download_property::callback_interface);
     return _SetPropertyHelper(*_spDownload.Get(), key, val);
 }
 
-int32_t CDownloadImpl::SetCallback(const download_property_value::status_callback_t& callback, download& download) noexcept
+std::error_code CDownloadImpl::SetCallback(const download_property_value::status_callback_t& callback, download& download) noexcept
 {
     Microsoft::WRL::ComPtr<DOStatusCallback> spCallback;
     RETURN_IF_FAILED(MakeAndInitialize<DOStatusCallback>(&spCallback, callback, download));
@@ -312,18 +323,18 @@ int32_t CDownloadImpl::SetCallback(const download_property_value::status_callbac
     ConvertToComProperty(msdo::download_property::callback_interface, prop);
     const auto hr = _spDownload->SetProperty(prop, &vtCallback);
     VariantClear(&vtCallback);
-    return hr;
+    return msdo::make_error_code(hr);
 }
 
-int32_t CDownloadImpl::_SetPropertyHelper(IDODownload& download, msdo::download_property key, const msdo::download_property_value& val) noexcept
+std::error_code CDownloadImpl::_SetPropertyHelper(IDODownload& download, msdo::download_property key, const msdo::download_property_value& val) noexcept
 {
     DODownloadProperty prop;
-    RETURN_IF_FAILED(ConvertToComProperty(key, prop));
+    DO_RETURN_IF_FAILED(ConvertToComProperty(key, prop));
 
-    return download.SetProperty(prop, &val._val->native_value());
+    return msdo::make_error_code(download.SetProperty(prop, &val._val->native_value()));
 }
 
-int32_t CDownloadImpl::_GetPropertyHelper(msdo::download_property key, msdo::download_property_value& value) noexcept
+std::error_code CDownloadImpl::_GetPropertyHelper(msdo::download_property key, msdo::download_property_value& value) noexcept
 {
-    return static_cast<int32_t>(errc::e_not_impl);
+    return msdo::make_error_code(errc::e_not_impl);
 }
