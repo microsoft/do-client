@@ -39,7 +39,7 @@ steps:
   displayName: 'Populate artifacts staging dir'
 
 - task: CopyFiles@2
-  condition: eq('${{parameters.config}}', 'minsizerel')
+  condition: eq('${{parameters.config}}', 'debug')
   inputs:
     SourceFolder: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
     Contents: |
