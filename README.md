@@ -175,7 +175,6 @@ tracked appropriately.
 | x86-64 | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20Simple%20Client%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=25&branchName=main) | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20CPP-SDK%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=33&branchName=main) | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20Plugins%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=31&branchName=main) |
 | arm64 | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20Simple%20Client%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=25&branchName=main) | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20CPP-SDK%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=33&branchName=main) | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20Plugins%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=31&branchName=main) |
 
-
 #### Debian 9
 
 | Architecture | Agent | SDK | Plugin |
