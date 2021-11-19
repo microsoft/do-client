@@ -69,7 +69,7 @@ const std::error_code& exception::error_code() const
     return _code;
 }
 
+#endif // DO_ENABLE_EXCEPTIONS
+
 } // namespace deliveryoptimization
 } // namespace microsoft
-
-#endif //DO_ENABLE_EXCEPTIONS
