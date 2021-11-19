@@ -204,14 +204,15 @@ std::error_code download::start_and_wait_until_completion_nothrow(const std::ato
 
 std::error_code download::download_url_to_path_nothrow(const std::string& uri, const std::string& downloadFilePath, std::chrono::seconds timeOut) noexcept
 {
-    download oneShotDownload = download::make(uri, downloadFilePath);
-    return oneShotDownload.start_and_wait_until_completion_nothrow(timeOut);
+    std::atomic_bool dummy{false};
+    return download_url_to_path_nothrow(uri, downloadFilePath, dummy, timeOut);
 }
 
 std::error_code download::download_url_to_path_nothrow(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeOut) noexcept
 {
-    download oneShotDownload = download::make(uri, downloadFilePath);
-    return oneShotDownload.start_and_wait_until_completion_nothrow(timeOut);
+    download oneShotDownload;
+    DO_RETURN_IF_FAILED(download::make_nothrow(uri, downloadFilePath, oneShotDownload));
+    return oneShotDownload.start_and_wait_until_completion_nothrow(isCancelled, timeOut);
 }
 
 std::error_code download::set_property_nothrow(download_property prop, const download_property_value& val) noexcept

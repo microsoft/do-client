@@ -100,12 +100,12 @@ CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(const CDownloadPr
 #if DEBUG
     assert(SUCCEEDED(res));
 #endif
-    if FAILED(res)
+    if (FAILED(res))
     {
 #if defined(DO_ENABLE_EXCEPTIONS)
         throw std::bad_alloc();
 #else
-        std::terminate()
+        std::terminate();
 #endif
     }
     _callback = rhs._callback;
