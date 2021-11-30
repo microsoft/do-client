@@ -154,6 +154,7 @@ class BuildRunnerBase(object):
         self.cmake_target = None
         self.project = None
         self.build_directory = None
+        self._generator = None
 
         if (script_args.cmaketarget is None):
             self.cmake_target = "all"
@@ -227,8 +228,8 @@ class BuildRunnerBase(object):
             None if default generator should be used (not recommended).
         """
         if is_running_on_linux():
-            return "Ninja"
-        return None
+            self._generator = "Ninja"
+        return self._generator
 
     @property
     def platform(self):
@@ -434,7 +435,11 @@ class LinuxBuildRunner(BuildRunnerBase):
 
     @property
     def generator(self):
-        return 'Ninja'
+        return self._generator or 'Ninja'
+
+    @generator.setter
+    def generator(self, value):
+        self._generator = value
 
     @property
     def generate_options(self):
@@ -494,7 +499,12 @@ class WindowsBuildRunner(BuildRunnerBase):
     def generator(self):
         # No need to specify architecture here as the default target platform name (architecture) is that of the host and is provided in the CMAKE_VS_PLATFORM_NAME_DEFAULT variable
         # https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2016%202019.html
-        return 'Visual Studio 16 2019'
+        return self._generator or 'Visual Studio 16 2019'
+
+    @generator.setter
+    def generator(self, value):
+        self._generator = value
+
 
     @property
     def generate_options(self):
@@ -532,7 +542,12 @@ class MacBuildRunner(BuildRunnerBase):
 
     @property
     def generator(self):
-        return 'Ninja'
+        return self._generator or 'Ninja'
+
+    @generator.setter
+    def generator(self, value):
+        self._generator = value
+
 
     @property
     def generate_options(self):
