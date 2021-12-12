@@ -127,7 +127,6 @@ class MacArgParser(ArgParserBase):
             help='vcpkg installation directory for c++ packages on mac'
         )
 
-
 # endregion ArgParser
 
 #region BuildRunner classes
@@ -176,9 +175,6 @@ class BuildRunnerBase(object):
         if self.config not in ['debug', 'devdebug', 'release', 'relwithdebinfo', 'minsizerel']:
             raise ValueError('Building configuration for {self.platform} is not supported.'.format(self.config, self.platform))
 
-        if self.script_args.generator:
-            self.generator = self.script_args.generator
-
         self.skip_tests = script_args.skip_tests
 
         self.disable_exceptions = script_args.disable_exceptions
@@ -223,12 +219,9 @@ class BuildRunnerBase(object):
         etc.
 
         Returns:
-            CMake generator ID as string.
-            None if default generator should be used (not recommended).
+            CMake generator ID as string, if specified via cmdline args.
         """
-        if is_running_on_linux():
-            return "Ninja"
-        return None
+        return self.script_args.generator
 
     @property
     def platform(self):
@@ -350,8 +343,11 @@ class BuildRunnerBase(object):
             The list of additional generate options.
         """
         generate_options = []
-        if self.generator:
-            generate_options.extend(['-G', self.generator])
+
+        if self.generator is None:
+            raise argparse.ArgumentError('The generator was not specified. Please check the defaults in the derived build runners.')
+
+        generate_options.extend(['-G', self.generator])
 
         if self.config == "debug":
             generate_options.extend(["-DCMAKE_BUILD_TYPE=Debug"])
@@ -434,7 +430,7 @@ class LinuxBuildRunner(BuildRunnerBase):
 
     @property
     def generator(self):
-        return 'Ninja'
+        return super().generator or 'Ninja'
 
     @property
     def generate_options(self):
@@ -494,7 +490,7 @@ class WindowsBuildRunner(BuildRunnerBase):
     def generator(self):
         # No need to specify architecture here as the default target platform name (architecture) is that of the host and is provided in the CMAKE_VS_PLATFORM_NAME_DEFAULT variable
         # https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2016%202019.html
-        return 'Visual Studio 16 2019'
+        return super().generator or 'Visual Studio 16 2019'
 
     @property
     def generate_options(self):
@@ -532,7 +528,7 @@ class MacBuildRunner(BuildRunnerBase):
 
     @property
     def generator(self):
-        return 'Ninja'
+        return super().generator or 'Ninja'
 
     @property
     def generate_options(self):
