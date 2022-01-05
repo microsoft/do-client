@@ -45,7 +45,7 @@ pool:
 jobs:
 - job: Debug
   steps:
-  - template:../templates/dosdkcpp-native-steps.yml
+  - template: ../templates/dosdkcpp-native-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804_x64'
       config: debug
