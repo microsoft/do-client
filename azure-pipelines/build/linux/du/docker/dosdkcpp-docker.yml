@@ -16,7 +16,7 @@ schedules:
   displayName: Daily midnight build
   branches:
     include:
-    - main
+    - develop
 
 pool:
   name: 1es_hosted_pool_ubuntu_1804

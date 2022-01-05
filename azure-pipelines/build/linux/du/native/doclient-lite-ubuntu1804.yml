@@ -11,7 +11,7 @@ trigger:
       - develop
   paths:
     include:
-      - azure-pipelines/build/linux/du/doclient-lite-native.yml
+      - azure-pipelines/build/linux/du/native/doclient-lite-ubuntu1804.yml
       - azure-pipelines/build/linux/du/templates/doclient-lite-native-steps.yml
       - client-lite/*
       - common/*
@@ -26,7 +26,7 @@ pr:
       - develop
   paths:
     include:
-      - azure-pipelines/build/linux/du/doclient-lite-native.yml
+      - azure-pipelines/build/linux/du/native/doclient-lite-ubuntu1804.yml
       - azure-pipelines/build/linux/du/templates/doclient-lite-native-steps.yml
       - client-lite/*
       - common/*

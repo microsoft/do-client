@@ -12,7 +12,7 @@ trigger:
       - develop
   paths:
     include:
-      - azure-pipelines/build/linux/du/dosdkcpp-native.yml
+      - azure-pipelines/build/linux/du/native/dosdkcpp-ubuntu1804.yml
       - azure-pipelines/build/linux/du/templates/dosdkcpp-native-steps.yml
       - common/*
       - sdk-cpp/*
@@ -28,7 +28,7 @@ pr:
       - develop
   paths:
     include:
-      - azure-pipelines/build/linux/du/dosdkcpp-native.yml
+      - azure-pipelines/build/linux/du/native/dosdkcpp-ubuntu1804.yml
       - azure-pipelines/build/linux/du/templates/dosdkcpp-native-steps.yml
       - common/*
       - sdk-cpp/*
