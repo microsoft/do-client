@@ -11,7 +11,7 @@ trigger:
       - develop
   paths:
     include:
-      - azure-pipelines/build/linux/du/dopapt-native.yml
+      - azure-pipelines/build/linux/du/native/dopapt-ubuntu1804.yml
       - azure-pipelines/build/linux/du/templates/dopapt-native-steps.yml
       - common/*
       - plugins/*
@@ -27,7 +27,7 @@ pr:
       - develop
   paths:
     include:
-      - azure-pipelines/build/linux/du/dopapt-native.yml
+      - azure-pipelines/build/linux/du/native/dopapt-ubuntu1804.yml
       - azure-pipelines/build/linux/du/templates/dopapt-native-steps.yml
       - common/*
       - plugins/*

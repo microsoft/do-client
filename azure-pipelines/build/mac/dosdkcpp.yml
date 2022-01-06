@@ -1,14 +1,13 @@
-# Pipeline to build the DO CPP SDK on Windows 10
+# Pipeline to build the DO CPP SDK on MacOS X
 # Runs tests after build and publishes the binaries as artifacts
 
 trigger:
   branches:
     include:
       - develop
-      - feature/xplat_sdk
   paths:
     include:
-      - azure-pipelines/build/windows/*
+      - azure-pipelines/build/mac/*
       - common/*
       - sdk-cpp/*
       - build/build.py
@@ -21,7 +20,6 @@ pr:
   branches:
     include:
       - develop
-      - feature/xplat_sdk
   paths:
     include:
       - azure-pipelines/build/mac/*
