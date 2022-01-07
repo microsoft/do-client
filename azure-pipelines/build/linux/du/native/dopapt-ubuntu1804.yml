@@ -8,10 +8,10 @@ variables:
 trigger:
   branches:
     include:
-      - main
+      - develop
   paths:
     include:
-      - azure-pipelines/build/linux/du/dopapt-native.yml
+      - azure-pipelines/build/linux/du/native/dopapt-ubuntu1804.yml
       - azure-pipelines/build/linux/du/templates/dopapt-native-steps.yml
       - common/*
       - plugins/*
@@ -24,10 +24,10 @@ trigger:
 pr:
   branches:
     include:
-      - main
+      - develop
   paths:
     include:
-      - azure-pipelines/build/linux/du/dopapt-native.yml
+      - azure-pipelines/build/linux/du/native/dopapt-ubuntu1804.yml
       - azure-pipelines/build/linux/du/templates/dopapt-native-steps.yml
       - common/*
       - plugins/*
@@ -44,14 +44,14 @@ pool:
 jobs:
 - job: Debug
   steps:
-  - template: templates/dopapt-native-steps.yml
+  - template: ../templates/dopapt-native-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804_x64'
       config: debug
 
 - job: Release
   steps:
-  - template: templates/dopapt-native-steps.yml
+  - template: ../templates/dopapt-native-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804_x64'
       config: minsizerel

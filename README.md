@@ -168,6 +168,13 @@ tracked appropriately.
 | x86-64 | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20Simple%20Client%20x86-64%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=45&branchName=main) | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20CPP-SDK%20x86-64%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=46&branchName=main) | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20Plugins%20x86-64%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=47&branchName=main) |
 | arm64 | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20Simple%20Client%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=25&branchName=main) | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20CPP-SDK%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=33&branchName=main) | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20Plugins%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=31&branchName=main) |
 
+#### Ubuntu 20.04
+
+| Architecture | Agent | SDK | Plugin |
+|-----|--------|-----|--------|
+| x86-64 | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20Simple%20Client%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=25&branchName=main) | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20CPP-SDK%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=33&branchName=main) | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20Plugins%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=31&branchName=main) |
+| arm64 | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20Simple%20Client%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=25&branchName=main) | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20CPP-SDK%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=33&branchName=main) | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20Plugins%20ARM%20Build?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=31&branchName=main) |
+
 #### Debian 9
 
 | Architecture | Agent | SDK | Plugin |
@@ -184,13 +191,13 @@ tracked appropriately.
 
 | Architecture | SDK |
 |-----|--------|
-| x86-64 | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20CPP-SDK%20Windows10%20x64?branchName=feature%2Fxplat_sdk)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=53&branchName=feature%2Fxplat_sdk) |
+| x86-64 | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20CPP-SDK%20Windows%2010%20x64?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=59&branchName=main) |
 
 ### MacOS
 
 | Architecture | SDK |
 |-----|--------|
-| x86-64 | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20CPP-SDK%20MacOs%20X64?branchName=user%2Fjimson%2Fsdk_mac)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=57&branchName=user%2Fjimson%2Fsdk_mac)) |
+| x86-64 | [![Build Status](https://deliveryoptimization.visualstudio.com/client/_apis/build/status/DO%20CPP-SDK%20MacOS%20X64?branchName=main)](https://deliveryoptimization.visualstudio.com/client/_build/latest?definitionId=60&branchName=main) |
 
 ## Contact
 
