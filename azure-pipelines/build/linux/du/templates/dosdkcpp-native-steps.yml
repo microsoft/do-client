@@ -94,30 +94,3 @@ steps:
     ArtifactName: 'deliveryoptimization-sdk'
     publishLocation: 'Container'
 
-# TODO(jimson) Azure artifacts are no longer free to publish to, this task will fail as a result, bug to resolve issue here:
-# https://microsoft.visualstudio.com/OS/_workitems/edit/30317524
-# Note: The second feed publishes to a feed that did not hit storage limits. Choose which one to keep when re-enabling the publish.
-#
-#  - task: UniversalPackages@0
-#    inputs:
-#      command: 'publish'
-#      publishDirectory: '$(Build.ArtifactStagingDirectory)'
-#      feedsToUsePublish: 'internal'
-#      vstsFeedPublish: 'a6e08e1f-d299-4d2f-aaa5-db7ddde849e0'
-#      publishPackageMetadata: false
-#      vstsFeedPackagePublish: 'deliveryoptimization-sdk'
-#      versionOption: 'custom'
-#      versionPublish: '$(test.package.version)'
-#    displayName: 'Publish artifacts to test feed'
-
-# - task: UniversalPackages@0
-#   inputs:
-#     command: 'publish'
-#     publishDirectory: '$(Build.ArtifactStagingDirectory)'
-#     feedsToUsePublish: 'internal'
-#     vstsFeedPublish: '7cdf52bf-a6f7-436c-b12f-3f063ef389c4/a671f3bd-f4e8-44b8-9553-9a9c04fa266a'
-#     vstsFeedPackagePublish: 'deliveryoptimization-sdk'
-#     versionOption: 'patch'
-#     packagePublishDescription: 'sdk'
-#     versionPublish: '$(test.package.version)'
-#   displayName: 'Publish artifacts to test feed'
