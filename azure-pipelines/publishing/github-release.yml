@@ -84,7 +84,7 @@ stages:
     - task: GitHubRelease@1
       condition: eq(${{parameters.SkipPublishing}}, false)
       inputs:
-        gitHubConnection: 'client2'
+        gitHubConnection: 'github_gauth'
         repositoryName: 'microsoft/do-client'
         action: 'create'
         assets: '$(Build.ArtifactStagingDirectory)/**/*.tar'
