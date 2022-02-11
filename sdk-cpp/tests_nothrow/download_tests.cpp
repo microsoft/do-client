@@ -42,16 +42,29 @@ public:
 TEST_F(DownloadTestsDOSVC, Download1PausedDownload2SameDestTest)
 {
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-    auto simpleDownload = msdo::download::make(g_largeFileUrl, g_tmpFileName);
-    msdo::download_status status = simpleDownload->get_status();
+
+    std::unique_ptr<msdo::download> simpleDownload;
+    auto ec = msdo::download::make_nothrow(g_largeFileUrl, g_tmpFileName, simpleDownload);
+    ASSERT_TRUE(!ec);
+
+    // msdo::download_property_value propUri;
+    // ASSERT_TRUE(!msdo::download_property_value::make_nothrow(g_largeFileUrl, propUri));
+    // ASSERT_TRUE(!simpleDownload->set_property_nothrow(msdo::download_property::uri, propUri));
+
+    // msdo::download_property_value propFilePath;
+    // ASSERT_TRUE(!msdo::download_property_value::make_nothrow(g_tmpFileName, propFilePath));
+    // ASSERT_TRUE(!simpleDownload->set_property_nothrow(msdo::download_property::uri, propFilePath));
+
+    msdo::download_status status;
+    simpleDownload->get_status_nothrow(status);
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
 
-    simpleDownload->start();
+    simpleDownload->start_nothrow();
     std::this_thread::sleep_for(1s);
-    simpleDownload->pause();
+    simpleDownload->pause_nothrow();
     TestHelpers::WaitForState(*simpleDownload, msdo::download_state::paused);
 
-    msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
+    msdo::download::download_url_to_path_nothrow(g_smallFileUrl, g_tmpFileName);
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
 }
