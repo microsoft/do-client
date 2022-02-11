@@ -50,7 +50,7 @@ public:
     download_property_value get_property(download_property key);
 #endif
 
-    static std::error_code make_nothrow(const std::string& uri, const std::string& downloadFilePath, download& out) noexcept;
+    static download make_nothrow(const std::string& uri, const std::string& downloadFilePath, std::error_code& error) noexcept;
 
     std::error_code start_nothrow() noexcept;
     std::error_code pause_nothrow() noexcept;

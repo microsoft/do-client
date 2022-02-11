@@ -104,14 +104,17 @@ void download::set_property(download_property prop, const download_property_valu
 
 #endif //DO_ENABLE_EXCEPTIONS
 
-std::error_code download::make_nothrow(const std::string& uri, const std::string& downloadFilePath, download& out) noexcept
+download download::make_nothrow(const std::string& uri, const std::string& downloadFilePath, std::error_code& error) noexcept
 {
     download tmp;
     tmp._download = std::make_shared<msdod::CDownloadImpl>();
-    std::error_code code = tmp._download->Init(uri, downloadFilePath);
-    DO_RETURN_IF_FAILED(code);
-    out = tmp;
-    return DO_OK;
+    error = tmp._download->Init(uri, downloadFilePath);
+#if DEBUG
+    assert(DO_FAILED(code))
+#endif
+    if (DO_FAILED(error))
+      ; // Need logging in DO code
+    return tmp;
 }
 
 std::error_code download::start_nothrow() noexcept
@@ -210,8 +213,9 @@ std::error_code download::download_url_to_path_nothrow(const std::string& uri, c
 
 std::error_code download::download_url_to_path_nothrow(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeOut) noexcept
 {
-    download oneShotDownload;
-    DO_RETURN_IF_FAILED(download::make_nothrow(uri, downloadFilePath, oneShotDownload));
+    std::error_code error;
+    download oneShotDownload = download::make_nothrow(uri, downloadFilePath, error);
+    DO_RETURN_IF_FAILED(error);
     return oneShotDownload.start_and_wait_until_completion_nothrow(isCancelled, timeOut);
 }
 
