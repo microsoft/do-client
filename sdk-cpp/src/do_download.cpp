@@ -27,10 +27,10 @@ download::download()
 download::~download() = default;
 
 #if defined(DO_ENABLE_EXCEPTIONS)
-download download::make(const std::string& uri, const std::string& downloadFilePath)
+std::unique_ptr<download> download::make(const std::string& uri, const std::string& downloadFilePath)
 {
-    download out;
-    throw_if_fail(out._download->Init(uri, downloadFilePath));
+    std::unique_ptr<download> out;
+    throw_if_fail(make_nothrow(uri, downloadFilePath, out));
     return out;
 }
 
@@ -75,14 +75,14 @@ void download::start_and_wait_until_completion(std::chrono::seconds timeOut)
 
 void download::download_url_to_path(const std::string& uri, const std::string& downloadFilePath, std::chrono::seconds timeOut)
 {
-    download oneShotDownload = download::make(uri, downloadFilePath);
-    oneShotDownload.start_and_wait_until_completion(timeOut);
+    auto oneShotDownload = download::make(uri, downloadFilePath);
+    oneShotDownload->start_and_wait_until_completion(timeOut);
 }
 
 void download::download_url_to_path(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeOut)
 {
-    download oneShotDownload = download::make(uri, downloadFilePath);
-    oneShotDownload.start_and_wait_until_completion(isCancelled, timeOut);
+    auto oneShotDownload = download::make(uri, downloadFilePath);
+    oneShotDownload->start_and_wait_until_completion(isCancelled, timeOut);
 }
 
 void download::start_and_wait_until_completion(const std::atomic_bool& isCancelled, std::chrono::seconds timeOut)
@@ -104,13 +104,15 @@ void download::set_property(download_property prop, const download_property_valu
 
 #endif //DO_ENABLE_EXCEPTIONS
 
-std::error_code download::make_nothrow(const std::string& uri, const std::string& downloadFilePath, download& out) noexcept
+std::error_code download::make_nothrow(const std::string& uri, const std::string& downloadFilePath, std::unique_ptr<download>& out) noexcept
 {
-    download tmp;
-    tmp._download = std::make_shared<msdod::CDownloadImpl>();
-    std::error_code code = tmp._download->Init(uri, downloadFilePath);
+    out.reset();
+    // using 'new' to access non-public constructor
+    std::unique_ptr<download> tmp(new download());
+    tmp->_download = std::make_shared<msdod::CDownloadImpl>();
+    std::error_code code = tmp->_download->Init(uri, downloadFilePath);
     DO_RETURN_IF_FAILED(code);
-    out = tmp;
+    out = std::move(tmp);
     return DO_OK;
 }
 
@@ -210,9 +212,9 @@ std::error_code download::download_url_to_path_nothrow(const std::string& uri, c
 
 std::error_code download::download_url_to_path_nothrow(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeOut) noexcept
 {
-    download oneShotDownload;
+    std::unique_ptr<download> oneShotDownload;
     DO_RETURN_IF_FAILED(download::make_nothrow(uri, downloadFilePath, oneShotDownload));
-    return oneShotDownload.start_and_wait_until_completion_nothrow(isCancelled, timeOut);
+    return oneShotDownload->start_and_wait_until_completion_nothrow(isCancelled, timeOut);
 }
 
 std::error_code download::set_property_nothrow(download_property prop, const download_property_value& val) noexcept
