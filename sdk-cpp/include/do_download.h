@@ -27,7 +27,7 @@ public:
     ~download();
 
 #if (DO_ENABLE_EXCEPTIONS)
-    static download make(const std::string& uri, const std::string& downloadFilePath);
+    static std::unique_ptr<download> make(const std::string& uri, const std::string& downloadFilePath);
 
     void start();
     void pause();
@@ -50,7 +50,7 @@ public:
     download_property_value get_property(download_property key);
 #endif
 
-    static std::error_code make_nothrow(const std::string& uri, const std::string& downloadFilePath, download& out) noexcept;
+    static std::error_code make_nothrow(const std::string& uri, const std::string& downloadFilePath, std::unique_ptr<download>& out) noexcept;
 
     std::error_code start_nothrow() noexcept;
     std::error_code pause_nothrow() noexcept;

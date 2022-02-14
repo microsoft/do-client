@@ -201,7 +201,7 @@ public:
     }
 
 #if defined(DO_ENABLE_EXCEPTIONS)
-    IFACEMETHODIMP OnStatusChange(IDODownload* download, const DO_DOWNLOAD_STATUS* comStatus)
+    IFACEMETHODIMP OnStatusChange(IDODownload* download, const DO_DOWNLOAD_STATUS* comStatus) noexcept
     {
         try
         {
@@ -225,7 +225,7 @@ public:
 #else
     // If an application builds the sdk from source and has toggled DO_ENABLE_EXCEPTIONS, it would be hypocritical for their callback to throw
     // Need to provide this definition because try/catch keywords in the implementation above will fail builds with exceptions disabled
-    IFACEMETHODIMP OnStatusChange(IDODownload* download, const DO_DOWNLOAD_STATUS* comStatus)
+    IFACEMETHODIMP OnStatusChange(IDODownload* download, const DO_DOWNLOAD_STATUS* comStatus) noexcept
     {
         msdo::download_status status = ConvertFromComStatus(*comStatus);
         _callback(*_download, status);

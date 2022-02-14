@@ -73,24 +73,24 @@ TEST_F(MCCDownloadTests, DownloadWithInvalidHostAndUrl)
     const auto invalidUrl = "http://" + std::to_string(gen()) + ".com";
     std::cout << "Using invalid URL: " << invalidUrl << std::endl;
 
-    msdo::download download = msdo::download::make(invalidUrl, g_tmpFileName);
-    download.start();
+    auto download = msdo::download::make(invalidUrl, g_tmpFileName);
+    download->start();
 
     // Wait enough time to exercise the agent code that attempts both MCC and CDN in a loop.
     // Verify there is no progress while waiting.
     const auto timeout = std::chrono::seconds(90);
     const auto endTime = std::chrono::steady_clock::now() + timeout;
-    uint64_t bytesTransferred = download.get_status().bytes_transferred();
+    uint64_t bytesTransferred = download->get_status().bytes_transferred();
     std::cout << "Verifying there is no download progress for " << timeout.count() << " seconds" << std::endl;
     do
     {
         std::this_thread::sleep_for(std::chrono::seconds(2));
 
-        const auto newStatus = download.get_status();
+        const auto newStatus = download->get_status();
         ASSERT_EQ(newStatus.state(), msdo::download_state::transferring);
         ASSERT_EQ(newStatus.bytes_transferred(), bytesTransferred);
 
     } while (std::chrono::steady_clock::now() < endTime);
 
-    download.abort();
+    download->abort();
 }

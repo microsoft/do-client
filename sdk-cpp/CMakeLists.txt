@@ -18,9 +18,11 @@ if (DO_PLATFORM_LINUX)
     fixup_compile_options_for_arm()
 endif()
 
-# Currently tests run off of the throwing interface, enable them only when building for the throwing interface
-if (DO_BUILD_TESTS AND DO_ENABLE_EXCEPTIONS)
-    add_subdirectory(tests)
+if (DO_BUILD_TESTS)
+    if (DO_ENABLE_EXCEPTIONS)
+        add_subdirectory(tests)
+    endif ()
+    add_subdirectory(tests_nothrow)
 endif()
 
 set(DO_SDK_LIB_NAME "deliveryoptimization")
