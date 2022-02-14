@@ -4,6 +4,7 @@
 #include "tests_common.h"
 
 #include <atomic>
+#include <array>
 #include <iostream>
 #include <string>
 #include <thread>
@@ -151,7 +152,11 @@ TEST_F(DownloadTests, SimpleDownloadTest_WithMalformedPath)
     catch (const msdo::exception& e)
     {
 #if defined(DO_INTERFACE_COM)
-        ASSERT_EQ(e.error_code().value(), E_ACCESSDENIED);
+        constexpr auto c_invalidDeviceName = (int)0x8007007b;
+        std::array<int, 3> expectedErrors{ E_ACCESSDENIED, HTTP_E_STATUS_NOT_FOUND, c_invalidDeviceName };
+        // DO returns different errors on dev machine and pipeline agents (Win10/Win11?)
+        ASSERT_TRUE(std::find(expectedErrors.begin(), expectedErrors.end(), e.error_code().value()) != expectedErrors.end())
+            << e.error_code().value();
 #elif defined(DO_INTERFACE_REST)
         ASSERT_EQ(e.error_code().value(), DO_ERROR_FROM_SYSTEM_ERROR(ENOENT));
 #endif
@@ -171,7 +176,11 @@ TEST_F(DownloadTests, SimpleDownloadTest_With404UrlAndMalformedPath)
     catch (const msdo::exception& e)
     {
 #if defined(DO_INTERFACE_COM)
-        ASSERT_EQ(e.error_code().value(), E_ACCESSDENIED);
+        constexpr auto c_invalidDeviceName = (int)0x8007007b;
+        std::array<int, 3> expectedErrors{ E_ACCESSDENIED, HTTP_E_STATUS_NOT_FOUND, c_invalidDeviceName };
+        // DO returns different errors on dev machine and pipeline agents (Win10/Win11?)
+        ASSERT_TRUE(std::find(expectedErrors.begin(), expectedErrors.end(), e.error_code().value()) != expectedErrors.end())
+            << e.error_code().value();
 #elif defined(DO_INTERFACE_REST)
         ASSERT_EQ(e.error_code().value(), DO_ERROR_FROM_SYSTEM_ERROR(ENOENT));
 #endif
