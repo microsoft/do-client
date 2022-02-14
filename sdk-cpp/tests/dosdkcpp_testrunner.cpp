@@ -34,7 +34,13 @@ int main(int argc, char** argv)
     }
 
 #if defined(DO_INTERFACE_COM)
-    ASSERT_TRUE(SUCCEEDED(CoInitializeEx(nullptr, COINIT_MULTITHREADED))); // SDK leaves com init up to caller, so initialize in test exe here
+    // SDK leaves com init up to caller, so initialize in test exe here
+    const auto hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    if (FAILED(hr))
+    {
+        std::cout << "CoInitializeEx failed with " << hr << std::endl;
+        return hr;
+    }
 #endif
 
     auto manualStart = vm["manual-start"].as<bool>();
@@ -46,11 +52,11 @@ int main(int argc, char** argv)
         } while (std::cin.get() != '\n');
     }
 
-    int hr = RUN_ALL_TESTS();
+    int testsResult = RUN_ALL_TESTS();
 
 #if defined(DO_INTERFACE_COM)
     CoUninitialize();
 #endif
 
-    return hr;
+    return testsResult;
 }
