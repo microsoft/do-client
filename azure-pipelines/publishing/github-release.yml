@@ -78,6 +78,7 @@ stages:
         buildType: 'specific'
         project: 'client'
         pipeline: '42'
+        buildVersionToDownload: 'specific'
         buildId: '3656'
         downloadType: 'specific'
         itemPattern: '**/*.tar'
