@@ -25,42 +25,42 @@ parameters:
     - false
 
 stages:
-- stage: pre_build
-  jobs:
-  - job: print_variables
-    steps:
-    - task: CmdLine@2
-      inputs:
-        script: |
-          echo "Release title: $(Release.Title)"
-          echo "Release tag: $(Release.Version)"
-          echo "Tag used to generate changelog: $(Release.PreviousVersion)"
+#- stage: pre_build
+#  jobs:
+#  - job: print_variables
+#    steps:
+#    - task: CmdLine@2
+#      inputs:
+#        script: |
+#          echo "Release title: $(Release.Title)"
+#          echo "Release tag: $(Release.Version)"
+#          echo "Tag used to generate changelog: $(Release.PreviousVersion)"
 
-- stage: release_build
-  jobs:
-  - template: templates/release-native-build-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu1804_x64'
-  - template: templates/release-docker-build-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu1804_arm64'
-      imageVersion: ${{variables.imageVersion}}
-  - template: templates/release-docker-build-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu2004_x64'
-      imageVersion: ${{variables.imageVersion}}
-  - template: templates/release-docker-build-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu2004_arm64'
-      imageVersion: ${{variables.imageVersion}}
-  - template: templates/release-docker-build-steps.yml
-    parameters:
-      targetOsArch: 'debian9_arm32'
-      imageVersion: ${{variables.imageVersion}}
-  - template: templates/release-docker-build-steps.yml
-    parameters:
-      targetOsArch: 'debian10_arm32'
-      imageVersion: ${{variables.imageVersion}}
+#- stage: release_build
+#  jobs:
+#  - template: templates/release-native-build-steps.yml
+#    parameters:
+#      targetOsArch: 'ubuntu1804_x64'
+#  - template: templates/release-docker-build-steps.yml
+#    parameters:
+#      targetOsArch: 'ubuntu1804_arm64'
+#      imageVersion: ${{variables.imageVersion}}
+#  - template: templates/release-docker-build-steps.yml
+#    parameters:
+#      targetOsArch: 'ubuntu2004_x64'
+#      imageVersion: ${{variables.imageVersion}}
+#  - template: templates/release-docker-build-steps.yml
+#    parameters:
+#      targetOsArch: 'ubuntu2004_arm64'
+#      imageVersion: ${{variables.imageVersion}}
+#  - template: templates/release-docker-build-steps.yml
+#    parameters:
+#      targetOsArch: 'debian9_arm32'
+#      imageVersion: ${{variables.imageVersion}}
+#  - template: templates/release-docker-build-steps.yml
+#    parameters:
+#      targetOsArch: 'debian10_arm32'
+#      imageVersion: ${{variables.imageVersion}}
 
 - stage: release
   condition: succeeded()
@@ -69,8 +69,11 @@ stages:
     steps:
     - task: DownloadBuildArtifacts@0
       inputs:
-        buildType: 'current'
+        buildType: 'specific'
+        project: 'client'
+        pipeline: '42'
         downloadType: 'specific'
+        itemPattern: '**/*.tar'
         downloadPath: '$(Build.ArtifactStagingDirectory)'
 
     - task: CmdLine@2
@@ -81,13 +84,22 @@ stages:
           ls -lR $(Build.ArtifactStagingDirectory)/**/*.tar
       displayName: Release Information
 
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: 'sha256sum ./*.tar > ../hashes_sha256.txt'
+        workingDirectory: $(Build.ArtifactStagingDirectory)/github-release-artifacts
+      displayName: Compute hashes of archive files
+
     - task: GitHubRelease@1
       condition: eq(${{parameters.SkipPublishing}}, false)
       inputs:
         gitHubConnection: 'github_gauth'
         repositoryName: 'microsoft/do-client'
         action: 'create'
-        assets: '$(Build.ArtifactStagingDirectory)/**/*.tar'
+        assets: |
+          '$(Build.ArtifactStagingDirectory)/**/*.tar'
+          '$(Build.ArtifactStagingDirectory)/hashes*.txt'
         tagSource: 'userSpecifiedTag'
         tag: '$(Release.Version)'
         title: '$(Release.Title)'
