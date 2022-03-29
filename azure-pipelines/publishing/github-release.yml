@@ -106,6 +106,14 @@ stages:
         workingDirectory: $(Build.ArtifactStagingDirectory)
       displayName: Display hashes of archive files
 
+    - task: CmdLine@2
+      inputs:
+        script: |
+          echo "Directory to be published: $(Build.ArtifactStagingDirectory)"
+          echo Content to be published:
+          ls -lR $(Build.ArtifactStagingDirectory)
+      displayName: Release Information
+
     - task: GitHubRelease@1
       condition: eq(${{parameters.SkipPublishing}}, false)
       inputs:
@@ -113,8 +121,8 @@ stages:
         repositoryName: 'microsoft/do-client'
         action: 'create'
         assets: |
-          '$(Build.ArtifactStagingDirectory)/**/*.tar'
-          '$(Build.ArtifactStagingDirectory)/hashes*.txt'
+          $(Build.ArtifactStagingDirectory)/**/*.tar
+          $(Build.ArtifactStagingDirectory)/hashes*.txt
         tagSource: 'userSpecifiedTag'
         tag: '$(Release.Version)'
         title: '$(Release.Title)'
