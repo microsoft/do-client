@@ -23,6 +23,12 @@ parameters:
     values:
     - true
     - false
+  - name: PublishAsDraft
+    displayName: Publish as draft
+    type: boolean
+    values:
+    - true
+    - false
 
 stages:
 #- stage: pre_build
@@ -91,6 +97,13 @@ stages:
         workingDirectory: $(Build.ArtifactStagingDirectory)/github-release-artifacts
       displayName: Compute hashes of archive files
 
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: 'cat ./hashes_sha256.txt'
+        workingDirectory: $(Build.ArtifactStagingDirectory)
+      displayName: Display hashes of archive files
+
     - task: GitHubRelease@1
       condition: eq(${{parameters.SkipPublishing}}, false)
       inputs:
@@ -104,6 +117,7 @@ stages:
         tag: '$(Release.Version)'
         title: '$(Release.Title)'
         isPreRelease: true
+        isDraft: ${{parameters.PublishAsDraft}}
         changeLogCompareToRelease: 'lastNonDraftReleaseByTag'
         changeLogCompareToReleaseTag: '$(Release.PreviousVersion)'
         changeLogType: 'commitBased'
