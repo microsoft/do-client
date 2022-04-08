@@ -23,6 +23,12 @@ parameters:
     values:
     - true
     - false
+  - name: PublishAsDraft
+    displayName: Publish as draft
+    type: boolean
+    values:
+    - true
+    - false
 
 stages:
 - stage: pre_build
@@ -81,17 +87,34 @@ stages:
           ls -lR $(Build.ArtifactStagingDirectory)/**/*.tar
       displayName: Release Information
 
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: 'sha256sum ./*.tar > ../hashes_sha256.txt'
+        workingDirectory: $(Build.ArtifactStagingDirectory)/github-release-artifacts
+      displayName: Compute hashes of archive files
+
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: 'cat ./hashes_sha256.txt'
+        workingDirectory: $(Build.ArtifactStagingDirectory)
+      displayName: Display hashes of archive files
+
     - task: GitHubRelease@1
       condition: eq(${{parameters.SkipPublishing}}, false)
       inputs:
         gitHubConnection: 'github_gauth'
         repositoryName: 'microsoft/do-client'
         action: 'create'
-        assets: '$(Build.ArtifactStagingDirectory)/**/*.tar'
+        assets: |
+          $(Build.ArtifactStagingDirectory)/**/*.tar
+          $(Build.ArtifactStagingDirectory)/hashes*.txt
         tagSource: 'userSpecifiedTag'
         tag: '$(Release.Version)'
         title: '$(Release.Title)'
         isPreRelease: true
+        isDraft: ${{parameters.PublishAsDraft}}
         changeLogCompareToRelease: 'lastNonDraftReleaseByTag'
         changeLogCompareToReleaseTag: '$(Release.PreviousVersion)'
         changeLogType: 'commitBased'
