@@ -217,6 +217,21 @@ std::error_code download::download_url_to_path_nothrow(const std::string& uri, c
     return oneShotDownload->start_and_wait_until_completion_nothrow(isCancelled, timeOut);
 }
 
+static std::error_code g_TryOverrideDownlevelOsSetPropertyError(download_property prop, std::error_code ec)
+{
+    // Temporary backward-compatibility for Chromium/Edge.
+    // These properties were not supported in IDODownload interface until build 19041.
+    if ((ec.value() == static_cast<int>(errc::do_e_unknown_property_id)) &&
+        ((prop == download_property::correlation_vector) || (prop == download_property::integrity_check_info)))
+    {
+        return DO_OK;
+    }
+    else
+    {
+        return ec;
+    }
+}
+
 std::error_code download::set_property_nothrow(download_property prop, const download_property_value& val) noexcept
 {
     if (prop == download_property::callback_interface)
@@ -228,7 +243,8 @@ std::error_code download::set_property_nothrow(download_property prop, const dow
     }
     else
     {
-        return _download->SetProperty(prop, val);
+        auto ec = _download->SetProperty(prop, val);
+        return g_TryOverrideDownlevelOsSetPropertyError(prop, ec);
     }
 }
 
