@@ -126,12 +126,11 @@ TEST_F(DownloadPropertyTestsDOSVC_NoThrow, InvalidPhfDigestTest)
     auto simpleDownload = g_MakeDownload(g_smallFileUrl, g_tmpFileName);
 
     msdo::download_property_value integrityCheckInfo =  g_MakePropertyValue("blah");
-    std::vector<int32_t> expectedErrors = { static_cast<int32_t>(msdo::errc::invalid_arg),
-        static_cast<int32_t>(msdo::errc::do_e_unknown_property_id) };
+    std::vector<int32_t> expectedErrors = { 0, static_cast<int32_t>(msdo::errc::invalid_arg) };
     VerifyCallWithExpectedErrors([&]()
         {
             return simpleDownload->set_property_nothrow(msdo::download_property::integrity_check_info, integrityCheckInfo);
-        }, { static_cast<int32_t>(msdo::errc::invalid_arg), static_cast<int32_t>(msdo::errc::do_e_unknown_property_id) });
+        }, expectedErrors);
 }
 
 // For some reason, custom headers are getting rejected and returning E_INVALIDARG now, disabling test for now
