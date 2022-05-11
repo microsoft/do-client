@@ -106,18 +106,19 @@ TEST_F(DownloadPropertyTestsDOSVC, InvalidPhfDigestTest)
 {
     auto simpleDownload = msdo::download::make(g_smallFileUrl, g_tmpFileName);
 
+    msdo::download_property_value integrityCheckInfo =  msdo::download_property_value::make("blah");
     try
     {
-        msdo::download_property_value integrityCheckInfo =  msdo::download_property_value::make("blah");
+        // Call fails only on 19041+ builds of Windows. Earlier versions did not support setting
+        // PHF info through IDODownload and the SDK has a workaround to ignore that error.
         simpleDownload->set_property(msdo::download_property::integrity_check_info, integrityCheckInfo);
     }
     catch (const msdo::exception& e)
     {
-        std::vector<int32_t> expectedErrors = { static_cast<int32_t>(msdo::errc::invalid_arg), static_cast<int32_t>(msdo::errc::do_e_unknown_property_id) };
+        std::vector<int32_t> expectedErrors = { static_cast<int32_t>(msdo::errc::invalid_arg) };
         VerifyError(e.error_code().value(), expectedErrors);
         return;
     }
-    ASSERT_TRUE(false);
 }
 
 // For some reason, custom headers are getting rejected and returning E_INVALIDARG now, disabling test for now
