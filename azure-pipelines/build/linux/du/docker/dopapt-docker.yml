@@ -37,6 +37,18 @@ jobs:
 
 - template: ../templates/do-docker-jobs.yml
   parameters:
+    targetOsArch: 'debian10_arm64'
+    imageVersion: ${{variables.imageVersion}}
+    stepsTemplate: 'dopapt-docker-steps.yml'
+
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'debian10_x64'
+    imageVersion: ${{variables.imageVersion}}
+    stepsTemplate: 'doclient-lite-docker-steps.yml'
+
+- template: ../templates/do-docker-jobs.yml
+  parameters:
     targetOsArch: 'ubuntu1804_arm64'
     imageVersion: ${{variables.imageVersion}}
     stepsTemplate: 'dopapt-docker-steps.yml'
