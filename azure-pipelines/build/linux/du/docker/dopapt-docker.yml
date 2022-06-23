@@ -45,7 +45,7 @@ jobs:
   parameters:
     targetOsArch: 'debian10_x64'
     imageVersion: ${{variables.imageVersion}}
-    stepsTemplate: 'doclient-lite-docker-steps.yml'
+    stepsTemplate: 'doapt-docker-steps.yml'
 
 - template: ../templates/do-docker-jobs.yml
   parameters:
