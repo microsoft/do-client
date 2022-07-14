@@ -25,7 +25,6 @@ SHELL [ "/bin/bash", "-c"]
 # After running the above, you can build the image by running in the current dockerfile directory
 # sudo docker build -t debian10_amd64 . --no-cache --network=host
 
-COPY qemu-arm-static /usr/bin/qemu-arm-static
 COPY bootstrap.sh /tmp/bootstrap.sh
 
 WORKDIR /tmp/
