@@ -7,7 +7,8 @@
 #include <errno.h>
 #include <ifaddrs.h>
 
-static const char* g_publicIfNames[] = { "eth", "wlan" };
+// https://www.freedesktop.org/software/systemd/man/systemd.net-naming-scheme.html
+static const char* g_publicIfNames[] = { "eth", "wlan", "en", "wl", "ww" };
 
 bool NetworkMonitor::IsConnected()
 {
@@ -31,6 +32,7 @@ bool NetworkMonitor::IsConnected()
             continue;
         }
 
+        // TODO(shishirb): Look for a better way to find the relevant adapter. Naming conventions can change.
         for (auto ifname : g_publicIfNames)
         {
             auto foundPos = strcasestr(ifa->ifa_name, ifname);
