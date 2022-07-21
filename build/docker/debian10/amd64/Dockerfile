@@ -7,7 +7,7 @@
 # Example:
 # docker run -ti --rm --entrypoint=/bin/bash -v D:\do-client-lite:/code -v D:\temp\build_client_lite\arm-linux-debug:/build custom-debian10-amd64
 
-FROM amd64/debian:buster
+FROM mcr.microsoft.com/mirror/docker/library/debian:buster@sha256:0e328f15f5cb0f93bff52a37d98f0bbfc40f97fcaf250096fd2b2c6871a497eb
 
 SHELL [ "/bin/bash", "-c"]
 
@@ -28,11 +28,6 @@ SHELL [ "/bin/bash", "-c"]
 COPY bootstrap.sh /tmp/bootstrap.sh
 
 WORKDIR /tmp/
-
-
-
-
-
 
 RUN chmod +x bootstrap.sh
 RUN ./bootstrap.sh --platform debian10 --install build

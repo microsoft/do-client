@@ -14,7 +14,7 @@ variables:
   Release.Version: $(release_version)
   Release.PreviousVersion: $(previous_release_version) # Select the previous version, used to generate changelog
   Release.Title: $(title) # title of the release, following <Release.Version> (YYYY-MM-DD) format i.e. v0.6.0 (2021-03-02)
-  imageVersion: '0.8.0'
+  imageVersion: '0.9.0'
 
 parameters:
   - name: SkipPublishing

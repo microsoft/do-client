@@ -3,7 +3,7 @@
 
 variables:
 - name: imageVersion # This is used to specify the vmImage & dockerImage to build the current release, this version # will always be the subsequent release in development branches
-  value: 0.8.0
+  value: 0.9.0
 
 # Disable branch and pr triggers - currently run this manually to avoid hogging build machine resources
 # Rely on Ubuntu x64 pipeline for CI/CD
