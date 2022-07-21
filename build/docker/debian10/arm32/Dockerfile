@@ -7,7 +7,7 @@
 # Example:
 # docker run -ti --rm --entrypoint=/bin/bash -v D:\do-client-lite:/code -v D:\temp\build_client_lite\arm-linux-debug:/build custom-debian10-arm32
 
-FROM arm32v7/debian:buster
+FROM mcr.microsoft.com/mirror/docker/library/debian:buster@sha256:27ab779c4d59ead815ff584f2e41b34a6b261db358b4cdfe664b8bfa1f494ae8
 
 SHELL [ "/bin/bash", "-c"]
 
