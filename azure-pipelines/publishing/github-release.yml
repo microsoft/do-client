@@ -14,7 +14,8 @@ variables:
   Release.Version: $(release_version)
   Release.PreviousVersion: $(previous_release_version) # Select the previous version, used to generate changelog
   Release.Title: $(title) # title of the release, following <Release.Version> (YYYY-MM-DD) format i.e. v0.6.0 (2021-03-02)
-  imageVersion: '0.9.0'
+  imageVersion: '0.8.0'
+  containerImageVersion: '0.9.0'
 
 parameters:
   - name: SkipPublishing
@@ -50,23 +51,31 @@ stages:
   - template: templates/release-docker-build-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804_arm64'
-      imageVersion: ${{variables.imageVersion}}
+      imageVersion: ${{variables.containerImageVersion}}
   - template: templates/release-docker-build-steps.yml
     parameters:
       targetOsArch: 'ubuntu2004_x64'
-      imageVersion: ${{variables.imageVersion}}
+      imageVersion: ${{variables.containerImageVersion}}
   - template: templates/release-docker-build-steps.yml
     parameters:
       targetOsArch: 'ubuntu2004_arm64'
-      imageVersion: ${{variables.imageVersion}}
+      imageVersion: ${{variables.containerImageVersion}}
   - template: templates/release-docker-build-steps.yml
     parameters:
       targetOsArch: 'debian9_arm32'
-      imageVersion: ${{variables.imageVersion}}
+      imageVersion: '0.8.0' #hard coded version because debian9 support will soon be removed
   - template: templates/release-docker-build-steps.yml
     parameters:
       targetOsArch: 'debian10_arm32'
-      imageVersion: ${{variables.imageVersion}}
+      imageVersion: ${{variables.containerImageVersion}}
+  - template: templates/release-docker-build-steps.yml
+    parameters:
+      targetOsArch: 'debian10_arm64'
+      imageVersion: ${{variables.containerImageVersion}}
+  - template: templates/release-docker-build-steps.yml
+    parameters:
+      targetOsArch: 'debian10_x64'
+      imageVersion: ${{variables.containerImageVersion}}
 
 - stage: release
   condition: succeeded()
