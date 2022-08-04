@@ -388,10 +388,15 @@ void Download::_SendHttpRequest(bool retryAfterFailure)
 
     const std::string url = _UpdateConnectionTypeAndGetUrl(retryAfterFailure);
 
+    // Default curl connect timeout is too long (300s). Override it.
+    // MCC requests get an even shorter timeout because it is expected to be quick and
+    // allows faster fallback to original source.
+    const UINT connectTimeoutSecs = (_connectionType == ConnectionType::MCC) ? 3 : 15;
+
     if (_status.BytesTransferred == 0)
     {
         DoLogInfo("%s, requesting full file from %s", GuidToString(_id).data(), url.data());
-        THROW_IF_FAILED(_httpAgent->SendRequest(url.data(), szProxyUrl));
+        THROW_IF_FAILED(_httpAgent->SendRequest(url.data(), szProxyUrl, nullptr, connectTimeoutSecs));
     }
     else
     {
@@ -399,7 +404,7 @@ void Download::_SendHttpRequest(bool retryAfterFailure)
 
         auto range = HttpAgent::MakeRange(_status.BytesTransferred, (_status.BytesTotal - _status.BytesTransferred));
         DoLogInfo("%s, requesting range: %s from %s", GuidToString(_id).data(), range.data(), url.data());
-        THROW_IF_FAILED(_httpAgent->SendRequest(url.data(), szProxyUrl, range.data()));
+        THROW_IF_FAILED(_httpAgent->SendRequest(url.data(), szProxyUrl, range.data(), connectTimeoutSecs));
     }
 
     _timer.Start();
