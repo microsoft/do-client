@@ -65,9 +65,9 @@ bool HttpAgent::ValidateUrl(const std::string& url)
 }
 
 // IHttpAgent
-HRESULT HttpAgent::SendRequest(PCSTR szUrl, PCSTR szProxyUrl, PCSTR szRange) try
+HRESULT HttpAgent::SendRequest(PCSTR szUrl, PCSTR szProxyUrl, PCSTR szRange, UINT connectTimeoutSecs) try
 {
-    RETURN_IF_FAILED(_CreateClient(szUrl, szProxyUrl));
+    RETURN_IF_FAILED(_CreateClient(szUrl, szProxyUrl, connectTimeoutSecs));
     DO_ASSERT(_requestContext.curlHandle);
     if (szRange == nullptr)
     {
@@ -182,7 +182,7 @@ HRESULT HttpAgent::QueryHeadersByType(HttpAgentHeaders type, std::string& header
     return QueryHeaders(headerName, headers);
 }
 
-HRESULT HttpAgent::_CreateClient(PCSTR szUrl, PCSTR szProxyUrl) try
+HRESULT HttpAgent::_CreateClient(PCSTR szUrl, PCSTR szProxyUrl, UINT connectTimeoutSecs) try
 {
     std::unique_lock<std::recursive_mutex> lock(_requestLock);
 
@@ -209,6 +209,13 @@ HRESULT HttpAgent::_CreateClient(PCSTR szUrl, PCSTR szProxyUrl) try
         // Timeout request if download speed is less than 4KB/s for 20s (7KB/s or 56kb/s is dial-up modem speed)
         curl_easy_setopt(_requestContext.curlHandle, CURLOPT_LOW_SPEED_TIME, static_cast<long>(20));
         curl_easy_setopt(_requestContext.curlHandle, CURLOPT_LOW_SPEED_LIMIT, static_cast<long>(4000));
+
+        constexpr UINT c_curlDefaultTimeout = 300;
+        if ((connectTimeoutSecs > 0) && (connectTimeoutSecs < c_curlDefaultTimeout))
+        {
+            auto timeoutSecs = static_cast<long>(connectTimeoutSecs);
+            curl_easy_setopt(_requestContext.curlHandle, CURLOPT_CONNECTTIMEOUT, timeoutSecs);
+        }
 
         // Set up callbacks
         curl_easy_setopt(_requestContext.curlHandle, CURLOPT_HEADERFUNCTION, s_HeaderCallback);
