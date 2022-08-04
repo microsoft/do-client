@@ -5,11 +5,6 @@
 
 namespace msdo = microsoft::deliveryoptimization;
 
-int internal_set_iot_connection_string(const char* value)
-{
-    return static_cast<int>(msdo::errc::e_not_impl);
-}
-
 char* internal_get_components_version()
 {
     return nullptr;

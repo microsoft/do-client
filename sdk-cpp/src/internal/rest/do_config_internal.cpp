@@ -26,49 +26,6 @@ namespace msdoutil = microsoft::deliveryoptimization::util::details;
 const char* const g_dosvcBinName = DOSVC_BIN_NAME;
 const char* const g_doPluginAptBinName = DO_PLUGIN_APT_BIN_NAME;
 
-static int WriteIoTConnectionStringToConfigFile(const char* value) noexcept
-{
-    int returnValue = 0;
-    // ptree's exceptions do not provide an error code, and SDK has no logging of its own.
-    // Return specific errors as a workaround.
-    boost::filesystem::path filePath{microsoft::deliveryoptimization::details::GetConfigFilePath()};
-    boost::system::error_code ec;
-    if (boost::filesystem::exists(filePath.parent_path(), ec))
-    {
-        try
-        {
-            boost::property_tree::ptree configTree;
-            configTree.put("ADUC_IoTConnectionString", value);
-
-            // No other configs are used at this time so overwrite the whole file here
-            boost::property_tree::write_json(filePath.string(), configTree);
-
-            return 0;
-        }
-        catch (const boost::property_tree::ptree_bad_data&)
-        {
-            returnValue = -1;
-        }
-        catch (const boost::property_tree::ptree_bad_path&)
-        {
-            returnValue = -2;
-        }
-        catch (const boost::property_tree::ptree_error& pe)
-        {
-            returnValue = -3;
-        }
-        catch (const std::exception&)
-        {
-            returnValue = -4;
-        }
-    }
-    else
-    {
-        returnValue = ec.value();
-    }
-    return returnValue;
-}
-
 static std::string GetSdkVersion()
 {
     return msdoutil::ComponentVersion(false);
@@ -167,11 +124,6 @@ static char* GetAllVersions()
     return pBuffer;
 }
 
-int internal_set_iot_connection_string(const char* value)
-{
-    return WriteIoTConnectionStringToConfigFile(value);
-}
-
 char* internal_get_components_version()
 {
     return GetAllVersions();
@@ -187,11 +139,6 @@ void internal_free_version_buf(char** ppBuffer)
 }
 
 #else // End DO_CLIENT_AGENT
-
-int internal_set_iot_connection_string(const char* value)
-{
-    return static_cast<int>(msdo::errc::e_not_impl);
-}
 
 char* internal_get_components_version()
 {

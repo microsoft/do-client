@@ -29,18 +29,6 @@ using btcp_t = boost::asio::ip::tcp;
 #define TEST_MOCK_MCC_HOST2  "10.130.48.180"
 
 const cppfs::path g_adminConfigFilePath = g_testTempDir / "admin-config.json";
-const cppfs::path g_sdkConfigFilePath = g_testTempDir / "sdk-config.json";
-
-static void SetIoTConnectionString(const char* connectionString)
-{
-    boost::property_tree::ptree json;
-    if (cppfs::exists(g_sdkConfigFilePath))
-    {
-        boost::property_tree::read_json(g_sdkConfigFilePath, json);
-    }
-    json.put(ConfigName_AduIoTConnectionString, connectionString);
-    boost::property_tree::write_json(g_sdkConfigFilePath, json);
-}
 
 static void SetDOCacheHostConfig(const char* server)
 {
@@ -75,10 +63,6 @@ public:
         {
             cppfs::remove(g_adminConfigFilePath);
         }
-        if (cppfs::exists(g_sdkConfigFilePath))
-        {
-            cppfs::remove(g_sdkConfigFilePath);
-        }
     }
 
     void TearDown() override
@@ -89,36 +73,20 @@ public:
 protected:
     void _VerifyExpectedCacheHost(const std::string& expectedHostValue)
     {
-        ConfigManager configReader(g_adminConfigFilePath.string(), g_sdkConfigFilePath.string());
+        ConfigManager configReader(g_adminConfigFilePath.string());
         MCCManager mccManager(configReader);
         std::string mccHost = mccManager.GetHost("http://www.example.com");
         ASSERT_EQ(mccHost, expectedHostValue);
     }
 };
 
-TEST_F(MCCManagerTests, ParseIoTConnectionString)
+TEST_F(MCCManagerTests, AdminConfig)
 {
-    // Gateway specified as the last element
-    SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=" TEST_MOCK_MCC_HOST);
-    _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST);
-
-    // Gateway specified in the middle
-    SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;GatewayHostName=" TEST_MOCK_MCC_HOST ";DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=");
-    _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST);
-
-    // No gateway specified
-    cppfs::remove(g_sdkConfigFilePath);
-    _VerifyExpectedCacheHost("");
-}
-
-TEST_F(MCCManagerTests, AdminConfigOverride)
-{
-    SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=" TEST_MOCK_MCC_HOST);
     SetDOCacheHostConfig(TEST_MOCK_MCC_HOST2);
     _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST2);
 
     cppfs::remove(g_adminConfigFilePath);
-    _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST);
+    _VerifyExpectedCacheHost("");
 }
 
 // Disabled tests: Azure lab MCC instance isn't responding quickly with 404.
@@ -129,7 +97,7 @@ TEST_F(MCCManagerTests, DISABLED_Download404WithFallback)
     const auto fallbackDelay = std::chrono::seconds{10};
     SetFallbackDelayConfig(fallbackDelay);
 
-    ConfigManager configs(g_adminConfigFilePath.string(), g_sdkConfigFilePath.string());
+    ConfigManager configs(g_adminConfigFilePath.string());
     DownloadManager manager(configs);
     const std::string destFile = g_testTempDir / "prodfile.test";
     const std::string id = manager.CreateDownload(g_404Url, destFile); // start with 404 url
@@ -160,7 +128,7 @@ TEST_F(MCCManagerTests, DISABLED_Download404NoFallback)
     SetDOCacheHostConfig(g_mccHostName.data());
     SetFallbackDelayConfig(g_cacheHostFallbackDelayNoFallback);
 
-    ConfigManager configs(g_adminConfigFilePath.string(), g_sdkConfigFilePath.string());
+    ConfigManager configs(g_adminConfigFilePath.string());
     DownloadManager manager(configs);
     const std::string destFile = g_testTempDir / "prodfile.test";
     const std::string id = manager.CreateDownload(g_404Url, destFile); // start with 404 url
@@ -175,10 +143,10 @@ TEST_F(MCCManagerTests, DISABLED_Download404NoFallback)
 // Set invalid MCC host and no-fallback config. Expect download to timeout.
 TEST_F(MCCManagerTests, NoFallbackDownload)
 {
-    SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=ahdkhkasdhaksd");
+    SetDOCacheHostConfig("ahdkhkasdhaksd");
     SetFallbackDelayConfig(g_cacheHostFallbackDelayNoFallback);
 
-    ConfigManager configs(g_adminConfigFilePath.string(), g_sdkConfigFilePath.string());
+    ConfigManager configs(g_adminConfigFilePath.string());
     DownloadManager manager(configs);
     const std::string destFile = g_testTempDir / "prodfile.test";
     const std::string id = manager.CreateDownload(g_prodFileUrl, destFile);
@@ -204,12 +172,12 @@ TEST_F(MCCManagerTests, NoFallbackDownload)
 // Test works fine on Ubuntu 18.04 VM.
 TEST_F(MCCManagerTests, FallbackWithDelayDownload)
 {
-    SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=ahdkhkasdhaksd");
+    SetDOCacheHostConfig("ahdkhkasdhaksd");
 
     const auto fallbackDelay = 45s;
     SetFallbackDelayConfig(fallbackDelay);
 
-    ConfigManager configs(g_adminConfigFilePath.string(), g_sdkConfigFilePath.string());
+    ConfigManager configs(g_adminConfigFilePath.string());
     DownloadManager manager(configs);
     const std::string destFile = g_testTempDir / "prodfile.test";
     const std::string id = manager.CreateDownload(g_prodFileUrl, destFile);

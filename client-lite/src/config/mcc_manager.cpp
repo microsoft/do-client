@@ -11,33 +11,6 @@
 
 namespace msdod = microsoft::deliveryoptimization::details;
 
-static std::string GetHostNameFromIoTConnectionString(const char* connectionString)
-{
-    DoLogDebug("Parsing connection string: %s", connectionString);
-
-    static const char* toFind = "GatewayHostName=";
-    const char* start = strcasestr(connectionString, toFind);
-    if (start == NULL)
-    {
-        DoLogDebug("GatewayHostName not found in %s", connectionString);
-        return {};
-    }
-
-    start = start + strlen(toFind);
-
-    std::string hostname;
-    const char* end = strchr(start, ';');
-    if (end == NULL)
-    {
-        hostname = start;
-    }
-    else
-    {
-        hostname.assign(start, start + (end - start));
-    }
-    return hostname;
-}
-
 MCCManager::MCCManager(ConfigManager& sdkConfigs):
     _configManager(sdkConfigs)
 {
@@ -50,15 +23,7 @@ boost::optional<std::chrono::seconds> MCCManager::FallbackDelay()
 
 std::string MCCManager::GetHost(const std::string& originalUrl)
 {
-    std::string mccHostName =_configManager.CacheHostServer();
-    if (mccHostName.empty())
-    {
-        const std::string connString = _configManager.IoTConnectionString();
-        if (!connString.empty())
-        {
-            mccHostName = GetHostNameFromIoTConnectionString(connString.data());
-        }
-    }
+    std::string mccHostName = _configManager.CacheHostServer();
 
     const auto originalHost = msdod::cpprest_web::uri{originalUrl}.host();
     if (!mccHostName.empty())

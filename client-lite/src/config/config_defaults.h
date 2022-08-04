@@ -14,8 +14,6 @@ constexpr auto g_progressTrackerMaxRetryDelay = std::chrono::seconds(30);
 // of steady_clock (timing, event waits, condition_variable waits).
 constexpr auto g_steadyClockInfiniteWaitTime = std::chrono::milliseconds(MAXUINT);
 
-const char* const ConfigName_AduIoTConnectionString = "ADUC_IoTConnectionString";
-
 const char* const ConfigName_CacheHostFallbackDelayBgSecs = "DODelayCacheServerFallbackBackground";
 const char* const ConfigName_CacheHostFallbackDelayFgSecs = "DODelayCacheServerFallbackForeground";
 constexpr auto g_cacheHostFallbackDelayNoFallback = std::chrono::seconds(-1);   // fallback to CDN not allowed

@@ -6,6 +6,7 @@
 #include <random>
 #include <thread>
 #include <experimental/filesystem>
+#include <fstream>
 #include "do_config.h"
 #include "do_download.h"
 #include "do_download_status.h"
@@ -24,10 +25,6 @@ public:
     void SetUp() override
     {
         TestHelpers::CleanTestDir();
-        if (cppfs::exists(msdod::GetConfigFilePath()))
-        {
-            cppfs::remove(msdod::GetConfigFilePath());
-        }
     }
 
     void TearDown() override
@@ -38,25 +35,27 @@ public:
     }
 };
 
-TEST_F(MCCDownloadTests, DownloadWithMockIoTConnectionString)
+static void ConfigureMccHostName(const std::string& mccHost)
 {
-    // Mock connecting string with GatewayHostName pointing to a valid MCC instance
-    std::string iotConnString("HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=");
-    iotConnString += g_mccHostName;
-    std::cout << "Using mock IoT connections string: " << iotConnString << '\n';
-    int ret = deliveryoptimization_set_iot_connection_string(iotConnString.data());
-    ASSERT_EQ(ret, 0);
+    std::fstream configFile;
+    configFile.exceptions(std::ios::badbit | std::ios::failbit);
+    configFile.open(msdod::GetAdminConfigFilePath(), std::ios::out | std::ios::trunc);
+    configFile << "{ \"DOCacheHost\" : \"" << mccHost << "\" }\n";
+    configFile.flush();
+    configFile.close();
+}
+
+TEST_F(MCCDownloadTests, DownloadWithValidHost)
+{
+    ConfigureMccHostName(g_mccHostName);
 
     msdo::download::download_url_to_path(g_prodFileUrl, g_tmpFileName);
     // TODO(jimson): Parse docs logs and check download occurred via MCC
 }
 
-TEST_F(MCCDownloadTests, DownloadWithMockIoTConnectionStringInvalidHost)
+TEST_F(MCCDownloadTests, DownloadWithInvalidHost)
 {
-    // Mock connecting string with GatewayHostName pointing to an invalid MCC instance
-    const char* expectedValue = "HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=ahdkhkasdhaksd";
-    int ret = deliveryoptimization_set_iot_connection_string(expectedValue);
-    ASSERT_EQ(ret, 0);
+    ConfigureMccHostName("ahdkhkasdhaksd");
 
     // Download should still succeed in a reasonable time
     msdo::download::download_url_to_path(g_prodFileUrl, g_tmpFileName, std::chrono::seconds(60));
@@ -64,9 +63,7 @@ TEST_F(MCCDownloadTests, DownloadWithMockIoTConnectionStringInvalidHost)
 
 TEST_F(MCCDownloadTests, DownloadWithInvalidHostAndUrl)
 {
-    const char* expectedValue = "GatewayHostName=ahdkhkasdhaksd";
-    int ret = deliveryoptimization_set_iot_connection_string(expectedValue);
-    ASSERT_EQ(ret, 0);
+    ConfigureMccHostName("ahdkhkasdhaksd");
 
     std::random_device rd;
     std::mt19937_64 gen{rd()};

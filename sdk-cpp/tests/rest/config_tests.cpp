@@ -5,8 +5,6 @@
 
 #include <cstring>
 #include <experimental/filesystem>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 #include "do_config.h"
 #include "do_persistence.h"
 #include "test_data.h"
@@ -15,39 +13,6 @@
 namespace cppfs = std::experimental::filesystem;
 namespace msdo = microsoft::deliveryoptimization;
 namespace msdod = microsoft::deliveryoptimization::details;
-
-class ConfigTests : public ::testing::Test
-{
-public:
-    void SetUp() override
-    {
-        TestHelpers::CleanTestDir();
-        if (cppfs::exists(msdod::GetConfigFilePath()))
-        {
-            cppfs::remove(msdod::GetConfigFilePath());
-        }
-    }
-
-    void TearDown() override
-    {
-        SetUp();
-        // Make sure docs reloads config immediately
-        TestHelpers::RestartService(g_docsSvcName);
-    }
-};
-
-TEST_F(ConfigTests, IoTConnectionString)
-{
-    const char* expectedValue = "HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=10.0.0.200";
-    int ret = deliveryoptimization_set_iot_connection_string(expectedValue);
-    ASSERT_EQ(ret, 0);
-
-    boost::property_tree::ptree configTree;
-    boost::property_tree::read_json(msdod::GetConfigFilePath(), configTree);
-
-    const std::string value = configTree.get<std::string>("ADUC_IoTConnectionString");
-    ASSERT_EQ(value, std::string{expectedValue});
-}
 
 TEST(ConfigVersionTests, GetVersion)
 {

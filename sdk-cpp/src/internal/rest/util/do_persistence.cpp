@@ -22,16 +22,6 @@ const std::string& GetRuntimeDirectory()
     return runDirectory;
 }
 
-const std::string& GetConfigFilePath()
-{
-#ifdef DO_DEV_DEBUG
-    static std::string configFilePath("/tmp/etc/deliveryoptimization-agent/sdk-config.json");
-#else
-    static std::string configFilePath("/etc/deliveryoptimization-agent/sdk-config.json");
-#endif
-    return configFilePath;
-}
-
 // TODO(shishirb): this is used only in test
 const std::string& GetAdminConfigFilePath()
 {

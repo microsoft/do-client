@@ -25,12 +25,6 @@ const std::string& GetConfigDirectory()
     return configDirectory;
 }
 
-const std::string& GetSDKConfigFilePath()
-{
-    static std::string configFilePath(DO_CONFIG_DIRECTORY_PATH "/sdk-config.json");
-    return configFilePath;
-}
-
 const std::string& GetAdminConfigFilePath()
 {
     static std::string configFilePath(DO_CONFIG_DIRECTORY_PATH "/admin-config.json");

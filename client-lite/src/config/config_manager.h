@@ -10,16 +10,14 @@ class ConfigManager
 {
 public:
     ConfigManager();
-    ConfigManager(const std::string& adminConfigPath, const std::string& sdkConfigPath);
+    ConfigManager(const std::string& adminConfigPath);
 
     void RefreshAdminConfigs();
 
     boost::optional<std::chrono::seconds> CacheHostFallbackDelay();
     std::string CacheHostServer();
-    std::string IoTConnectionString();
     bool RestControllerValidateRemoteAddr();
 
 private:
     JsonParser _adminConfigs;
-    JsonParser _sdkConfigs;
 };

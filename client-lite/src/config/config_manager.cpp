@@ -9,14 +9,13 @@
 #include "string_ops.h"
 
 ConfigManager::ConfigManager() :
-    ConfigManager(docli::GetAdminConfigFilePath(), docli::GetSDKConfigFilePath())
+    ConfigManager(docli::GetAdminConfigFilePath())
 {
 }
 
 // Used by unit tests to override config paths
-ConfigManager::ConfigManager(const std::string& adminConfigPath, const std::string& sdkConfigPath) :
-    _adminConfigs(adminConfigPath, true),
-    _sdkConfigs(sdkConfigPath)
+ConfigManager::ConfigManager(const std::string& adminConfigPath) :
+    _adminConfigs(adminConfigPath, true)
 {
 }
 
@@ -47,12 +46,6 @@ std::string ConfigManager::CacheHostServer()
 {
     boost::optional<std::string> cacheHostServer = _adminConfigs.Get<std::string>(ConfigName_CacheHostServer);
     return boost::get_optional_value_or(cacheHostServer, std::string{});
-}
-
-std::string ConfigManager::IoTConnectionString()
-{
-    boost::optional<std::string> connectionString = _sdkConfigs.Get<std::string>(ConfigName_AduIoTConnectionString);
-    return boost::get_optional_value_or(connectionString, std::string{});
 }
 
 bool ConfigManager::RestControllerValidateRemoteAddr()
