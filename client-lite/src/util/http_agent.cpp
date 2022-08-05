@@ -9,6 +9,7 @@
 #include "do_cpprest_uri_builder.h"
 #include "do_cpprest_uri.h"
 #include "do_curl_wrappers.h"
+#include "do_error.h"
 #include "do_http_defines.h"
 #include "safe_int.h"
 
@@ -394,7 +395,33 @@ void HttpAgent::_CompleteCallback(int curlResult)
     }
     else
     {
-        _requestContext.hrTranslatedStatusCode = HRESULT_FROM_XPLAT_SYSERR(curlResult);
+        switch (curlResult)
+        {
+            case CURLE_URL_MALFORMAT:
+                _requestContext.hrTranslatedStatusCode = INET_E_INVALID_URL;
+                break;
+
+            case CURLE_COULDNT_RESOLVE_HOST:
+                _requestContext.hrTranslatedStatusCode = HRESULT_FROM_WIN32(ERROR_WINHTTP_NAME_NOT_RESOLVED);
+                break;
+
+            case CURLE_COULDNT_CONNECT:
+                _requestContext.hrTranslatedStatusCode = HRESULT_FROM_WIN32(ERROR_WINHTTP_CANNOT_CONNECT);
+                break;
+
+            case CURLE_OPERATION_TIMEDOUT:
+                _requestContext.hrTranslatedStatusCode = WININET_E_TIMEOUT;
+                break;
+
+            case CURLE_RANGE_ERROR:
+                _requestContext.hrTranslatedStatusCode = DO_E_INSUFFICIENT_RANGE_SUPPORT;
+                break;
+
+            default:
+                _requestContext.hrTranslatedStatusCode = HRESULT_FROM_XPLAT_SYSERR(curlResult);
+                break;
+        }
+
         (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode);
     }
 }

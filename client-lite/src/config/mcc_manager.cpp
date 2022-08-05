@@ -88,7 +88,10 @@ std::string MCCManager::GetHost(const std::string& originalUrl)
 
 void MCCManager::ReportHostError(HRESULT hr, UINT httpStatusCode, const std::string& mccHost, const std::string& originalUrl)
 {
-    const bool isFatalError = HttpAgent::IsClientError(httpStatusCode);
+    const bool isFatalError = HttpAgent::IsClientError(httpStatusCode)
+        || (hr == WININET_E_TIMEOUT)
+        || (hr == HRESULT_FROM_WIN32(ERROR_WINHTTP_NAME_NOT_RESOLVED))
+        || (hr == HRESULT_FROM_WIN32(ERROR_WINHTTP_CANNOT_CONNECT));
     const auto originalHost = msdod::cpprest_web::uri{originalUrl}.host();
     DoLogWarningHr(hr, "ACK error from MCC host: [%s], original host: [%s], fatal error? %d",
         mccHost.data(), originalHost.data(), isFatalError);
