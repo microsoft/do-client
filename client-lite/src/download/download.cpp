@@ -279,7 +279,7 @@ void Download::_Start()
         DoLogInfo("MCC fallback to original URL throttled for %ld s", mccFallbackDelay->count());
     }
 
-    _mccHost = _mccManager.GetHost(_url);
+    _mccHost = _mccManager.GetHost();
 
     DO_ASSERT((_status.BytesTotal == 0) && (_status.BytesTransferred == 0));
     _SendHttpRequest();
@@ -308,7 +308,7 @@ void Download::_Resume()
     {
         if (_fAllowMcc)
         {
-            _mccHost = _mccManager.GetHost(_url);
+            _mccHost = _mccManager.GetHost();
         }
         _SendHttpRequest();
     }
