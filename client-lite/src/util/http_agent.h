@@ -25,7 +25,7 @@ public:
 
     // IHttpAgent
 
-    HRESULT SendRequest(PCSTR szUrl = nullptr, PCSTR szProxyUrl = nullptr, PCSTR szRange = nullptr) override;
+    HRESULT SendRequest(PCSTR szUrl = nullptr, PCSTR szProxyUrl = nullptr, PCSTR szRange = nullptr, UINT connectTimeoutSecs = 0) override;
     void Close() override;
 
     // The Query* functions are supposed to be called only from within the IHttpAgentEvents callbacks
@@ -65,7 +65,7 @@ private:
     RequestContext _requestContext {};
 
 private:
-    HRESULT _CreateClient(PCSTR szUrl = nullptr, PCSTR szProxyUrl = nullptr);
+    HRESULT _CreateClient(PCSTR szUrl = nullptr, PCSTR szProxyUrl = nullptr, UINT connectTimeoutSecs = 0);
     static HRESULT _ResultFromStatusCode(unsigned int code);
     void _SetWebProxyFromProxyUrl(_In_opt_ PCSTR szProxyUrl);
 

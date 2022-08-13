@@ -252,15 +252,21 @@ private:
         char filePath[512];
         const auto hr = StringPrintf(filePath, ARRAYSIZE(filePath), "%s/%s%s.log", _logDir.c_str(), g_logFileNamePrefix, timestamp.data());
         DO_ASSERT(SUCCEEDED(hr));
-
-        _logFile.open(filePath, std::fstream::out | std::fstream::app);
-        if (_logFile.fail())
+        if (SUCCEEDED(hr))
         {
-            fprintf(stderr, "Failed to create log file at %s\n", filePath);
+            _logFile.open(filePath, std::fstream::out | std::fstream::app);
+            if (_logFile.fail())
+            {
+                fprintf(stderr, "Failed to create log file at %s\n", filePath);
+            }
+            else
+            {
+                ++_stats.numFilesCreated;
+            }
         }
         else
         {
-            ++_stats.numFilesCreated;
+            fprintf(stderr, "Failed to construct log file name with timestamp: %s\n", timestamp.data());
         }
     }
 

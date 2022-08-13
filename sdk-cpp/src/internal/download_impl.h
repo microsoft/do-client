@@ -9,11 +9,12 @@
 #include "download_interface.h"
 #include "do_download_property.h"
 #include "do_download_status.h"
+#include "do_errors.h"
 
 #if defined(DO_INTERFACE_COM)
 #include <wrl.h>
 
-#include "deliveryoptimization.h" // Fwd declaration of IDODownload doesn't work well w/ chromium builds
+#include "do.hpp" // Fwd declaration of IDODownload doesn't work well w/ all build systems
 #endif
 
 namespace microsoft
@@ -25,27 +26,30 @@ namespace details
 class CDownloadImpl : public IDownload
 {
 public:
-    CDownloadImpl(const std::string& uri, const std::string& downloadFilePath);
+    CDownloadImpl() = default;
 
-    void Start() override;
-    void Pause() override;
-    void Resume() override;
-    void Finalize() override;
-    void Abort() override;
+    std::error_code Init(const std::string& uri, const std::string& downloadFilePath) noexcept override;
 
-    download_status GetStatus() override;
-    download_property_value GetProperty(download_property key) override;
-    void SetProperty(download_property key, const download_property_value& val) override;
-    void SetCallback(const download_property_value::status_callback_t& callback, download& download) override;
+    std::error_code Start() noexcept override;
+    std::error_code Pause() noexcept override;
+    std::error_code Resume() noexcept override;
+    std::error_code Finalize() noexcept override;
+    std::error_code Abort() noexcept override;
+
+    std::error_code GetStatus(download_status& status) noexcept override;
+    std::error_code GetProperty(download_property key, download_property_value& value) noexcept override;
+    std::error_code SetProperty(download_property key, const download_property_value& val) noexcept override;
+    std::error_code SetCallback(const download_property_value::status_callback_t& callback, download& download) noexcept override;
 
 private:
+
 #if defined(DO_INTERFACE_COM)
-    static void _SetPropertyHelper(IDODownload& download, download_property key, const download_property_value& val);
-    download_property_value _GetPropertyHelper(download_property key);
+    static std::error_code _SetPropertyHelper(IDODownload& download, download_property key, const download_property_value& val) noexcept;
+    std::error_code _GetPropertyHelper(download_property key, download_property_value& value) noexcept;
 
     Microsoft::WRL::ComPtr<IDODownload> _spDownload;
 #elif defined(DO_INTERFACE_REST)
-    void _DownloadOperationCall(const std::string& type);
+    std::error_code _DownloadOperationCall(const std::string& type) noexcept;
 
     std::string _id;
 #endif

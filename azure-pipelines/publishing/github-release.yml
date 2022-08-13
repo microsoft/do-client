@@ -15,10 +15,17 @@ variables:
   Release.PreviousVersion: $(previous_release_version) # Select the previous version, used to generate changelog
   Release.Title: $(title) # title of the release, following <Release.Version> (YYYY-MM-DD) format i.e. v0.6.0 (2021-03-02)
   imageVersion: '0.8.0'
+  containerImageVersion: '0.9.0'
 
 parameters:
   - name: SkipPublishing
     displayName: Skip publishing step
+    type: boolean
+    values:
+    - true
+    - false
+  - name: PublishAsDraft
+    displayName: Publish as draft
     type: boolean
     values:
     - true
@@ -44,23 +51,31 @@ stages:
   - template: templates/release-docker-build-steps.yml
     parameters:
       targetOsArch: 'ubuntu1804_arm64'
-      imageVersion: ${{variables.imageVersion}}
+      imageVersion: ${{variables.containerImageVersion}}
   - template: templates/release-docker-build-steps.yml
     parameters:
       targetOsArch: 'ubuntu2004_x64'
-      imageVersion: ${{variables.imageVersion}}
+      imageVersion: ${{variables.containerImageVersion}}
   - template: templates/release-docker-build-steps.yml
     parameters:
       targetOsArch: 'ubuntu2004_arm64'
-      imageVersion: ${{variables.imageVersion}}
+      imageVersion: ${{variables.containerImageVersion}}
   - template: templates/release-docker-build-steps.yml
     parameters:
       targetOsArch: 'debian9_arm32'
-      imageVersion: ${{variables.imageVersion}}
+      imageVersion: '0.8.0' #hard coded version because debian9 support will soon be removed
   - template: templates/release-docker-build-steps.yml
     parameters:
       targetOsArch: 'debian10_arm32'
-      imageVersion: ${{variables.imageVersion}}
+      imageVersion: ${{variables.containerImageVersion}}
+  - template: templates/release-docker-build-steps.yml
+    parameters:
+      targetOsArch: 'debian10_arm64'
+      imageVersion: ${{variables.containerImageVersion}}
+  - template: templates/release-docker-build-steps.yml
+    parameters:
+      targetOsArch: 'debian10_x64'
+      imageVersion: ${{variables.containerImageVersion}}
 
 - stage: release
   condition: succeeded()
@@ -81,17 +96,34 @@ stages:
           ls -lR $(Build.ArtifactStagingDirectory)/**/*.tar
       displayName: Release Information
 
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: 'sha256sum ./*.tar > ../hashes_sha256.txt'
+        workingDirectory: $(Build.ArtifactStagingDirectory)/github-release-artifacts
+      displayName: Compute hashes of archive files
+
+    - task: Bash@3
+      inputs:
+        targetType: 'inline'
+        script: 'cat ./hashes_sha256.txt'
+        workingDirectory: $(Build.ArtifactStagingDirectory)
+      displayName: Display hashes of archive files
+
     - task: GitHubRelease@1
       condition: eq(${{parameters.SkipPublishing}}, false)
       inputs:
         gitHubConnection: 'github_gauth'
         repositoryName: 'microsoft/do-client'
         action: 'create'
-        assets: '$(Build.ArtifactStagingDirectory)/**/*.tar'
+        assets: |
+          $(Build.ArtifactStagingDirectory)/**/*.tar
+          $(Build.ArtifactStagingDirectory)/hashes*.txt
         tagSource: 'userSpecifiedTag'
         tag: '$(Release.Version)'
         title: '$(Release.Title)'
         isPreRelease: true
+        isDraft: ${{parameters.PublishAsDraft}}
         changeLogCompareToRelease: 'lastNonDraftReleaseByTag'
         changeLogCompareToReleaseTag: '$(Release.PreviousVersion)'
         changeLogType: 'commitBased'

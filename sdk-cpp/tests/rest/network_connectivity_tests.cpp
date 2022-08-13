@@ -10,7 +10,7 @@
 
 #include "do_download.h"
 #include "do_download_status.h"
-#include "do_exceptions.h"
+#include "do_errors.h"
 #include "test_data.h"
 #include "test_helpers.h"
 
@@ -49,7 +49,7 @@ TEST_F(NetworkConnectivityTests, DISABLED_SimpleBlockingDownloadNetworkDisconnec
             }
             catch (const msdo::exception& e)
             {
-                ASSERT_EQ(e.error_code(), static_cast<int32_t>(std::errc::timed_out));
+                ASSERT_EQ(e.error_code().value(), DO_ERROR_FROM_STD_ERROR(std::errc::timed_out));
             }
         });
     TestHelpers::DisableNetwork();

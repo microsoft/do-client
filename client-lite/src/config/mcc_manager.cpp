@@ -48,7 +48,7 @@ boost::optional<std::chrono::seconds> MCCManager::FallbackDelay()
     return _configManager.CacheHostFallbackDelay();
 }
 
-std::string MCCManager::GetHost(const std::string& originalUrl)
+std::string MCCManager::GetHost()
 {
     std::string mccHostName =_configManager.CacheHostServer();
     if (mccHostName.empty())
@@ -60,57 +60,52 @@ std::string MCCManager::GetHost(const std::string& originalUrl)
         }
     }
 
-    const auto originalHost = msdod::cpprest_web::uri{originalUrl}.host();
-    if (!mccHostName.empty())
-    {
-        auto it = _mccHostsByOriginalHost.find(originalHost);
-        if (it != _mccHostsByOriginalHost.end())
-        {
-            if (it->second.Address() != mccHostName)
-            {
-                // MCC to be used has changed, discard existing one
-                _mccHostsByOriginalHost.erase(it);
-                it = _mccHostsByOriginalHost.end();
-            }
-        }
-
-        if (it == _mccHostsByOriginalHost.end())
-        {
-            MccHost newEntry{mccHostName};
-            it = _mccHostsByOriginalHost.emplace(originalHost, std::move(newEntry)).first;
-        }
-
-        DO_ASSERT(it != _mccHostsByOriginalHost.end());
-    }
-    DoLogVerbose("Returning MCC host: [%s] for original host: [%s]", mccHostName.data(), originalHost.data());
+    DoLogVerbose("Returning MCC host: [%s]", mccHostName.c_str());
     return mccHostName;
 }
 
 void MCCManager::ReportHostError(HRESULT hr, UINT httpStatusCode, const std::string& mccHost, const std::string& originalUrl)
 {
-    const bool isFatalError = HttpAgent::IsClientError(httpStatusCode);
+    // Client error (HTTP 4xx codes) indicates that MCC is responsive but does not support this
+    // original URL/host. The other errors indicate an unresponsive MCC.
+    const bool perHostFatalError = HttpAgent::IsClientError(httpStatusCode);
+    const bool generalFatalError = (hr == WININET_E_TIMEOUT)
+        || (hr == HRESULT_FROM_WIN32(ERROR_WINHTTP_NAME_NOT_RESOLVED))
+        || (hr == HRESULT_FROM_WIN32(ERROR_WINHTTP_CANNOT_CONNECT));
     const auto originalHost = msdod::cpprest_web::uri{originalUrl}.host();
     DoLogWarningHr(hr, "ACK error from MCC host: [%s], original host: [%s], fatal error? %d",
-        mccHost.data(), originalHost.data(), isFatalError);
-    if (isFatalError)
+        mccHost.data(), originalHost.data(), perHostFatalError || generalFatalError);
+    if (perHostFatalError || generalFatalError)
     {
-        auto it = _mccHostsByOriginalHost.find(originalHost);
-        if (it != _mccHostsByOriginalHost.end() && (it->second.Address() == mccHost))
+        auto it = std::find(_mccHosts.begin(), _mccHosts.end(), mccHost);
+        if (it == _mccHosts.end())
         {
-            it->second.Ban(g_mccHostBanInterval);
+            it = _mccHosts.emplace(_mccHosts.end(), mccHost);
+        }
+
+        if (perHostFatalError)
+        {
+            it->BanForOriginalHost(originalHost, g_mccHostBanInterval);
+        }
+        else
+        {
+            it->Ban(g_mccHostBanInterval);
         }
     }
 }
 
 bool MCCManager::IsBanned(const std::string& mccHost, const std::string& originalUrl) const
 {
-    const auto originalHost = msdod::cpprest_web::uri{originalUrl}.host();
-    auto it = _mccHostsByOriginalHost.find(originalHost);
-    if (it != _mccHostsByOriginalHost.end() && (it->second.Address() == mccHost))
+    auto it = std::find(_mccHosts.begin(), _mccHosts.end(), mccHost);
+    if (it == _mccHosts.end())
     {
-        return it->second.IsBanned();
+        return false;
     }
-    return false;
+    else
+    {
+        const auto originalHost = msdod::cpprest_web::uri{originalUrl}.host();
+        return it->IsBanned(originalHost);
+    }
 }
 
 MCCManager::MccHost::MccHost(const std::string& address) :
@@ -125,14 +120,43 @@ void MCCManager::MccHost::Ban(std::chrono::seconds banInterval)
     DoLogInfo("%s banned for %ld s", _address.data(), banInterval.count());
 }
 
-bool MCCManager::MccHost::IsBanned() const
+void MCCManager::MccHost::BanForOriginalHost(const std::string& originalHost, std::chrono::seconds banInterval)
+{
+    auto timeOfUnban = std::chrono::steady_clock::now() + banInterval;
+    DoLogInfo("%s banned for %ld s for %s", _address.c_str(), banInterval.count(), originalHost.c_str());
+
+    auto banForOriginalHost = std::find(_timeOfUnbanForOriginalHosts.begin(), _timeOfUnbanForOriginalHosts.end(), originalHost);
+    if (banForOriginalHost == _timeOfUnbanForOriginalHosts.end())
+    {
+        _timeOfUnbanForOriginalHosts.emplace_back(originalHost, timeOfUnban);
+    }
+    else
+    {
+        banForOriginalHost->timeOfUnban = timeOfUnban;
+    }
+}
+
+bool MCCManager::MccHost::IsBanned(const std::string& originalHost) const
 {
     const auto now = std::chrono::steady_clock::now();
-    const bool isBanned = (_timeOfUnban > now);
+    bool isBanned = (now < _timeOfUnban);
     if (isBanned)
     {
         const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(_timeOfUnban - now);
         DoLogVerbose("%s will be unbanned after %ld ms", _address.data(), diff.count());
+    }
+    else
+    {
+        auto banForOriginalHost = std::find(_timeOfUnbanForOriginalHosts.begin(), _timeOfUnbanForOriginalHosts.end(), originalHost);
+        if (banForOriginalHost != _timeOfUnbanForOriginalHosts.end())
+        {
+            isBanned = (now < banForOriginalHost->timeOfUnban);
+            if (isBanned)
+            {
+                const auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(banForOriginalHost->timeOfUnban - now);
+                DoLogVerbose("%s will be unbanned after %ld ms for host %s", _address.data(), diff.count(), originalHost.c_str());
+            }
+        }
     }
     return isBanned;
 }

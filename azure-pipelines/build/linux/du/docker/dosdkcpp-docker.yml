@@ -4,6 +4,8 @@
 variables:
 - name: imageVersion
   value: 0.8.0
+- name: containerImageVersion
+  value: 0.9.0
 
 # Disable branch and pr triggers - currently run this manually to avoid hogging build machine resources
 # Rely on Ubuntu x64 pipeline for CI/CD
@@ -26,29 +28,41 @@ jobs:
 - template: ../templates/do-docker-jobs.yml
   parameters:
     targetOsArch: 'debian10_arm32'
-    imageVersion: ${{variables.imageVersion}}
+    imageVersion: '0.8.0' #hard coded version because debian9 support will soon be removed
+    stepsTemplate: 'dosdkcpp-docker-steps.yml'
+
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'debian10_arm64'
+    imageVersion: ${{variables.containerImageVersion}}
+    stepsTemplate: 'dosdkcpp-docker-steps.yml'
+
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'debian10_x64'
+    imageVersion: ${{variables.containerImageVersion}}
     stepsTemplate: 'dosdkcpp-docker-steps.yml'
 
 - template: ../templates/do-docker-jobs.yml
   parameters:
     targetOsArch: 'debian9_arm32'
-    imageVersion: ${{variables.imageVersion}}
+    imageVersion: ${{variables.containerImageVersion}}
     stepsTemplate: 'dosdkcpp-docker-steps.yml'
 
 - template: ../templates/do-docker-jobs.yml
   parameters:
     targetOsArch: 'ubuntu1804_arm64'
-    imageVersion: ${{variables.imageVersion}}
+    imageVersion: ${{variables.containerImageVersion}}
     stepsTemplate: 'dosdkcpp-docker-steps.yml'
 
 - template: ../templates/do-docker-jobs.yml
   parameters:
     targetOsArch: 'ubuntu2004_arm64'
-    imageVersion: ${{variables.imageVersion}}
+    imageVersion: ${{variables.containerImageVersion}}
     stepsTemplate: 'dosdkcpp-docker-steps.yml'
 
 - template: ../templates/do-docker-jobs.yml
   parameters:
     targetOsArch: 'ubuntu2004_x64'
-    imageVersion: ${{variables.imageVersion}}
+    imageVersion: ${{variables.containerImageVersion}}
     stepsTemplate: 'dosdkcpp-docker-steps.yml'

@@ -26,6 +26,11 @@ steps:
 
 - task: CmdLine@2
   inputs:
+    script: 'sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes'
+  displayName: Enable the build VM to run multiarch docker container
+
+- task: CmdLine@2
+  inputs:
     script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-sdk doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "sdk" "--cmaketarget" "deliveryoptimization"'
   displayName: 'Build sdk-cpp ${{parameters.targetOsArch}}-${{parameters.config}}'
 

@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "do_errors.h"
+
 namespace microsoft
 {
 namespace deliveryoptimization
@@ -67,25 +69,39 @@ friend class details::CDownloadImpl;
 
 public:
     using status_callback_t = std::function<void(download&, download_status&)>;
-    download_property_value() = default;
 
-    explicit download_property_value(const std::string& val);
-    explicit download_property_value(uint32_t val);
-    explicit download_property_value(uint64_t val);
-    explicit download_property_value(bool val);
-    explicit download_property_value(std::vector<unsigned char>& val); // DODownloadProperty_SecurityContext
-
-    explicit download_property_value(const status_callback_t& val);
-
+    download_property_value();
     ~download_property_value() = default;
+
+#if (DO_ENABLE_EXCEPTIONS)
+    static download_property_value make(const std::string& val);
+    static download_property_value make(uint32_t val);
+    static download_property_value make(uint64_t val);
+    static download_property_value make(bool val);
+    static download_property_value make(std::vector<unsigned char>& val);
+    static download_property_value make(const status_callback_t& val);
 
     void as(bool& val) const;
     void as(uint32_t& val) const;
     void as(uint64_t& val) const;
     void as(std::string& val) const;
-
-    void as(status_callback_t& val) const;
     void as(std::vector<unsigned char>& val) const;
+    void as(status_callback_t& val) const;
+#endif
+
+    static std::error_code make_nothrow(const std::string& val, download_property_value& out);
+    static std::error_code make_nothrow(uint32_t val, download_property_value& out);
+    static std::error_code make_nothrow(uint64_t val, download_property_value& out);
+    static std::error_code make_nothrow(bool val, download_property_value& out);
+    static std::error_code make_nothrow(std::vector<unsigned char>& val, download_property_value& out);
+    static std::error_code make_nothrow(const status_callback_t& val, download_property_value& out);
+
+    std::error_code as_nothrow(bool& val) const noexcept;
+    std::error_code as_nothrow(uint32_t& val) const noexcept;
+    std::error_code as_nothrow(uint64_t& val) const noexcept;
+    std::error_code as_nothrow(std::string& val) const noexcept;
+    std::error_code as_nothrow(std::vector<unsigned char>& val) const noexcept;
+    std::error_code as_nothrow(status_callback_t& val) const noexcept;
 
 private:
     std::shared_ptr<details::CDownloadPropertyValueInternal> _val;

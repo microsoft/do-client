@@ -44,6 +44,16 @@ TEST_F(NetworkMonitorTests, DISABLED_VerifyNetworkReconnect)
     ASSERT_TRUE(NetworkMonitor::IsConnected());
 }
 
+// Execute this test after manually changing network interface name.
+// Ubuntu: changing eth0 to eno1 by creating this file and rebooting:
+//      $ cat /etc/udev/rules.d/10-rename-network.rules
+//      SUBSYSTEM=="net", ACTION=="add", ATTR{address}=="xx:xx:xx:xx:xx:xx", NAME="eno1"
+// Automating the name change is not feasible - requires reboot, and can make build agents go offline.
+TEST_F(NetworkMonitorTests, BasicNetworkConnected)
+{
+    ASSERT_TRUE(NetworkMonitor::IsConnected());
+}
+
 void NetworkMonitorTests::_EnableNetwork()
 {
     TestHelpers::EnableNetwork();

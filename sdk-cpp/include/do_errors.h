@@ -1,22 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-#ifndef _DELIVERY_OPTIMIZATION_DO_EXCEPTIONS_H
-#define _DELIVERY_OPTIMIZATION_DO_EXCEPTIONS_H
+#ifndef _DELIVERY_OPTIMIZATION_DO_ERRORS_H
+#define _DELIVERY_OPTIMIZATION_DO_ERRORS_H
 
+#if (DO_ENABLE_EXCEPTIONS)
 #include <exception>
+#endif
 #include <stdint.h>
 #include <system_error>
 
+#include "do_error_macros.h"
 
 namespace microsoft
 {
 namespace deliveryoptimization
 {
-
-#ifndef FAILED
-#define FAILED(res) (((int32_t)(res)) < 0)
-#endif
 
 enum class errc : int32_t
 {
@@ -30,14 +29,22 @@ enum class errc : int32_t
     do_e_unknown_property_id    = -2133843951
 };
 
+// Category error type for Delivery Optimization errors
 class error_category : public std::error_category
 {
 public:
     const char* name() const noexcept override;
 
-    std::string message(int code) const override;
+    std::string message(int32_t code) const override;
 };
 
+const error_category& do_category();
+
+std::error_code make_error_code(std::errc e);
+std::error_code make_error_code(errc e);
+std::error_code make_error_code(int32_t e);
+
+#if (DO_ENABLE_EXCEPTIONS)
 class exception : public std::exception
 {
 public:
@@ -47,24 +54,24 @@ public:
 
     const char* what() const noexcept override;
 
-    int32_t error_code() const;
-
-    const std::error_code& get_error_code() const;
+    const std::error_code& error_code() const;
 
 private:
     std::error_code _code;
     std::string _msg;
 };
 
-//TODO: Look into replacing using internal exception class
-inline void throw_if_fail(int32_t hr)
+inline void throw_if_fail(std::error_code code)
 {
-    if (FAILED(hr))
+    if (DO_FAILED(code))
     {
-        throw exception(hr);
+        throw exception(code.value());
     }
 }
 
-}
-}
-#endif // _DELIVERY_OPTIMIZATION_DO_EXCEPTIONS_H
+#endif // DO_ENABLE_EXCEPTIONS
+
+} //namespace deliveryoptimization
+} //namespace microsoft
+
+#endif //_DELIVERY_OPTIMIZATION_DO_ERRORS_H

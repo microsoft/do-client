@@ -1,7 +1,10 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-project (deliveryoptimization_sdk VERSION 0.6.0)
+option (DO_ENABLE_EXCEPTIONS "Set DO_ENABLE_EXCEPTIONS to OFF to compile the non-throwing interface" ON)
+message(STATUS "Exceptions enabled: ${DO_ENABLE_EXCEPTIONS}")
+
+project (deliveryoptimization_sdk VERSION 0.7.0)
 
 if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
     message("DO configured to use shared Boost libraries")
@@ -16,7 +19,10 @@ if (DO_PLATFORM_LINUX)
 endif()
 
 if (DO_BUILD_TESTS)
-    add_subdirectory(tests)
+    if (DO_ENABLE_EXCEPTIONS)
+        add_subdirectory(tests)
+    endif ()
+    add_subdirectory(tests_nothrow)
 endif()
 
 set(DO_SDK_LIB_NAME "deliveryoptimization")
@@ -124,6 +130,9 @@ target_compile_definitions(${DO_SDK_LIB_NAME}
 if (DO_DEV_DEBUG)
     target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE DO_DEV_DEBUG)
 endif ()
+if (DO_ENABLE_EXCEPTIONS)
+    target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE DO_ENABLE_EXCEPTIONS)
+endif()
 add_platform_interface_definitions(${DO_SDK_LIB_NAME})
 
 target_link_libraries(${DO_SDK_LIB_NAME}
