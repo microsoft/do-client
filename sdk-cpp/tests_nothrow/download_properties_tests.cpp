@@ -155,7 +155,7 @@ TEST_F(DownloadPropertyTestsDOSVC_NoThrow, CallbackTestUseDownload)
     msdo::download_property_value callback = g_MakePropertyValue([&fPauseDownload](msdo::download& download, msdo::download_status& status)
         {
             char msgBuf[1024];
-            snprintf(msgBuf, sizeof(msgBuf), "Received status callback: %llu/%llu, 0x%x, 0x%x, %u",
+            snprintf(msgBuf, sizeof(msgBuf), "Received status callback: %lu/%lu, 0x%x, 0x%x, %u",
                 status.bytes_transferred(), status.bytes_total(), status.error_code().value(), status.extended_error_code().value(),
                 static_cast<unsigned int>(status.state()));
             std::cout << msgBuf << std::endl;
@@ -184,7 +184,7 @@ TEST_F(DownloadPropertyTestsDOSVC_NoThrow, SetCallbackTest)
     msdo::download_property_value callback = g_MakePropertyValue([&i](msdo::download& download, msdo::download_status& status)
         {
             char msgBuf[1024];
-            snprintf(msgBuf, sizeof(msgBuf), "Received status callback: %llu/%llu, 0x%x, 0x%x, %u",
+            snprintf(msgBuf, sizeof(msgBuf), "Received status callback: %lu/%lu, 0x%x, 0x%x, %u",
                 status.bytes_transferred(), status.bytes_total(), status.error_code().value(), status.extended_error_code().value(),
                 static_cast<unsigned int>(status.state()));
             std::cout << msgBuf << std::endl;
