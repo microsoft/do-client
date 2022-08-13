@@ -17,14 +17,6 @@
 namespace msdo = microsoft::deliveryoptimization;
 using namespace std::chrono_literals;
 
-static double TimeOperation(const std::function<void()>& op)
-{
-    auto start = std::chrono::steady_clock::now();
-    op();
-    auto end = std::chrono::steady_clock::now();
-    return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-}
-
 class DownloadTestsDOSVC : public ::testing::Test
 {
 public:
