@@ -4,7 +4,7 @@
 #include "do_download_property.h"
 
 #include "do_download_property_internal.h"
-#include "do_errors.h"
+#include "do_error_helpers.h"
 
 namespace msdod = microsoft::deliveryoptimization::details;
 

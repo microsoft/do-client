@@ -8,8 +8,8 @@
 #include <chrono>
 #include <memory>
 #include <string>
-#include "do_download_status.h"
 
+#include "do_download_status.h"
 #include "do_download_property.h"
 
 namespace microsoft

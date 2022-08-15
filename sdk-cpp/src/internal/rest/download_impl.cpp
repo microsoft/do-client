@@ -8,6 +8,7 @@
 
 #include "do_cpprest_uri_builder.h"
 #include "do_errors.h"
+#include "do_error_helpers.h"
 #include "do_exceptions_internal.h"
 #include "do_http_client.h"
 
@@ -150,7 +151,7 @@ std::error_code CDownloadImpl::SetCallback(const download_property_value::status
 
 std::error_code CDownloadImpl::_DownloadOperationCall(const std::string& type) noexcept
 {
-    try 
+    try
     {
         cpprest_web::uri_builder builder(g_downloadUriPart);
         builder.append_path(type);

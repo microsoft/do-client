@@ -10,8 +10,6 @@
 #include <stdint.h>
 #include <system_error>
 
-#include "do_error_macros.h"
-
 namespace microsoft
 {
 namespace deliveryoptimization
@@ -60,14 +58,6 @@ private:
     std::error_code _code;
     std::string _msg;
 };
-
-inline void throw_if_fail(std::error_code code)
-{
-    if (DO_FAILED(code))
-    {
-        throw exception(code.value());
-    }
-}
 
 #endif // DO_ENABLE_EXCEPTIONS
 

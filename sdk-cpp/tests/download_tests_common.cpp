@@ -33,6 +33,11 @@ using namespace std::chrono_literals; // NOLINT(build/namespaces)
 #define E_ACCESSDENIED      ((int)0x80070005)
 #endif
 
+// Enables verifying of some errors returned from DO agent
+#ifndef DO_ERROR_FROM_SYSTEM_ERROR
+#define DO_ERROR_FROM_SYSTEM_ERROR(x) (int32_t)(0xC0000000 | (FACILITY_DELIVERY_OPTIMIZATION << 16) | ((int32_t)(x) & 0x0000FFFF))
+#endif
+
 void WaitForDownloadCompletion(msdo::download& simpleDownload)
 {
     msdo::download_status status = simpleDownload.get_status();

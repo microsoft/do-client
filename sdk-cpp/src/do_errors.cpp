@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #include "do_errors.h"
+#include "do_error_helpers.h"
 
 namespace microsoft
 {

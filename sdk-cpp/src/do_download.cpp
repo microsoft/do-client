@@ -8,6 +8,7 @@
 #include <thread>
 
 #include "do_errors.h"
+#include "do_error_helpers.h"
 #include "download_interface.h"
 #include "download_impl.h"
 

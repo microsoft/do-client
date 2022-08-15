@@ -9,6 +9,7 @@
 #include <string>
 
 #include "do_errors.h"
+#include "do_error_helpers.h"
 
 namespace msdo = microsoft::deliveryoptimization;
 using namespace microsoft::deliveryoptimization::details;

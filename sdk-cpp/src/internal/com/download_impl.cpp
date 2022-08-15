@@ -3,8 +3,7 @@
 
 #include "download_impl.h"
 
-#include "assert.h"
-
+#include <assert.h>
 #include <wrl.h>
 #include <wrl/client.h>
 #include <wrl/implements.h>
@@ -12,6 +11,7 @@
 #include "do_download_property.h"
 #include "do_download_property_internal.h"
 #include "do_errors.h"
+#include "do_error_helpers.h"
 
 namespace msdo = microsoft::deliveryoptimization;
 using namespace microsoft::deliveryoptimization::details;
