@@ -23,6 +23,8 @@
 #include "test_helpers.h"
 
 namespace msdo = microsoft::deliveryoptimization;
+namespace msdod = microsoft::deliveryoptimization::details;
+namespace msdot = microsoft::deliveryoptimization::test;
 using namespace std::chrono_literals; // NOLINT(build/namespaces)
 
 #ifndef HTTP_E_STATUS_NOT_FOUND
@@ -38,7 +40,7 @@ using namespace std::chrono_literals; // NOLINT(build/namespaces)
 #define DO_ERROR_FROM_SYSTEM_ERROR(x) (int32_t)(0xC0000000 | (FACILITY_DELIVERY_OPTIMIZATION << 16) | ((int32_t)(x) & 0x0000FFFF))
 #endif
 
-void WaitForDownloadCompletion(msdo::download& simpleDownload)
+void WaitForDownloadCompletion(msdot::download& simpleDownload)
 {
     msdo::download_status status = simpleDownload.get_status();
     const auto endtime = std::chrono::steady_clock::now() + 5min;
@@ -67,7 +69,7 @@ public:
 
 TEST_F(DownloadTests, SimpleDownloadTest)
 {
-    auto simpleDownload = msdo::download::make(g_smallFileUrl, g_tmpFileName);
+    auto simpleDownload = msdot::download::make(g_smallFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload->get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
@@ -86,7 +88,7 @@ TEST_F(DownloadTests, SimpleDownloadTest)
 TEST_F(DownloadTests, SimpleBlockingDownloadTest)
 {
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-    msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
+    msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
     ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName));
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
 }
@@ -99,10 +101,10 @@ TEST_F(DownloadTests, CancelBlockingDownloadTest)
     {
         try
         {
-            msdo::download::download_url_to_path(g_largeFileUrl, g_tmpFileName, cancelToken);
+            msdot::download::download_url_to_path(g_largeFileUrl, g_tmpFileName, cancelToken);
             ASSERT_TRUE(false);
         }
-        catch (const msdo::exception& e)
+        catch (const msdod::exception& e)
         {
             ASSERT_EQ(e.error_code().value(), static_cast<int>(std::errc::operation_canceled));
         }
@@ -118,10 +120,10 @@ TEST_F(DownloadTests, BlockingDownloadTimeout)
     auto startTime = std::chrono::steady_clock::now();
     try
     {
-        msdo::download::download_url_to_path(g_largeFileUrl, g_tmpFileName, std::chrono::seconds(2));
+        msdot::download::download_url_to_path(g_largeFileUrl, g_tmpFileName, std::chrono::seconds(2));
         ASSERT_TRUE(!"Expected download to time out");
     }
-    catch (const msdo::exception& e)
+    catch (const msdod::exception& e)
     {
         ASSERT_EQ(e.error_code().value(), static_cast<int>(std::errc::timed_out));
         auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - startTime);
@@ -138,10 +140,10 @@ TEST_F(DownloadTests, SimpleDownloadTest_With404Url)
 
     try
     {
-        msdo::download::download_url_to_path(g_404Url, g_tmpFileName);
+        msdot::download::download_url_to_path(g_404Url, g_tmpFileName);
         ASSERT_TRUE(false);
     }
-    catch (const msdo::exception& e)
+    catch (const msdod::exception& e)
     {
         ASSERT_EQ(e.error_code().value(), HTTP_E_STATUS_NOT_FOUND);
     }
@@ -151,10 +153,10 @@ TEST_F(DownloadTests, SimpleDownloadTest_WithMalformedPath)
 {
     try
     {
-        msdo::download::download_url_to_path(g_smallFileUrl, g_malformedFilePath);
+        msdot::download::download_url_to_path(g_smallFileUrl, g_malformedFilePath);
         ASSERT_TRUE(false);
     }
-    catch (const msdo::exception& e)
+    catch (const msdod::exception& e)
     {
 #if defined(DO_INTERFACE_COM)
         constexpr auto c_invalidDeviceName = (int)0x8007007b;
@@ -175,10 +177,10 @@ TEST_F(DownloadTests, SimpleDownloadTest_With404UrlAndMalformedPath)
 
     try
     {
-        msdo::download::download_url_to_path(g_404Url, g_malformedFilePath);
+        msdot::download::download_url_to_path(g_404Url, g_malformedFilePath);
         ASSERT_TRUE(false);
     }
-    catch (const msdo::exception& e)
+    catch (const msdod::exception& e)
     {
 #if defined(DO_INTERFACE_COM)
         constexpr auto c_invalidDeviceName = (int)0x8007007b;
@@ -198,14 +200,10 @@ TEST_F(DownloadTests, SimpleDownloadTest_With404UrlAndMalformedPath)
     }
 }
 
-// TODO(jimson): Resolve difference in tests, leave below test commented until then
-// This test will have different behavior on windows because the file is not created in the dest dir until finalize() is invoked
-// Also, no exception will be thrown in the try catch on windows
-#if defined(DO_INTERFACE_REST)
 TEST_F(DownloadTests, Download1PausedDownload2SameDestTest)
 {
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-    auto simpleDownload = msdo::download::make(g_largeFileUrl, g_tmpFileName);
+    auto simpleDownload = msdot::download::make(g_largeFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload->get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
@@ -215,15 +213,20 @@ TEST_F(DownloadTests, Download1PausedDownload2SameDestTest)
     simpleDownload->pause();
     status = simpleDownload->get_status();
     ASSERT_EQ(status.state(), msdo::download_state::paused);
-    ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName));
 
-    auto simpleDownload2 = msdo::download::make(g_smallFileUrl, g_tmpFileName);
+#ifdef DO_CLIENT_AGENT
+    // Only DO Agent creates the output file upon calling start()
+    ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName)) << "Verify output file created for first download";
+
+    // DO Agent does not support downloading to an already existing path (yet?).
+    // Verify second download fails and the first download resumes successfully.
+    auto simpleDownload2 = msdot::download::make(g_smallFileUrl, g_tmpFileName);
     try
     {
         simpleDownload2->start();
         ASSERT_TRUE(false);
     }
-    catch (const msdo::exception& e)
+    catch (const msdod::exception& e)
     {
        ASSERT_EQ(e.error_code().value(), DO_ERROR_FROM_SYSTEM_ERROR(EEXIST));
     }
@@ -234,17 +237,30 @@ TEST_F(DownloadTests, Download1PausedDownload2SameDestTest)
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
 
     // download2 should now succeed
-    simpleDownload2 = msdo::download::make(g_smallFileUrl, g_tmpFileName);
+    simpleDownload2 = msdot::download::make(g_smallFileUrl, g_tmpFileName);
     simpleDownload2->start();
     WaitForDownloadCompletion(*simpleDownload2);
     ASSERT_EQ(boost::filesystem::file_size(g_tmpFileName), g_smallFileSizeBytes);
-}
+
+#elif defined(DO_CLIENT_DOSVC)
+    // DoSvc does support downloading to an already existing path via
+    // aborting the first download. Verify this and that the second download succeeds.
+
+    msdo::test::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
+    ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
+
+    status = simpleDownload->get_status();
+    ASSERT_EQ(status.state(), msdo::download_state::aborted);
+
+#else
+#error "Target client undefined"
 #endif
+}
 
 TEST_F(DownloadTests, Download1PausedDownload2SameFileDownload1Resume)
 {
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-    auto simpleDownload = msdo::download::make(g_largeFileUrl, g_tmpFileName);
+    auto simpleDownload = msdot::download::make(g_largeFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload->get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
@@ -253,7 +269,7 @@ TEST_F(DownloadTests, Download1PausedDownload2SameFileDownload1Resume)
     simpleDownload->pause();
     TestHelpers::WaitForState(*simpleDownload, msdo::download_state::paused);
 
-    msdo::download::download_url_to_path(g_largeFileUrl, g_tmpFileName2);
+    msdot::download::download_url_to_path(g_largeFileUrl, g_tmpFileName2);
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName2)), g_largeFileSizeBytes);
 
     simpleDownload->resume();
@@ -266,17 +282,17 @@ TEST_F(DownloadTests, Download1PausedDownload2SameFileDownload1Resume)
 TEST_F(DownloadTests, Download1NeverStartedDownload2CancelledSameFileTest)
 {
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-    auto simpleDownload = msdo::download::make(g_largeFileUrl, g_tmpFileName);
+    auto simpleDownload = msdot::download::make(g_largeFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload->get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
 
-    auto simpleDownload2 = msdo::download::make(g_largeFileUrl, g_tmpFileName);
+    auto simpleDownload2 = msdot::download::make(g_largeFileUrl, g_tmpFileName);
     try
     {
         simpleDownload2->abort();
     }
-    catch (const msdo::exception& e)
+    catch (const msdod::exception& e)
     {
         ASSERT_EQ(e.error_code().value(), static_cast<int>(msdo::errc::not_found));
     }
@@ -285,7 +301,7 @@ TEST_F(DownloadTests, Download1NeverStartedDownload2CancelledSameFileTest)
 
 TEST_F(DownloadTests, ResumeOnAlreadyDownloadedFileTest)
 {
-    auto simpleDownload = msdo::download::make(g_smallFileUrl, g_tmpFileName);
+    auto simpleDownload = msdot::download::make(g_smallFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload->get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
@@ -304,7 +320,7 @@ TEST_F(DownloadTests, ResumeOnAlreadyDownloadedFileTest)
     {
         simpleDownload->resume();
     }
-    catch (const msdo::exception& e)
+    catch (const msdod::exception& e)
     {
 #if defined(DO_INTERFACE_COM)
         ASSERT_EQ(e.error_code().value(), static_cast<int>(msdo::errc::do_e_invalid_state));
@@ -316,7 +332,7 @@ TEST_F(DownloadTests, ResumeOnAlreadyDownloadedFileTest)
 
 TEST_F(DownloadTests, CancelDownloadOnCompletedState)
 {
-    auto simpleDownload = msdo::download::make(g_smallFileUrl, g_tmpFileName);
+    auto simpleDownload = msdot::download::make(g_smallFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload->get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
@@ -336,7 +352,7 @@ TEST_F(DownloadTests, CancelDownloadOnCompletedState)
     {
         simpleDownload->abort();
     }
-    catch (const msdo::exception& e)
+    catch (const msdod::exception& e)
     {
 #if defined(DO_INTERFACE_COM)
         ASSERT_EQ(e.error_code().value(), static_cast<int>(msdo::errc::do_e_invalid_state));
@@ -348,7 +364,7 @@ TEST_F(DownloadTests, CancelDownloadOnCompletedState)
 
 TEST_F(DownloadTests, CancelDownloadInTransferredState)
 {
-    auto simpleDownload = msdo::download::make(g_smallFileUrl, g_tmpFileName);
+    auto simpleDownload = msdot::download::make(g_smallFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload->get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
@@ -368,7 +384,7 @@ TEST_F(DownloadTests, CancelDownloadInTransferredState)
     {
         simpleDownload->abort();
     }
-    catch (const msdo::exception& e)
+    catch (const msdod::exception& e)
     {
 #if defined(DO_INTERFACE_COM)
         ASSERT_EQ(e.error_code().value(), static_cast<int>(msdo::errc::do_e_invalid_state));
@@ -380,7 +396,7 @@ TEST_F(DownloadTests, CancelDownloadInTransferredState)
 
 static void _PauseResumeTest(bool delayAfterStart = false)
 {
-    auto simpleDownload = msdo::download::make(g_largeFileUrl, g_tmpFileName);
+    auto simpleDownload = msdot::download::make(g_largeFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload->get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
     ASSERT_EQ(status.bytes_transferred(), 0u);
@@ -420,17 +436,17 @@ TEST_F(DownloadTests, PauseResumeTestWithDelayAfterStart)
 TEST_F(DownloadTests, MultipleConsecutiveDownloadTest)
 {
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-    msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
+    msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
     ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName));
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
 
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName2));
-    msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName2);
+    msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName2);
     ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName2));
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName2)), g_smallFileSizeBytes);
 
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName3));
-    msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName3);
+    msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName3);
     ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName3));
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName3)), g_smallFileSizeBytes);
 }
@@ -442,9 +458,9 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest)
     {
         try
         {
-            msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
+            msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
         }
-        catch (const msdo::exception&)
+        catch (const msdod::exception&)
         {
             ASSERT_TRUE(false);
         }
@@ -453,9 +469,9 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest)
     {
         try
         {
-            msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName2);
+            msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName2);
         }
-        catch (const msdo::exception&)
+        catch (const msdod::exception&)
         {
             ASSERT_TRUE(false);
         }
@@ -464,9 +480,9 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest)
     {
         try
         {
-            msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName3);
+            msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName3);
         }
-        catch (const msdo::exception&)
+        catch (const msdod::exception&)
         {
             ASSERT_TRUE(false);
         }
@@ -490,9 +506,9 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
     {
         try
         {
-            msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
+            msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
         }
-        catch (const msdo::exception&)
+        catch (const msdod::exception&)
         {
             ASSERT_TRUE(false);
         }
@@ -501,10 +517,10 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
     {
         try
         {
-            msdo::download::download_url_to_path(g_largeFileUrl, g_tmpFileName2, cancelToken);
+            msdot::download::download_url_to_path(g_largeFileUrl, g_tmpFileName2, cancelToken);
             ASSERT_TRUE(false); // Cancel will cause download_url_to_path to throw, so reaching here would be unexpected.
         }
-        catch (const msdo::exception& e)
+        catch (const msdod::exception& e)
         {
             ASSERT_EQ(e.error_code().value(), static_cast<int>(std::errc::operation_canceled));
         }
@@ -513,9 +529,9 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
     {
         try
         {
-            msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName3);
+            msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName3);
         }
-        catch (const msdo::exception&)
+        catch (const msdod::exception&)
         {
             ASSERT_TRUE(false);
         }
@@ -546,10 +562,10 @@ TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunning)
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
     try
     {
-        msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
+        msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
         ASSERT_TRUE(!"Expected operation to throw exception");
     }
-    catch (const msdo::exception& e)
+    catch (const msdod::exception& e)
     {
         ASSERT_EQ(e.error_code().value(), static_cast<int>(msdo::errc::no_service));
     }
@@ -570,10 +586,10 @@ TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunningPortFilePresent
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
     try
     {
-        msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
+        msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
         ASSERT_TRUE(!"Expected operation to throw exception");
     }
-    catch (const msdo::exception& e)
+    catch (const msdod::exception& e)
     {
         ASSERT_EQ(e.error_code().value(), static_cast<int>(msdo::errc::no_service));
     }
@@ -594,7 +610,7 @@ TEST_F(DownloadTests, MultipleRestPortFileExists_Download)
     ASSERT_EQ(TestHelpers::CountRestPortFiles(), 1u) << "All other restport files must be deleted by the agent";
 
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
-    msdo::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
+    msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
     ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName));
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
 }

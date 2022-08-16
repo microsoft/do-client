@@ -7,8 +7,8 @@
 
 #include <boost/filesystem.hpp>
 
-#include "do_exceptions_internal.h"
 #include "do_errors.h"
+#include "do_error_helpers.h"
 #include "do_persistence.h"
 
 using namespace std::chrono_literals; // NOLINT(build/namespaces)

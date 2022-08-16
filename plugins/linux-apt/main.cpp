@@ -14,7 +14,6 @@
 #include <unordered_map>
 
 #include <deliveryoptimization/do_download.h>
-#include <deliveryoptimization/do_errors.h>
 namespace msdo = microsoft::deliveryoptimization;
 
 #include "do_hash.h"
@@ -194,7 +193,11 @@ DownloadResult SimpleDownload(const std::string& url, const std::string& destFil
         tempPath = GenerateUniqueCachePath();
         LogDebug("Using temp file %s for %s", tempPath.data(), destFilePath.data());
 
-        msdo::download::download_url_to_path(url, tempPath);
+        std::error_code errorCode = msdo::download::download_url_to_path(url, tempPath);
+        if (errorCode)
+        {
+            throw DOPluginException("Download hit an error: %d, %s", errorCode.value(), errorCode.message().c_str());
+        }
         LogDebug("Download successful");
 
         if (rename(tempPath.data(), destFilePath.data()) == -1)
@@ -206,15 +209,15 @@ DownloadResult SimpleDownload(const std::string& url, const std::string& destFil
         }
         LogDebug("Rename successful: %s --> %s", tempPath.data(), destFilePath.data());
     }
-    catch (const msdo::exception& doex)
-    {
-        TryDeleteFile(tempPath);
-        throw DOPluginException("Download hit an exception: %d, %s", doex.error_code(), doex.what());
-    }
     catch (const std::exception& ex)
     {
         TryDeleteFile(tempPath);
         throw DOPluginException("Download hit an exception: %s", ex.what());
+    }
+    catch (...)
+    {
+        TryDeleteFile(tempPath);
+        throw;
     }
 
     const HashResult hashResult = FileHashes(destFilePath);

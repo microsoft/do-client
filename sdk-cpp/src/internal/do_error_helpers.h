@@ -5,6 +5,8 @@
 #define _DELIVERY_OPTIMIZATION_DO_ERROR_HELPERS_H
 
 #include <cstdint>
+#include <exception>
+#include <system_error>
 #include "do_errors.h"
 
 namespace microsoft
@@ -51,7 +53,38 @@ inline std::error_code make_error_code(errc e)
     return std::error_code(static_cast<int32_t>(e), do_category());
 }
 
-#if (DO_ENABLE_EXCEPTIONS)
+class exception : public std::exception
+{
+public:
+    exception(std::error_code code) :
+        _code(std::move(code))
+    {
+    }
+
+    exception(int32_t code) :
+        exception(std::error_code(code, do_category()))
+    {
+    }
+
+    exception(errc code) :
+        exception(std::error_code(static_cast<int32_t>(code), do_category()))
+    {
+    }
+
+    const char* what() const noexcept override
+    {
+        return _code.message().c_str();
+    }
+
+    const std::error_code& error_code() const
+    {
+        return _code;
+    }
+
+private:
+    std::error_code _code;
+};
+
 inline void throw_if_fail(std::error_code errorCode)
 {
     if (errorCode)
@@ -59,10 +92,29 @@ inline void throw_if_fail(std::error_code errorCode)
         throw exception(errorCode);
     }
 }
-#endif
+
+inline void ThrowException(std::error_code errorCode)
+{
+    throw exception(errorCode);
+}
+
+inline void ThrowException(std::errc errorCode)
+{
+    ThrowException(std::make_error_code(errorCode));
+}
+
+inline void ThrowException(int32_t errorCode)
+{
+    throw exception(errorCode);
+}
+
+inline void ThrowException(errc errorCode)
+{
+    throw exception(errorCode);
+}
 
 } // namespace details
-} // namespace deliveryoptimization
-} // namespace microsoft
+} //namespace deliveryoptimization
+} //namespace microsoft
 
 #endif // _DELIVERY_OPTIMIZATION_DO_ERROR_HELPERS_H

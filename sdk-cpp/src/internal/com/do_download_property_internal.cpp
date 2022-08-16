@@ -109,11 +109,7 @@ CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(const CDownloadPr
 #endif
     if (FAILED(res))
     {
-#if defined(DO_ENABLE_EXCEPTIONS)
         throw std::bad_alloc();
-#else
-        std::terminate();
-#endif
     }
     _callback = rhs._callback;
 };

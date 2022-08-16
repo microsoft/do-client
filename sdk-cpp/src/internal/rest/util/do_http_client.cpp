@@ -10,7 +10,7 @@
 #include <gsl/gsl_util>
 
 #include "do_errors.h"
-#include "do_exceptions_internal.h"
+#include "do_error_helpers.h"
 #include "do_http_message.h"
 #include "do_port_finder.h"
 
@@ -103,7 +103,7 @@ boost::property_tree::ptree CHttpClient::SendRequest(HttpRequest::Method method,
             return SendRequest(method, url, false);
         }
 
-        ThrowException(e.code().value());
+        ThrowException(e.code());
     }
 
     if (responseStatusCode != 200)

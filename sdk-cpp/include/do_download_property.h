@@ -65,7 +65,7 @@ CDownloadImpl is declared as a friend class because it needs to access the platf
 The type of the native value is defined in CDownloadPropertyValueInternal, because DO header files are platform agnostic
 This is so any user of the SDK does not have to worry about supplying platform specific compile definitions to use the SDK
 */
-friend class details::CDownloadImpl; 
+friend class details::CDownloadImpl;
 
 public:
     using status_callback_t = std::function<void(download&, download_status&)>;
@@ -73,35 +73,19 @@ public:
     download_property_value();
     ~download_property_value() = default;
 
-#if (DO_ENABLE_EXCEPTIONS)
-    static download_property_value make(const std::string& val);
-    static download_property_value make(uint32_t val);
-    static download_property_value make(uint64_t val);
-    static download_property_value make(bool val);
-    static download_property_value make(std::vector<unsigned char>& val);
-    static download_property_value make(const status_callback_t& val);
+    static std::error_code make(const std::string& val, download_property_value& out);
+    static std::error_code make(uint32_t val, download_property_value& out);
+    static std::error_code make(uint64_t val, download_property_value& out);
+    static std::error_code make(bool val, download_property_value& out);
+    static std::error_code make(std::vector<unsigned char>& val, download_property_value& out);
+    static std::error_code make(const status_callback_t& val, download_property_value& out);
 
-    void as(bool& val) const;
-    void as(uint32_t& val) const;
-    void as(uint64_t& val) const;
-    void as(std::string& val) const;
-    void as(std::vector<unsigned char>& val) const;
-    void as(status_callback_t& val) const;
-#endif
-
-    static std::error_code make_nothrow(const std::string& val, download_property_value& out);
-    static std::error_code make_nothrow(uint32_t val, download_property_value& out);
-    static std::error_code make_nothrow(uint64_t val, download_property_value& out);
-    static std::error_code make_nothrow(bool val, download_property_value& out);
-    static std::error_code make_nothrow(std::vector<unsigned char>& val, download_property_value& out);
-    static std::error_code make_nothrow(const status_callback_t& val, download_property_value& out);
-
-    std::error_code as_nothrow(bool& val) const noexcept;
-    std::error_code as_nothrow(uint32_t& val) const noexcept;
-    std::error_code as_nothrow(uint64_t& val) const noexcept;
-    std::error_code as_nothrow(std::string& val) const noexcept;
-    std::error_code as_nothrow(std::vector<unsigned char>& val) const noexcept;
-    std::error_code as_nothrow(status_callback_t& val) const noexcept;
+    std::error_code as(bool& val) const noexcept;
+    std::error_code as(uint32_t& val) const noexcept;
+    std::error_code as(uint64_t& val) const noexcept;
+    std::error_code as(std::string& val) const noexcept;
+    std::error_code as(std::vector<unsigned char>& val) const noexcept;
+    std::error_code as(status_callback_t& val) const noexcept;
 
 private:
     std::shared_ptr<details::CDownloadPropertyValueInternal> _val;
