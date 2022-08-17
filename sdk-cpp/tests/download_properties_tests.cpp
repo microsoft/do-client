@@ -8,8 +8,6 @@
 #include <functional>
 #include <thread>
 
-#include <boost/filesystem.hpp>
-
 #include "do_download.h"
 #include "do_errors.h"
 #include "test_data.h"
@@ -17,17 +15,6 @@
 
 namespace msdo = microsoft::deliveryoptimization;
 using namespace std::chrono_literals;
-
-// Only the DoSvc client (windows) supports get/set property at present
-#ifdef DO_CLIENT_DOSVC
-
-static uint32_t TimeOperation(const std::function<void()>& op)
-{
-    auto start = std::chrono::steady_clock::now();
-    op();
-    auto end = std::chrono::steady_clock::now();
-    return static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
-}
 
 class DownloadPropertyTests : public ::testing::Test
 {
@@ -42,6 +29,7 @@ public:
         TestHelpers::CleanTestDir();
     }
 
+#ifdef DO_CLIENT_DOSVC
     // Our build/test machines run Windows Server 2019, which use an older COM interface and does not support setting IntegrityCheckInfo through DODownloadProperty com interface
     // Accept multiple error codes to handle running tests both locally and on the build machine
     static void VerifyError(int32_t code, const std::vector<int32_t>& expectedErrors)
@@ -54,7 +42,19 @@ public:
         auto ec = op();
         VerifyError(ec.value(), expectedErrors);
     }
+#endif
 };
+
+// Only the DoSvc client (windows) supports get/set property at present
+#ifdef DO_CLIENT_DOSVC
+
+static uint32_t TimeOperation(const std::function<void()>& op)
+{
+    auto start = std::chrono::steady_clock::now();
+    op();
+    auto end = std::chrono::steady_clock::now();
+    return static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+}
 
 static std::unique_ptr<msdo::download> g_MakeDownload(const std::string& url, const std::string& destPath)
 {
@@ -254,13 +254,10 @@ TEST_F(DownloadPropertyTests, ForegroundBackgroundRace)
 
 TEST_F(DownloadPropertyTests, SmallDownloadSetCallerNameFailureTest)
 {
-    auto simpleDownload = g_MakeDownload(g_smallFileUrl, g_tmpFileName);
-
     std::string strCallerName("dosdkcpp_tests");
-    msdo::download_property_value callerName = g_MakePropertyValue(strCallerName);
-    ASSERT_EQ(simpleDownload->set_property(msdo::download_property::caller_name, callerName).value(),
-        static_cast<int>(msdo::errc::e_not_impl));
-    simpleDownload->abort();
+    msdo::download_property_value callerName;
+    auto ec = msdo::download_property_value::make(strCallerName, callerName);
+    ASSERT_EQ(ec.value(), static_cast<int>(msdo::errc::e_not_impl));
 }
 
 #else

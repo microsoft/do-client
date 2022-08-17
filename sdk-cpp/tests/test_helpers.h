@@ -8,7 +8,7 @@
 #include <thread>
 
 #include "tests_common.h"
-
+#include "test_data.h"
 #include "do_download.h"
 #include "do_download_status.h"
 #include "do_error_helpers.h"

@@ -34,8 +34,7 @@ if(DO_PLATFORM_LINUX)
         dotestutil
     )
 
-    file(GLOB test_source
-        ${test_source_common}
+    set(test_source_private
         "rest/*.cpp"
     )
 
@@ -51,8 +50,7 @@ elseif (DO_PLATFORM_MAC)
     )
 
     # Many of the rest interface tests test simple client specific functionality, should make a seperate folder for simple client
-    file(GLOB test_source
-        ${test_source_common}
+    set(test_source_private
         "rest/test_helpers.cpp"
     )
 
@@ -62,12 +60,13 @@ elseif(DO_PLATFORM_WINDOWS)
         "../src/internal/com"
         "../src/internal/com/util"
     )
-    file(GLOB test_source
-        ${test_source_common}
-        "com/*.cpp"
-    )
 
 endif() # Windows
+
+file (GLOB test_source
+    ${test_source_common}
+    ${test_source_private}
+)
 
 add_executable(deliveryoptimization-sdk-tests ${test_source})
 add_platform_interface_definitions(deliveryoptimization-sdk-tests)

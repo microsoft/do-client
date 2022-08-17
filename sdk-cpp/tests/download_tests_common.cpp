@@ -266,12 +266,16 @@ TEST_F(DownloadTests, Download1PausedDownload2SameFileDownload1Resume)
     ASSERT_EQ(status.bytes_transferred(), 0u);
 
     simpleDownload->start();
+    std::this_thread::sleep_for(3s);
     simpleDownload->pause();
+    std::cout << "Waiting for state to change to paused" << std::endl;
     TestHelpers::WaitForState(*simpleDownload, msdo::download_state::paused);
 
+    std::cout << "Downloading the same file with a second download" << std::endl;
     msdot::download::download_url_to_path(g_largeFileUrl, g_tmpFileName2);
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName2)), g_largeFileSizeBytes);
 
+    std::cout << "Resuming and waiting for completion of first download" << std::endl;
     simpleDownload->resume();
     TestHelpers::WaitForState(*simpleDownload, msdo::download_state::transferred, g_largeFileWaitTime);
 
