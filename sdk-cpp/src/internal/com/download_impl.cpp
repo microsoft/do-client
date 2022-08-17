@@ -14,19 +14,24 @@
 #include "do_error_helpers.h"
 
 namespace msdo = microsoft::deliveryoptimization;
-using namespace microsoft::deliveryoptimization::details;
 using namespace Microsoft::WRL;
-
-#ifndef RETURN_IF_FAILED
-#define RETURN_IF_FAILED(hr)  {  \
-    int32_t __hr = (hr);            \
-    if(FAILED(__hr)) return std::error_code(__hr, msdo::do_category());   \
-}
-#endif
 
 #ifndef FAILED
 #define FAILED(hr) (((int32_t)(hr)) < 0)
 #endif
+
+#ifndef RETURN_IF_FAILED
+#define RETURN_IF_FAILED(hr)  {     \
+    int32_t __hr = (hr);            \
+    if (FAILED(__hr)) return std::error_code(__hr, msdo::details::do_category()); }
+#endif
+
+namespace microsoft
+{
+namespace deliveryoptimization
+{
+namespace details
+{
 
 static msdo::download_state ConvertFromComState(DODownloadState platformState)
 {
@@ -184,7 +189,7 @@ static std::error_code ConvertToComProperty(msdo::download_property key, DODownl
     }
     default:
     {
-        return msdo::make_error_code(E_INVALIDARG);
+        return make_error_code(E_INVALIDARG);
     }
     }
 }
@@ -272,22 +277,22 @@ std::error_code CDownloadImpl::Start() noexcept
 
 std::error_code CDownloadImpl::Pause() noexcept
 {
-    return msdo::make_error_code(_spDownload->Pause());
+    return make_error_code(_spDownload->Pause());
 }
 
 std::error_code CDownloadImpl::Resume() noexcept
 {
-    return msdo::make_error_code(_spDownload->Start(nullptr));
+    return make_error_code(_spDownload->Start(nullptr));
 }
 
 std::error_code CDownloadImpl::Finalize() noexcept
 {
-    return msdo::make_error_code(_spDownload->Finalize());
+    return make_error_code(_spDownload->Finalize());
 }
 
 std::error_code CDownloadImpl::Abort() noexcept
 {
-    return msdo::make_error_code(_spDownload->Abort());
+    return make_error_code(_spDownload->Abort());
 }
 
 std::error_code CDownloadImpl::GetStatus(msdo::download_status& status) noexcept
@@ -323,7 +328,7 @@ std::error_code CDownloadImpl::SetCallback(const download_property_value::status
     ConvertToComProperty(msdo::download_property::callback_interface, prop);
     const auto hr = _spDownload->SetProperty(prop, &vtCallback);
     VariantClear(&vtCallback);
-    return msdo::make_error_code(hr);
+    return make_error_code(hr);
 }
 
 std::error_code CDownloadImpl::_SetPropertyHelper(IDODownload& download, msdo::download_property key, const msdo::download_property_value& val) noexcept
@@ -331,10 +336,14 @@ std::error_code CDownloadImpl::_SetPropertyHelper(IDODownload& download, msdo::d
     DODownloadProperty prop;
     DO_RETURN_IF_FAILED(ConvertToComProperty(key, prop));
 
-    return msdo::make_error_code(download.SetProperty(prop, &val._val->native_value()));
+    return make_error_code(download.SetProperty(prop, &val._val->native_value()));
 }
 
 std::error_code CDownloadImpl::_GetPropertyHelper(msdo::download_property key, msdo::download_property_value& value) noexcept
 {
-    return msdo::make_error_code(errc::e_not_impl);
+    return make_error_code(errc::e_not_impl);
 }
+
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

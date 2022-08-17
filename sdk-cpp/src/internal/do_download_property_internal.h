@@ -23,6 +23,7 @@ namespace deliveryoptimization
 {
 namespace details
 {
+
 class CDownloadPropertyValueInternal
 {
 public:
