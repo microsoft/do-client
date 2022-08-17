@@ -31,39 +31,39 @@ download::~download() = default;
 std::unique_ptr<download> download::make(const std::string& uri, const std::string& downloadFilePath)
 {
     std::unique_ptr<download> out;
-    throw_if_fail(make_nothrow(uri, downloadFilePath, out));
+    details::throw_if_fail(make_nothrow(uri, downloadFilePath, out));
     return out;
 }
 
 void download::start()
 {
-    throw_if_fail(_download->Start());
+    details::throw_if_fail(_download->Start());
 }
 
 void download::pause()
 {
-    throw_if_fail(_download->Pause());
+    details::throw_if_fail(_download->Pause());
 }
 
 void download::resume()
 {
-    throw_if_fail(_download->Resume());
+    details::throw_if_fail(_download->Resume());
 }
 
 void download::finalize()
 {
-    throw_if_fail(_download->Finalize());
+    details::throw_if_fail(_download->Finalize());
 }
 
 void download::abort()
 {
-    throw_if_fail(_download->Abort());
+    details::throw_if_fail(_download->Abort());
 }
 
 download_status download::get_status() const
 {
     download_status status;
-    throw_if_fail(_download->GetStatus(status));
+    details::throw_if_fail(_download->GetStatus(status));
 
     return status;
 }
@@ -88,19 +88,19 @@ void download::download_url_to_path(const std::string& uri, const std::string& d
 
 void download::start_and_wait_until_completion(const std::atomic_bool& isCancelled, std::chrono::seconds timeOut)
 {
-    throw_if_fail(start_and_wait_until_completion_nothrow(isCancelled, timeOut));
+    details::throw_if_fail(start_and_wait_until_completion_nothrow(isCancelled, timeOut));
 }
 
 download_property_value download::get_property(download_property prop)
 {
     download_property_value val;
-    throw_if_fail(_download->GetProperty(prop, val));
+    details::throw_if_fail(_download->GetProperty(prop, val));
     return val;
 }
 
 void download::set_property(download_property prop, const download_property_value& val)
 {
-    throw_if_fail(set_property_nothrow(prop, val));
+    details::throw_if_fail(set_property_nothrow(prop, val));
 }
 
 #endif //DO_ENABLE_EXCEPTIONS
@@ -190,11 +190,11 @@ std::error_code download::start_and_wait_until_completion_nothrow(const std::ato
         DO_RETURN_IF_FAILED(abort_nothrow());
         if (isCancelled)
         {
-            return microsoft::deliveryoptimization::make_error_code(std::errc::operation_canceled);
+            return details::make_error_code(std::errc::operation_canceled);
         }
         else if (timedOut)
         {
-            return microsoft::deliveryoptimization::make_error_code(std::errc::timed_out);
+            return details::make_error_code(std::errc::timed_out);
         }
         else if (status.state() == download_state::paused && !status.is_transient_error())
         {

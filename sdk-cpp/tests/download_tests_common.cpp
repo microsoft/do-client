@@ -104,7 +104,7 @@ TEST_F(DownloadTests, CancelBlockingDownloadTest)
         }
         catch (const msdo::exception& e)
         {
-            ASSERT_EQ(e.error_code().value(), DO_ERROR_FROM_STD_ERROR(static_cast<int>(std::errc::operation_canceled)));
+            ASSERT_EQ(e.error_code().value(), static_cast<int>(std::errc::operation_canceled));
         }
     });
     std::this_thread::sleep_for(1s);
@@ -123,7 +123,7 @@ TEST_F(DownloadTests, BlockingDownloadTimeout)
     }
     catch (const msdo::exception& e)
     {
-        ASSERT_EQ(e.error_code().value(), DO_ERROR_FROM_STD_ERROR(std::errc::timed_out));
+        ASSERT_EQ(e.error_code().value(), static_cast<int>(std::errc::timed_out));
         auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - startTime);
         ASSERT_GE(elapsedTime, std::chrono::seconds(2));
         ASSERT_LE(elapsedTime, std::chrono::seconds(5));
@@ -506,7 +506,7 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
         }
         catch (const msdo::exception& e)
         {
-            ASSERT_EQ(e.error_code().value(), DO_ERROR_FROM_STD_ERROR(std::errc::operation_canceled));
+            ASSERT_EQ(e.error_code().value(), static_cast<int>(std::errc::operation_canceled));
         }
     });
     std::thread downloadThread3([&]()
