@@ -8,6 +8,7 @@
 
 #include "do_cpprest_uri_builder.h"
 #include "do_errors.h"
+#include "do_error_helpers.h"
 #include "do_exceptions_internal.h"
 #include "do_http_client.h"
 
@@ -56,7 +57,7 @@ std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& d
                 }
             }
         }
-        return msdo::make_error_code(msdo::errc::no_service);
+        return make_error_code(msdo::errc::no_service);
     }
     catch (msdo::exception& e)
     {
@@ -135,22 +136,22 @@ std::error_code CDownloadImpl::GetStatus(msdo::download_status& outStatus) noexc
 
 std::error_code CDownloadImpl::GetProperty(msdo::download_property key, msdo::download_property_value& value) noexcept
 {
-    return msdo::make_error_code(msdo::errc::e_not_impl);
+    return make_error_code(msdo::errc::e_not_impl);
 }
 
 std::error_code CDownloadImpl::SetProperty(msdo::download_property key, const msdo::download_property_value& val) noexcept
 {
-    return msdo::make_error_code(msdo::errc::e_not_impl);
+    return make_error_code(msdo::errc::e_not_impl);
 }
 
 std::error_code CDownloadImpl::SetCallback(const download_property_value::status_callback_t& callback, download& download) noexcept
 {
-    return msdo::make_error_code(msdo::errc::e_not_impl);
+    return make_error_code(msdo::errc::e_not_impl);
 }
 
 std::error_code CDownloadImpl::_DownloadOperationCall(const std::string& type) noexcept
 {
-    try 
+    try
     {
         cpprest_web::uri_builder builder(g_downloadUriPart);
         builder.append_path(type);
@@ -160,7 +161,7 @@ std::error_code CDownloadImpl::_DownloadOperationCall(const std::string& type) n
     }
     catch (msdo::exception& e)
     {
-        return msdo::make_error_code(e.error_code().value());
+        return make_error_code(e.error_code().value());
     }
 
 }

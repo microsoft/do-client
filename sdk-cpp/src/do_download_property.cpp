@@ -4,7 +4,7 @@
 #include "do_download_property.h"
 
 #include "do_download_property_internal.h"
-#include "do_errors.h"
+#include "do_error_helpers.h"
 
 namespace msdod = microsoft::deliveryoptimization::details;
 
@@ -22,73 +22,73 @@ download_property_value::download_property_value()
 download_property_value download_property_value::make(const std::string& val)
 {
     download_property_value out;
-    throw_if_fail(make_nothrow(val, out));
+    details::throw_if_fail(make_nothrow(val, out));
     return out;
 }
 
 download_property_value download_property_value::make(uint32_t val)
 {
     download_property_value out;
-    throw_if_fail(make_nothrow(val, out));
+    details::throw_if_fail(make_nothrow(val, out));
     return out;
 }
 
 download_property_value download_property_value::make(uint64_t val)
 {
     download_property_value out;
-    throw_if_fail(make_nothrow(val, out));
+    details::throw_if_fail(make_nothrow(val, out));
     return out;
 }
 
 download_property_value download_property_value::make(bool val)
 {
     download_property_value out;
-    throw_if_fail(make_nothrow(val, out));
+    details::throw_if_fail(make_nothrow(val, out));
     return out;
 }
 
 download_property_value download_property_value::make(std::vector<unsigned char>& val)
 {
     download_property_value out;
-    throw_if_fail(make_nothrow(val, out));
+    details::throw_if_fail(make_nothrow(val, out));
     return out;
 }
 
 download_property_value download_property_value::make(const status_callback_t& val)
 {
     download_property_value out;
-    throw_if_fail(make_nothrow(val, out));
+    details::throw_if_fail(make_nothrow(val, out));
     return out;
 }
 
 void download_property_value::as(bool& val) const
 {
-    throw_if_fail(_val->As(val));
+    details::throw_if_fail(_val->As(val));
 };
 
 void download_property_value::as(uint32_t& val) const
 {
-    throw_if_fail(_val->As(val));
+    details::throw_if_fail(_val->As(val));
 };
 
 void download_property_value::as(uint64_t& val) const
 {
-    throw_if_fail(_val->As(val));
+    details::throw_if_fail(_val->As(val));
 };
 
 void download_property_value::as(std::string& val) const
 {
-    throw_if_fail(_val->As(val));
+    details::throw_if_fail(_val->As(val));
 };
 
 void download_property_value::as(status_callback_t& val) const
 {
-    throw_if_fail(_val->As(val));
+    details::throw_if_fail(_val->As(val));
 };
 
 void download_property_value::as(std::vector<unsigned char>& val) const
 {
-    throw_if_fail(_val->As(val));
+    details::throw_if_fail(_val->As(val));
 }
 #endif
 

@@ -6,4 +6,7 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+
+#include "do_error_helpers.h"
+
 #endif

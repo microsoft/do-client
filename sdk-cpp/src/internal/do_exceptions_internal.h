@@ -6,8 +6,8 @@
 #ifndef _DELIVERY_OPTIMIZATION_DO_EXCEPTIONS_INTERNAL_H
 #define _DELIVERY_OPTIMIZATION_DO_EXCEPTIONS_INTERNAL_H
 
+#include <cstdint>
 #include <exception>
-#include <stdint.h>
 #include <system_error>
 
 #include "do_errors.h"

@@ -3,6 +3,7 @@
 
 #include "tests_common.h"
 
+#include <cinttypes>
 #include <chrono>
 #include <functional>
 #include <thread>
@@ -17,12 +18,12 @@
 namespace msdo = microsoft::deliveryoptimization;
 using namespace std::chrono_literals;
 
-static double TimeOperation(const std::function<void()>& op)
+static uint32_t TimeOperation(const std::function<void()>& op)
 {
     auto start = std::chrono::steady_clock::now();
     op();
     auto end = std::chrono::steady_clock::now();
-    return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    return static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
 }
 
 class DownloadPropertyTestsDOSVC_NoThrow : public ::testing::Test
@@ -155,7 +156,7 @@ TEST_F(DownloadPropertyTestsDOSVC_NoThrow, CallbackTestUseDownload)
     msdo::download_property_value callback = g_MakePropertyValue([&fPauseDownload](msdo::download& download, msdo::download_status& status)
         {
             char msgBuf[1024];
-            snprintf(msgBuf, sizeof(msgBuf), "Received status callback: %lu/%lu, 0x%x, 0x%x, %u",
+            snprintf(msgBuf, sizeof(msgBuf), "Received status callback: %" PRIu64 "/%" PRIu64 ", 0x%x, 0x%x, %u",
                 status.bytes_transferred(), status.bytes_total(), status.error_code().value(), status.extended_error_code().value(),
                 static_cast<unsigned int>(status.state()));
             std::cout << msgBuf << std::endl;
@@ -184,7 +185,7 @@ TEST_F(DownloadPropertyTestsDOSVC_NoThrow, SetCallbackTest)
     msdo::download_property_value callback = g_MakePropertyValue([&i](msdo::download& download, msdo::download_status& status)
         {
             char msgBuf[1024];
-            snprintf(msgBuf, sizeof(msgBuf), "Received status callback: %lu/%lu, 0x%x, 0x%x, %u",
+            snprintf(msgBuf, sizeof(msgBuf), "Received status callback: %" PRIu64 "/%" PRIu64 ", 0x%x, 0x%x, %u",
                 status.bytes_transferred(), status.bytes_total(), status.error_code().value(), status.extended_error_code().value(),
                 static_cast<unsigned int>(status.state()));
             std::cout << msgBuf << std::endl;
@@ -220,7 +221,7 @@ TEST_F(DownloadPropertyTestsDOSVC_NoThrow, OverrideCallbackTest)
 
 TEST_F(DownloadPropertyTestsDOSVC_NoThrow, ForegroundBackgroundRace)
 {
-    double backgroundDuration = TimeOperation([&]()
+    uint32_t backgroundDuration = TimeOperation([&]()
         {
             auto simpleDownload = g_MakeDownload(g_largeFileUrl, g_tmpFileName);
 
@@ -230,8 +231,8 @@ TEST_F(DownloadPropertyTestsDOSVC_NoThrow, ForegroundBackgroundRace)
             ASSERT_EQ(simpleDownload->start_and_wait_until_completion_nothrow().value(), 0);
         });
 
-    printf("Time for background download: %f ms\n", backgroundDuration);
-    double foregroundDuration = TimeOperation([&]()
+    printf("Time for background download: %u ms\n", backgroundDuration);
+    uint32_t foregroundDuration = TimeOperation([&]()
         {
             auto simpleDownload = g_MakeDownload(g_largeFileUrl, g_tmpFileName2);
 
@@ -240,7 +241,7 @@ TEST_F(DownloadPropertyTestsDOSVC_NoThrow, ForegroundBackgroundRace)
 
             ASSERT_EQ(simpleDownload->start_and_wait_until_completion_nothrow().value(), 0);
         });
-    printf("Time for foreground download: %f ms\n", foregroundDuration);
+    printf("Time for foreground download: %u ms\n", foregroundDuration);
 
     ASSERT_LT(foregroundDuration, backgroundDuration);
 }

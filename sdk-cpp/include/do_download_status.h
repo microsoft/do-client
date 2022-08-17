@@ -4,7 +4,7 @@
 #ifndef _DELIVERY_OPTIMIZATION_DO_DOWNLOAD_STATUS_H
 #define _DELIVERY_OPTIMIZATION_DO_DOWNLOAD_STATUS_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <system_error>
 
 #include "do_errors.h"
@@ -28,7 +28,7 @@ class download_status
 {
 public:
     download_status() = default;
-    
+
     download_status(uint64_t bytesTotal, uint64_t bytesTransferred, int32_t errorCode, int32_t extendedErrorCode, download_state state) noexcept :
         _bytesTotal(bytesTotal),
         _bytesTransferred(bytesTransferred),
@@ -48,21 +48,14 @@ public:
     {
         return _bytesTotal;
     }
-    
+
     uint64_t bytes_transferred() const noexcept
     {
         return _bytesTransferred;
     }
 
-    std::error_code error_code() const noexcept
-    {
-        return make_error_code(_errorCode);
-    }
-
-    std::error_code extended_error_code() const noexcept
-    {
-        return make_error_code(_extendedErrorCode);
-    }
+    std::error_code error_code() const noexcept;
+    std::error_code extended_error_code() const noexcept;
 
     download_state state() const noexcept
     {
@@ -80,4 +73,5 @@ private:
 
 } // namespace deliveryoptimization
 } // namespace microsoft
+
 #endif // _DELIVERY_OPTIMIZATION_DO_DOWNLOAD_STATUS_H

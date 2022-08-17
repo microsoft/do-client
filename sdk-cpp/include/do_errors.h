@@ -7,10 +7,8 @@
 #if (DO_ENABLE_EXCEPTIONS)
 #include <exception>
 #endif
-#include <stdint.h>
+#include <cstdint>
 #include <system_error>
-
-#include "do_error_macros.h"
 
 namespace microsoft
 {
@@ -29,21 +27,6 @@ enum class errc : int32_t
     do_e_unknown_property_id    = -2133843951
 };
 
-// Category error type for Delivery Optimization errors
-class error_category : public std::error_category
-{
-public:
-    const char* name() const noexcept override;
-
-    std::string message(int32_t code) const override;
-};
-
-const error_category& do_category();
-
-std::error_code make_error_code(std::errc e);
-std::error_code make_error_code(errc e);
-std::error_code make_error_code(int32_t e);
-
 #if (DO_ENABLE_EXCEPTIONS)
 class exception : public std::exception
 {
@@ -60,14 +43,6 @@ private:
     std::error_code _code;
     std::string _msg;
 };
-
-inline void throw_if_fail(std::error_code code)
-{
-    if (DO_FAILED(code))
-    {
-        throw exception(code.value());
-    }
-}
 
 #endif // DO_ENABLE_EXCEPTIONS
 

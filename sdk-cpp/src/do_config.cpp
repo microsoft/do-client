@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 #include "do_config.h"
-
 #include "do_config_internal.h"
 
 extern "C" int deliveryoptimization_set_iot_connection_string(const char* value)

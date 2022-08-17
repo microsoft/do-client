@@ -8,9 +8,16 @@
 #include <string>
 
 #include "do_errors.h"
+#include "do_error_helpers.h"
 
 namespace msdo = microsoft::deliveryoptimization;
-using namespace microsoft::deliveryoptimization::details;
+
+namespace microsoft
+{
+namespace deliveryoptimization
+{
+namespace details
+{
 
 std::error_code UTF8toWstr(const char* str, std::wstring& wstr)
 {
@@ -24,7 +31,7 @@ std::error_code UTF8toWstr(const char* str, std::wstring& wstr)
     const uint32_t result = MultiByteToWideChar(CP_UTF8, 0, str, static_cast<int>(cch), dest.data(), static_cast<int>(dest.size()));
     if (result == 0)
     {
-        return std::error_code(E_FAIL, msdo::do_category());
+        return make_error_code(E_FAIL);
     }
     wstr = std::wstring(dest.data(), result);
     return DO_OK;
@@ -46,7 +53,7 @@ std::error_code CDownloadPropertyValueInternal::Init(const std::string& val) noe
     BSTR bstr = SysAllocString(wval.c_str());
     if (bstr == nullptr)
     {
-        return msdo::make_error_code(std::errc::not_enough_memory);
+        return msdo::details::make_error_code(std::errc::not_enough_memory);
     }
     V_BSTR(&_var) = bstr;
 
@@ -76,7 +83,7 @@ std::error_code CDownloadPropertyValueInternal::Init(bool val) noexcept
 
 std::error_code CDownloadPropertyValueInternal::Init(std::vector<unsigned char>& val) noexcept
 {
-    return msdo::make_error_code(errc::e_not_impl);
+    return make_error_code(errc::e_not_impl);
 };
 
 std::error_code CDownloadPropertyValueInternal::Init(const download_property_value::status_callback_t& val) noexcept
@@ -161,3 +168,6 @@ std::error_code CDownloadPropertyValueInternal::As(download_property_value::stat
     return DO_OK;
 };
 
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft

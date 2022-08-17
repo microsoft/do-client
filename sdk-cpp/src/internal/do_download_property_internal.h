@@ -23,6 +23,7 @@ namespace deliveryoptimization
 {
 namespace details
 {
+
 class CDownloadPropertyValueInternal
 {
 public:
@@ -65,6 +66,7 @@ private:
     native_type _var;
     download_property_value::status_callback_t _callback;
 };
+
 } // namespace details
 } // namespace deliveryoptimization
 } // namespace microsoft

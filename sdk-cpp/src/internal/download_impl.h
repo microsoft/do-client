@@ -58,4 +58,5 @@ private:
 } // namespace details
 } // namespace deliveryoptimization
 } // namespace microsoft
-#endif
+
+#endif // _DELIVERY_OPTIMIZATION_DOWNLOAD_IMPL_H
