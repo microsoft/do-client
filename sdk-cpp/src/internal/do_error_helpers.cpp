@@ -20,14 +20,10 @@ const char* error_category::name() const noexcept
 {
     return "delivery optimization error";
 }
-std::string error_category::message(int32_t code) const
+std::string error_category::message(int32_t /*code*/) const
 {
-    switch (code)
-    {
-        // TODO(shishirb) describe common error codes
-    default:
-        return "unrecognized error";
-    }
+    // TODO(shishirb) describe common error codes
+    return "unrecognized error";
 }
 
 } // namespace details
