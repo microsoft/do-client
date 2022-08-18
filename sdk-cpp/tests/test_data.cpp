@@ -16,7 +16,11 @@ const std::string g_tmpFileName = (boost::filesystem::temp_directory_path() / bo
 const std::string g_tmpFileName2 = (boost::filesystem::temp_directory_path() / boost::filesystem::path("docsdk_testfile2.txt")).string();
 const std::string g_tmpFileName3 = (boost::filesystem::temp_directory_path() / boost::filesystem::path("docsdk_testfile3.txt")).string();
 const std::string g_smallFileUrl = "http://main.oremdl.microsoft.com.nsatc.net/dotc/49c591d405d307e25e72a19f7e79b53d69f19954/43A54FC03C6A979E9AAEAE2493757D1429A5C8A8D093FB7B8103E8CC8DF7B6B6";
-const std::string g_smallFilePhfInfoJson = "{\"PiecesHashFileUrl\":\"https://eus2intdo101.blob.core.windows.net/partnercatalogcontainer/pc00051365650774478716C3536617271346B6B33563946436D6C794B6A516B2F74376751506F7A4933337472593D0000B9CCB33-51FB-4062-AFAC-08C8A088CB35.json\",\"HashOfHashes\":\"Q6VPwDxql56arq4kk3V9FCmlyKjQk/t7gQPozI33trY=\"}";
+const std::string g_smallFilePhfInfoJson = R"(
+    {
+        "PiecesHashFileUrl":"https://storage4do.blob.core.windows.net/testdata/SmallFile.phf",
+        "HashOfHashes":"Q6VPwDxql56arq4kk3V9FCmlyKjQk/t7gQPozI33trY="
+    })";
 const std::string g_404Url = "http://main.oremdl.microsoft.com.nsatc.net/dotc/49c591d405d307e25e72a19f7e79b53d69f19954/nonexistent";
 const std::string g_prodFileUrl = "http://dl.delivery.mp.microsoft.com/filestreamingservice/files/52fa8751-747d-479d-8f22-e32730cc0eb1";
 
