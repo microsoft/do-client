@@ -14,7 +14,6 @@
 #include <unordered_map>
 
 #include <deliveryoptimization/do_download.h>
-#include <deliveryoptimization/do_errors.h>
 namespace msdo = microsoft::deliveryoptimization;
 
 #include "do_hash.h"
@@ -194,7 +193,11 @@ DownloadResult SimpleDownload(const std::string& url, const std::string& destFil
         tempPath = GenerateUniqueCachePath();
         LogDebug("Using temp file %s for %s", tempPath.data(), destFilePath.data());
 
-        msdo::download::download_url_to_path(url, tempPath);
+        std::error_code errorCode = msdo::download::download_url_to_path(url, tempPath);
+        if (errorCode)
+        {
+            throw DOPluginException("Download error: %d, %s", errorCode.value(), errorCode.message().c_str());
+        }
         LogDebug("Download successful");
 
         if (rename(tempPath.data(), destFilePath.data()) == -1)
@@ -202,19 +205,19 @@ DownloadResult SimpleDownload(const std::string& url, const std::string& destFil
             // Future: we could handle EXDEV error (oldpath and newpath are not on the same mounted filesystem) by
             // falling back to a copy operation but we'll implement this only if needed. Right now the fact that
             // tempPath and APT's path is under /var/cache should prevent this error.
-            throw DOPluginException("rename failed with %d, %s --> %s", errno, tempPath.data(), destFilePath.data());
+            throw DOPluginException("Rename error: %d, %s --> %s", errno, tempPath.data(), destFilePath.data());
         }
         LogDebug("Rename successful: %s --> %s", tempPath.data(), destFilePath.data());
-    }
-    catch (const msdo::exception& doex)
-    {
-        TryDeleteFile(tempPath);
-        throw DOPluginException("Download hit an exception: %d, %s", doex.error_code(), doex.what());
     }
     catch (const std::exception& ex)
     {
         TryDeleteFile(tempPath);
-        throw DOPluginException("Download hit an exception: %s", ex.what());
+        throw DOPluginException("Download exception: %s", ex.what());
+    }
+    catch (...)
+    {
+        TryDeleteFile(tempPath);
+        throw;
     }
 
     const HashResult hashResult = FileHashes(destFilePath);

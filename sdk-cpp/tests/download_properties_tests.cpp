@@ -8,8 +8,6 @@
 #include <functional>
 #include <thread>
 
-#include <boost/filesystem.hpp>
-
 #include "do_download.h"
 #include "do_errors.h"
 #include "test_data.h"
@@ -18,15 +16,7 @@
 namespace msdo = microsoft::deliveryoptimization;
 using namespace std::chrono_literals;
 
-static uint32_t TimeOperation(const std::function<void()>& op)
-{
-    auto start = std::chrono::steady_clock::now();
-    op();
-    auto end = std::chrono::steady_clock::now();
-    return static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
-}
-
-class DownloadPropertyTestsDOSVC_NoThrow : public ::testing::Test
+class DownloadPropertyTests : public ::testing::Test
 {
 public:
     void SetUp() override
@@ -39,6 +29,7 @@ public:
         TestHelpers::CleanTestDir();
     }
 
+#ifdef DO_CLIENT_DOSVC
     // Our build/test machines run Windows Server 2019, which use an older COM interface and does not support setting IntegrityCheckInfo through DODownloadProperty com interface
     // Accept multiple error codes to handle running tests both locally and on the build machine
     static void VerifyError(int32_t code, const std::vector<int32_t>& expectedErrors)
@@ -51,23 +42,35 @@ public:
         auto ec = op();
         VerifyError(ec.value(), expectedErrors);
     }
+#endif
 };
+
+// Only the DoSvc client (windows) supports get/set property at present
+#ifdef DO_CLIENT_DOSVC
+
+static uint32_t TimeOperation(const std::function<void()>& op)
+{
+    auto start = std::chrono::steady_clock::now();
+    op();
+    auto end = std::chrono::steady_clock::now();
+    return static_cast<uint32_t>(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+}
 
 static std::unique_ptr<msdo::download> g_MakeDownload(const std::string& url, const std::string& destPath)
 {
     std::unique_ptr<msdo::download> downloadObj;
-    auto ec = msdo::download::make_nothrow(url, destPath, downloadObj);
+    auto ec = msdo::download::make(url, destPath, downloadObj);
     if (ec) throw std::exception();
 
     // msdo::download_property_value propUri;
-    // auto ec = msdo::download_property_value::make_nothrow(url, propUri);
+    // auto ec = msdo::download_property_value::make(url, propUri);
     // if (ec) throw std::exception();
-    // ec = obj.set_property_nothrow(msdo::download_property::uri, propUri);
+    // ec = obj.set_property(msdo::download_property::uri, propUri);
     // if (ec) throw std::exception();
 
     // msdo::download_property_value propFilePath;
-    // ec = msdo::download_property_value::make_nothrow(destPath, propFilePath);
-    // ec = obj.set_property_nothrow(msdo::download_property::uri, propFilePath);
+    // ec = msdo::download_property_value::make(destPath, propFilePath);
+    // ec = obj.set_property(msdo::download_property::uri, propFilePath);
     // if (ec) throw std::exception();
 
     return downloadObj;
@@ -77,7 +80,7 @@ template <typename T>
 static msdo::download_property_value g_MakePropertyValue(T value)
 {
     msdo::download_property_value propValue;
-    auto ec = msdo::download_property_value::make_nothrow(value, propValue);
+    auto ec = msdo::download_property_value::make(value, propValue);
     if (ec)
     {
         throw std::exception();
@@ -87,42 +90,42 @@ static msdo::download_property_value g_MakePropertyValue(T value)
 
 //TODO: Not sure how much value these tests are, functional tests utilize parsing log lines to verify these properties were set, could be useful here
 //At the moment, these tests are essentially just verifying that these properties can be set and download succeeds
-TEST_F(DownloadPropertyTestsDOSVC_NoThrow, SmallDownloadSetCallerNameTest)
+TEST_F(DownloadPropertyTests, SmallDownloadSetCallerNameTest)
 {
     auto simpleDownload = g_MakeDownload(g_smallFileUrl, g_tmpFileName);
 
     std::string strCallerName("dosdkcpp_tests");
     msdo::download_property_value callerName = g_MakePropertyValue(strCallerName);
-    ASSERT_EQ(simpleDownload->set_property_nothrow(msdo::download_property::caller_name, callerName).value(), 0);
-    ASSERT_EQ(simpleDownload->start_and_wait_until_completion_nothrow().value(), 0);
+    ASSERT_EQ(simpleDownload->set_property(msdo::download_property::caller_name, callerName).value(), 0);
+    ASSERT_EQ(simpleDownload->start_and_wait_until_completion().value(), 0);
     ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName));
 }
 
-TEST_F(DownloadPropertyTestsDOSVC_NoThrow, SmallDownloadWithPhfDigestandCvTest)
+TEST_F(DownloadPropertyTests, SmallDownloadWithPhfDigestandCvTest)
 {
     auto simpleDownload = g_MakeDownload(g_smallFileUrl, g_tmpFileName);
 
     std::vector<int32_t> expectedErrors = { 0, static_cast<int32_t>(msdo::errc::do_e_unknown_property_id) };
 
     msdo::download_property_value integrityCheckMandatory = g_MakePropertyValue(false);
-    int32_t code = simpleDownload->set_property_nothrow(msdo::download_property::integrity_check_mandatory, integrityCheckMandatory).value();
+    int32_t code = simpleDownload->set_property(msdo::download_property::integrity_check_mandatory, integrityCheckMandatory).value();
     VerifyError(code, expectedErrors);
 
     msdo::download_property_value integrityCheckInfo = g_MakePropertyValue(g_smallFilePhfInfoJson);
-    code = simpleDownload->set_property_nothrow(msdo::download_property::integrity_check_info, integrityCheckInfo).value();
+    code = simpleDownload->set_property(msdo::download_property::integrity_check_info, integrityCheckInfo).value();
     VerifyError(code, expectedErrors);
 
     std::string strCorrelationVector("g+Vo71JZwkmJdYfF.0");
     msdo::download_property_value correlationVector = g_MakePropertyValue(strCorrelationVector);
-    code = simpleDownload->set_property_nothrow(msdo::download_property::correlation_vector, correlationVector).value();
+    code = simpleDownload->set_property(msdo::download_property::correlation_vector, correlationVector).value();
     VerifyError(code, expectedErrors);
 
-    ASSERT_EQ(simpleDownload->start_and_wait_until_completion_nothrow().value(), 0);
+    ASSERT_EQ(simpleDownload->start_and_wait_until_completion().value(), 0);
 
     ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName));
 }
 
-TEST_F(DownloadPropertyTestsDOSVC_NoThrow, InvalidPhfDigestTest)
+TEST_F(DownloadPropertyTests, InvalidPhfDigestTest)
 {
     auto simpleDownload = g_MakeDownload(g_smallFileUrl, g_tmpFileName);
 
@@ -130,25 +133,25 @@ TEST_F(DownloadPropertyTestsDOSVC_NoThrow, InvalidPhfDigestTest)
     std::vector<int32_t> expectedErrors = { 0, static_cast<int32_t>(msdo::errc::invalid_arg) };
     VerifyCallWithExpectedErrors([&]()
         {
-            return simpleDownload->set_property_nothrow(msdo::download_property::integrity_check_info, integrityCheckInfo);
+            return simpleDownload->set_property(msdo::download_property::integrity_check_info, integrityCheckInfo);
         }, expectedErrors);
 }
 
 // For some reason, custom headers are getting rejected and returning E_INVALIDARG now, disabling test for now
-TEST_F(DownloadPropertyTestsDOSVC_NoThrow, DISABLED_SmallDownloadWithCustomHeaders)
+TEST_F(DownloadPropertyTests, DISABLED_SmallDownloadWithCustomHeaders)
 {
     auto simpleDownload = g_MakeDownload(g_smallFileUrl, g_tmpFileName);
 
     std::string strHttpCustomHeaders("XCustom1=someData\nXCustom2=moreData");
     msdo::download_property_value httpCustomHeaders = g_MakePropertyValue(strHttpCustomHeaders);
-    simpleDownload->set_property_nothrow(msdo::download_property::http_custom_headers, httpCustomHeaders);
+    simpleDownload->set_property(msdo::download_property::http_custom_headers, httpCustomHeaders);
 
-    simpleDownload->start_and_wait_until_completion_nothrow();
+    simpleDownload->start_and_wait_until_completion();
 
     ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName));
 }
 
-TEST_F(DownloadPropertyTestsDOSVC_NoThrow, CallbackTestUseDownload)
+TEST_F(DownloadPropertyTests, CallbackTestUseDownload)
 {
     auto simpleDownload = g_MakeDownload(g_largeFileUrl, g_tmpFileName);
     bool fPauseDownload = false;
@@ -162,22 +165,23 @@ TEST_F(DownloadPropertyTestsDOSVC_NoThrow, CallbackTestUseDownload)
             std::cout << msgBuf << std::endl;
 
             msdo::download_status status2;
-            ASSERT_EQ(download.get_status_nothrow(status).value(), 0);
+            ASSERT_EQ(download.get_status(status).value(), 0);
             if (fPauseDownload)
             {
-                ASSERT_EQ(download.pause_nothrow().value(), 0);
+                ASSERT_EQ(download.pause().value(), 0);
             }
         });
 
-    ASSERT_EQ(simpleDownload->set_property_nothrow(msdo::download_property::callback_interface, callback).value(), 0);
-    ASSERT_EQ(simpleDownload->start_nothrow().value(), 0);
+    ASSERT_EQ(simpleDownload->set_property(msdo::download_property::callback_interface, callback).value(), 0);
+    ASSERT_EQ(simpleDownload->start().value(), 0);
     std::this_thread::sleep_for(5s);
     fPauseDownload = true;
 
-    TestHelpers::WaitForState(*simpleDownload, msdo::download_state::paused);
+    microsoft::deliveryoptimization::test::download testDownload{std::move(simpleDownload)};
+    TestHelpers::WaitForState(testDownload, msdo::download_state::paused);
 }
 
-TEST_F(DownloadPropertyTestsDOSVC_NoThrow, SetCallbackTest)
+TEST_F(DownloadPropertyTests, SetCallbackTest)
 {
     auto simpleDownload = g_MakeDownload(g_smallFileUrl, g_tmpFileName);
 
@@ -191,14 +195,14 @@ TEST_F(DownloadPropertyTestsDOSVC_NoThrow, SetCallbackTest)
             std::cout << msgBuf << std::endl;
             i += 1;
         });
-    ASSERT_EQ(simpleDownload->set_property_nothrow(msdo::download_property::callback_interface, callback).value(), 0);
+    ASSERT_EQ(simpleDownload->set_property(msdo::download_property::callback_interface, callback).value(), 0);
 
-    ASSERT_EQ(simpleDownload->start_and_wait_until_completion_nothrow().value(), 0);
+    ASSERT_EQ(simpleDownload->start_and_wait_until_completion().value(), 0);
 
     ASSERT_GE(i, 0);
 }
 
-TEST_F(DownloadPropertyTestsDOSVC_NoThrow, OverrideCallbackTest)
+TEST_F(DownloadPropertyTests, OverrideCallbackTest)
 {
     auto simpleDownload = g_MakeDownload(g_smallFileUrl, g_tmpFileName);
 
@@ -207,28 +211,28 @@ TEST_F(DownloadPropertyTestsDOSVC_NoThrow, OverrideCallbackTest)
         {
             i += 1;
         });
-    ASSERT_EQ(simpleDownload->set_property_nothrow(msdo::download_property::callback_interface, callback).value(), 0);
+    ASSERT_EQ(simpleDownload->set_property(msdo::download_property::callback_interface, callback).value(), 0);
 
     msdo::download_property_value::status_callback_t cb2 = [](msdo::download&, msdo::download_status&) {};
 
     callback = g_MakePropertyValue(cb2);
-    ASSERT_EQ(simpleDownload->set_property_nothrow(msdo::download_property::callback_interface, callback).value(), 0);
+    ASSERT_EQ(simpleDownload->set_property(msdo::download_property::callback_interface, callback).value(), 0);
 
-    ASSERT_EQ(simpleDownload->start_and_wait_until_completion_nothrow().value(), 0);
+    ASSERT_EQ(simpleDownload->start_and_wait_until_completion().value(), 0);
 
     ASSERT_EQ(i, 0);
 }
 
-TEST_F(DownloadPropertyTestsDOSVC_NoThrow, ForegroundBackgroundRace)
+TEST_F(DownloadPropertyTests, ForegroundBackgroundRace)
 {
     uint32_t backgroundDuration = TimeOperation([&]()
         {
             auto simpleDownload = g_MakeDownload(g_largeFileUrl, g_tmpFileName);
 
             msdo::download_property_value foregroundPriority = g_MakePropertyValue(false);
-            ASSERT_EQ(simpleDownload->set_property_nothrow(msdo::download_property::use_foreground_priority, foregroundPriority).value(), 0);
+            ASSERT_EQ(simpleDownload->set_property(msdo::download_property::use_foreground_priority, foregroundPriority).value(), 0);
 
-            ASSERT_EQ(simpleDownload->start_and_wait_until_completion_nothrow().value(), 0);
+            ASSERT_EQ(simpleDownload->start_and_wait_until_completion().value(), 0);
         });
 
     printf("Time for background download: %u ms\n", backgroundDuration);
@@ -237,11 +241,25 @@ TEST_F(DownloadPropertyTestsDOSVC_NoThrow, ForegroundBackgroundRace)
             auto simpleDownload = g_MakeDownload(g_largeFileUrl, g_tmpFileName2);
 
             msdo::download_property_value foregroundPriority = g_MakePropertyValue(true);
-            ASSERT_EQ(simpleDownload->set_property_nothrow(msdo::download_property::use_foreground_priority, foregroundPriority).value(), 0);
+            ASSERT_EQ(simpleDownload->set_property(msdo::download_property::use_foreground_priority, foregroundPriority).value(), 0);
 
-            ASSERT_EQ(simpleDownload->start_and_wait_until_completion_nothrow().value(), 0);
+            ASSERT_EQ(simpleDownload->start_and_wait_until_completion().value(), 0);
         });
     printf("Time for foreground download: %u ms\n", foregroundDuration);
 
     ASSERT_LT(foregroundDuration, backgroundDuration);
 }
+
+#elif defined(DO_CLIENT_AGENT)
+
+TEST_F(DownloadPropertyTests, SmallDownloadSetCallerNameFailureTest)
+{
+    std::string strCallerName("dosdkcpp_tests");
+    msdo::download_property_value callerName;
+    auto ec = msdo::download_property_value::make(strCallerName, callerName);
+    ASSERT_EQ(ec.value(), static_cast<int>(msdo::errc::e_not_impl));
+}
+
+#else
+#error "Target client unknown"
+#endif // DO_CLIENT_DOSVC

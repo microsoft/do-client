@@ -84,12 +84,6 @@ class ArgParserBase(object):
             help='Override default build output directory'
         )
 
-        '''SDK only'''
-        self.parser.add_argument(
-            '--disable-exceptions', dest='disable_exceptions', action='store_true',
-            help='Builds libdeliveryoptimization without compiling exception throwing code into the binary'
-        )
-
     def parse(self):
         return self.parser.parse_args()
 
@@ -176,8 +170,6 @@ class BuildRunnerBase(object):
             raise ValueError('Building configuration for {self.platform} is not supported.'.format(self.config, self.platform))
 
         self.skip_tests = script_args.skip_tests
-
-        self.disable_exceptions = script_args.disable_exceptions
 
         self.source_path = self.project_root_path
 
@@ -367,9 +359,6 @@ class BuildRunnerBase(object):
 
         if self.skip_tests:
             generate_options.extend(["-DDO_BUILD_TESTS=OFF"])
-
-        if self.disable_exceptions:
-            generate_options.extend(["-DDO_ENABLE_EXCEPTIONS=OFF"])
 
         if self.project:
             generate_options.extend([DOCLIENT_SUBPROJECT_BUILD_MAP[self.project]])

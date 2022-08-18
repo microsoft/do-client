@@ -17,6 +17,7 @@
 namespace cppfs = std::experimental::filesystem;
 namespace msdo = microsoft::deliveryoptimization;
 namespace msdod = microsoft::deliveryoptimization::details;
+namespace msdot = microsoft::deliveryoptimization::test;
 
 class MCCDownloadTests : public ::testing::Test
 {
@@ -47,7 +48,7 @@ TEST_F(MCCDownloadTests, DownloadWithMockIoTConnectionString)
     int ret = deliveryoptimization_set_iot_connection_string(iotConnString.data());
     ASSERT_EQ(ret, 0);
 
-    msdo::download::download_url_to_path(g_prodFileUrl, g_tmpFileName);
+    msdot::download::download_url_to_path(g_prodFileUrl, g_tmpFileName);
     // TODO(jimson): Parse docs logs and check download occurred via MCC
 }
 
@@ -73,7 +74,7 @@ TEST_F(MCCDownloadTests, DownloadWithInvalidHostAndUrl)
     const auto invalidUrl = "http://" + std::to_string(gen()) + ".com";
     std::cout << "Using invalid URL: " << invalidUrl << std::endl;
 
-    auto download = msdo::download::make(invalidUrl, g_tmpFileName);
+    auto download = msdot::download::make(invalidUrl, g_tmpFileName);
     download->start();
 
     // Wait enough time to exercise the agent code that attempts both MCC and CDN in a loop.

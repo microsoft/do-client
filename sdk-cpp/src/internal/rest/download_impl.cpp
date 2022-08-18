@@ -7,9 +7,7 @@
 #include <thread>
 
 #include "do_cpprest_uri_builder.h"
-#include "do_errors.h"
 #include "do_error_helpers.h"
-#include "do_exceptions_internal.h"
 #include "do_http_client.h"
 
 namespace msdo = microsoft::deliveryoptimization;
@@ -42,7 +40,7 @@ std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& d
                 _id = respBody.get<std::string>("Id");
                 return DO_OK;
             }
-            catch (const msdo::exception& e)
+            catch (const msdo::details::exception& e)
             {
                 // Handle DOCS in Shutdown state while Create request was issued, client will restart and this loop will break
                 // TODO(jimson): SDK doesn't have the capability to start do-client-lite.service if not running already. Test this
@@ -59,7 +57,7 @@ std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& d
         }
         return make_error_code(msdo::errc::no_service);
     }
-    catch (msdo::exception& e)
+    catch (msdo::details::exception& e)
     {
         return e.error_code();
     }
@@ -128,7 +126,7 @@ std::error_code CDownloadImpl::GetStatus(msdo::download_status& outStatus) noexc
         outStatus = out;
         return DO_OK;
     }
-    catch (msdo::exception& e)
+    catch (msdo::details::exception& e)
     {
         return e.error_code();
     }
@@ -159,9 +157,9 @@ std::error_code CDownloadImpl::_DownloadOperationCall(const std::string& type) n
         (void)CHttpClient::GetInstance().SendRequest(HttpRequest::POST, builder.to_string());
         return DO_OK;
     }
-    catch (msdo::exception& e)
+    catch (msdo::details::exception& e)
     {
-        return make_error_code(e.error_code().value());
+        return e.error_code();
     }
 
 }

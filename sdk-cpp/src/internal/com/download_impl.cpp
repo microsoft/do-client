@@ -205,39 +205,12 @@ public:
         return S_OK;
     }
 
-#if defined(DO_ENABLE_EXCEPTIONS)
-    IFACEMETHODIMP OnStatusChange(IDODownload* download, const DO_DOWNLOAD_STATUS* comStatus) noexcept
-    {
-        try
-        {
-            msdo::download_status status = ConvertFromComStatus(*comStatus);
-            _callback(*_download, status);
-        }
-        catch (const std::bad_alloc&)
-        {
-            return E_OUTOFMEMORY;
-        }
-        catch (const std::exception&)
-        {
-            return HRESULT_FROM_WIN32(ERROR_UNHANDLED_EXCEPTION);
-        }
-        catch (...)
-        {
-            return E_UNEXPECTED;
-        }
-        return S_OK;
-    }
-#else
-    // If an application builds the sdk from source and has toggled DO_ENABLE_EXCEPTIONS, it would be hypocritical for their callback to throw
-    // Need to provide this definition because try/catch keywords in the implementation above will fail builds with exceptions disabled
     IFACEMETHODIMP OnStatusChange(IDODownload* download, const DO_DOWNLOAD_STATUS* comStatus) noexcept
     {
         msdo::download_status status = ConvertFromComStatus(*comStatus);
         _callback(*_download, status);
         return S_OK;
     }
-
-#endif
 
 private:
     msdo::download_property_value::status_callback_t _callback;
@@ -257,8 +230,8 @@ std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& d
 
     download_property_value propUri;
     download_property_value propDownloadFilePath;
-    DO_RETURN_IF_FAILED(download_property_value::make_nothrow(uri, propUri));
-    DO_RETURN_IF_FAILED(download_property_value::make_nothrow(downloadFilePath, propDownloadFilePath));
+    DO_RETURN_IF_FAILED(download_property_value::make(uri, propUri));
+    DO_RETURN_IF_FAILED(download_property_value::make(downloadFilePath, propDownloadFilePath));
 
     DO_RETURN_IF_FAILED(_SetPropertyHelper(*spDownload.Get(), download_property::uri, propUri));
     DO_RETURN_IF_FAILED(_SetPropertyHelper(*spDownload.Get(), download_property::download_file_path, propDownloadFilePath));
