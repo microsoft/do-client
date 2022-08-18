@@ -10,11 +10,12 @@
 
 #include "do_download.h"
 #include "do_download_status.h"
-#include "do_exceptions.h"
+#include "do_errors.h"
 #include "test_data.h"
 #include "test_helpers.h"
 
 namespace msdo = microsoft::deliveryoptimization;
+namespace msdod = microsoft::deliveryoptimization::details;
 using namespace std::chrono_literals; // NOLINT(build/namespaces)
 
 // These tests cause build pipeline failure due to cutting off communication between the agent and backend pipeline infra.
@@ -47,9 +48,9 @@ TEST_F(NetworkConnectivityTests, DISABLED_SimpleBlockingDownloadNetworkDisconnec
                 msdo::download::download_url_to_path(g_largeFileUrl, g_tmpFileName, 60s);
                 ASSERT_TRUE(false);
             }
-            catch (const msdo::exception& e)
+            catch (const msdod::exception& e)
             {
-                ASSERT_EQ(e.error_code(), static_cast<int32_t>(std::errc::timed_out));
+                ASSERT_EQ(e.error_code().value(), static_cast<int>(std::errc::timed_out));
             }
         });
     TestHelpers::DisableNetwork();
@@ -66,7 +67,7 @@ TEST_F(NetworkConnectivityTests, DISABLED_SimpleBlockingDownloadNetworkReconnect
                 msdo::download::download_url_to_path(g_largeFileUrl, g_tmpFileName);
                 ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName)), g_largeFileSizeBytes);
             }
-            catch (const msdo::exception& e)
+            catch (const msdod::exception& e)
             {
                 ASSERT_TRUE(false);
             }

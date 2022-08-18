@@ -5,7 +5,7 @@
 
 #include <chrono>
 
-constexpr auto g_mccHostBanInterval = std::chrono::minutes(5);
+constexpr auto g_mccHostBanInterval = std::chrono::minutes(15);
 constexpr auto g_progressTrackerCheckInterval = std::chrono::seconds(10);
 constexpr UINT g_progressTrackerMaxNoProgressIntervals = 30;
 constexpr auto g_progressTrackerMaxRetryDelay = std::chrono::seconds(30);

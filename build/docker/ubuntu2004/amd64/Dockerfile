@@ -7,7 +7,7 @@
 # Example:
 # docker run -ti --rm --entrypoint=/bin/bash -v D:\do-client-lite:/code -v D:\temp\build_client_lite\arm-linux-debug:/build custom-ubuntu2004-arm64
 
-FROM amd64/ubuntu:20.04
+FROM mcr.microsoft.com/mirror/docker/library/ubuntu:20.04@sha256:b2339eee806d44d6a8adc0a790f824fb71f03366dd754d400316ae5a7e3ece3e
 
 SHELL [ "/bin/bash", "-c"]
 

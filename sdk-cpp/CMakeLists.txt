@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-project (deliveryoptimization_sdk VERSION 0.6.0)
+project (deliveryoptimization_sdk VERSION 0.7.0)
 
 if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
     message("DO configured to use shared Boost libraries")

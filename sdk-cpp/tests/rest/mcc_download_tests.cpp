@@ -9,7 +9,7 @@
 #include "do_config.h"
 #include "do_download.h"
 #include "do_download_status.h"
-#include "do_exceptions.h"
+#include "do_errors.h"
 #include "do_persistence.h"
 #include "test_data.h"
 #include "test_helpers.h"
@@ -17,6 +17,7 @@
 namespace cppfs = std::experimental::filesystem;
 namespace msdo = microsoft::deliveryoptimization;
 namespace msdod = microsoft::deliveryoptimization::details;
+namespace msdot = microsoft::deliveryoptimization::test;
 
 class MCCDownloadTests : public ::testing::Test
 {
@@ -47,7 +48,7 @@ TEST_F(MCCDownloadTests, DownloadWithMockIoTConnectionString)
     int ret = deliveryoptimization_set_iot_connection_string(iotConnString.data());
     ASSERT_EQ(ret, 0);
 
-    msdo::download::download_url_to_path(g_prodFileUrl, g_tmpFileName);
+    msdot::download::download_url_to_path(g_prodFileUrl, g_tmpFileName);
     // TODO(jimson): Parse docs logs and check download occurred via MCC
 }
 
@@ -73,24 +74,24 @@ TEST_F(MCCDownloadTests, DownloadWithInvalidHostAndUrl)
     const auto invalidUrl = "http://" + std::to_string(gen()) + ".com";
     std::cout << "Using invalid URL: " << invalidUrl << std::endl;
 
-    msdo::download download{invalidUrl, g_tmpFileName};
-    download.start();
+    auto download = msdot::download::make(invalidUrl, g_tmpFileName);
+    download->start();
 
     // Wait enough time to exercise the agent code that attempts both MCC and CDN in a loop.
     // Verify there is no progress while waiting.
     const auto timeout = std::chrono::seconds(90);
     const auto endTime = std::chrono::steady_clock::now() + timeout;
-    uint64_t bytesTransferred = download.get_status().bytes_transferred();
+    uint64_t bytesTransferred = download->get_status().bytes_transferred();
     std::cout << "Verifying there is no download progress for " << timeout.count() << " seconds" << std::endl;
     do
     {
         std::this_thread::sleep_for(std::chrono::seconds(2));
 
-        const auto newStatus = download.get_status();
+        const auto newStatus = download->get_status();
         ASSERT_EQ(newStatus.state(), msdo::download_state::transferring);
         ASSERT_EQ(newStatus.bytes_transferred(), bytesTransferred);
 
     } while (std::chrono::steady_clock::now() < endTime);
 
-    download.abort();
+    download->abort();
 }

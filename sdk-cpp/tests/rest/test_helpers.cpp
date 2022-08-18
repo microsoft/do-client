@@ -156,22 +156,6 @@ unsigned int TestHelpers::CountRestPortFiles()
     return count;
 }
 
-void TestHelpers::CleanTestDir()
-{
-    if (boost::filesystem::exists(g_tmpFileName))
-    {
-        boost::filesystem::remove(g_tmpFileName);
-    }
-    if (boost::filesystem::exists(g_tmpFileName2))
-    {
-        boost::filesystem::remove(g_tmpFileName2);
-    }
-    if (boost::filesystem::exists(g_tmpFileName3))
-    {
-        boost::filesystem::remove(g_tmpFileName3);
-    }
-}
-
 void TestHelpers::DisableNetwork()
 {
     dtu::ExecuteSystemCommand("ifconfig eth0 down");

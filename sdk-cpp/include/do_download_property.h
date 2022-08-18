@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "do_errors.h"
+
 namespace microsoft
 {
 namespace deliveryoptimization
@@ -63,29 +65,27 @@ CDownloadImpl is declared as a friend class because it needs to access the platf
 The type of the native value is defined in CDownloadPropertyValueInternal, because DO header files are platform agnostic
 This is so any user of the SDK does not have to worry about supplying platform specific compile definitions to use the SDK
 */
-friend class details::CDownloadImpl; 
+friend class details::CDownloadImpl;
 
 public:
     using status_callback_t = std::function<void(download&, download_status&)>;
-    download_property_value() = default;
 
-    explicit download_property_value(const std::string& val);
-    explicit download_property_value(uint32_t val);
-    explicit download_property_value(uint64_t val);
-    explicit download_property_value(bool val);
-    explicit download_property_value(std::vector<unsigned char>& val); // DODownloadProperty_SecurityContext
-
-    explicit download_property_value(const status_callback_t& val);
-
+    download_property_value();
     ~download_property_value() = default;
 
-    void as(bool& val) const;
-    void as(uint32_t& val) const;
-    void as(uint64_t& val) const;
-    void as(std::string& val) const;
+    static std::error_code make(const std::string& val, download_property_value& out);
+    static std::error_code make(uint32_t val, download_property_value& out);
+    static std::error_code make(uint64_t val, download_property_value& out);
+    static std::error_code make(bool val, download_property_value& out);
+    static std::error_code make(std::vector<unsigned char>& val, download_property_value& out);
+    static std::error_code make(const status_callback_t& val, download_property_value& out);
 
-    void as(status_callback_t& val) const;
-    void as(std::vector<unsigned char>& val) const;
+    std::error_code as(bool& val) const noexcept;
+    std::error_code as(uint32_t& val) const noexcept;
+    std::error_code as(uint64_t& val) const noexcept;
+    std::error_code as(std::string& val) const noexcept;
+    std::error_code as(std::vector<unsigned char>& val) const noexcept;
+    std::error_code as(status_callback_t& val) const noexcept;
 
 private:
     std::shared_ptr<details::CDownloadPropertyValueInternal> _val;

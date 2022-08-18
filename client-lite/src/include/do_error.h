@@ -24,6 +24,7 @@
 #define DO_E_READ_ONLY_PROPERTY                     HRESULT(0x80D02012L)    // Unable to call SetProperty() on a read-only property
 #define DO_E_INVALID_STATE                          HRESULT(0x80D02013L)    // The requested action is not allowed in the current job state. The job might have been canceled or completed transferring. It is in a read-only state now.
 #define DO_E_FILE_DOWNLOADSINK_UNSPECIFIED          HRESULT(0x80D02018L)    // Unable to start a download because no download sink (either local file or stream interface) was specified
+#define DO_E_INSUFFICIENT_RANGE_SUPPORT             HRESULT(0x80D05011L)    // The server does not support the necessary HTTP Range protocol header.
 
 // IDODownload interface
 

@@ -5,7 +5,7 @@ if (NOT DO_PLUGIN_APT_BIN_NAME)
     message (FATAL_ERROR "APT plugin binary name not defined")
 endif ()
 
-project (${DO_PLUGIN_APT_BIN_NAME} VERSION 0.4.0)
+project (${DO_PLUGIN_APT_BIN_NAME} VERSION 0.5.0)
 
 find_package(deliveryoptimization_sdk CONFIG REQUIRED)
 find_package(OpenSSL REQUIRED)
@@ -24,6 +24,7 @@ target_compile_definitions(${DO_PLUGIN_APT_BIN_NAME}
         DO_PLUGIN_APT_CACHE_PATH="${dopapt_cache_path}"
         DO_PLUGIN_APT_LOG_PATH="${dopapt_log_path}"
 )
+
 add_platform_interface_definitions(${DO_PLUGIN_APT_BIN_NAME})
 add_do_version_lib(${DO_PLUGIN_APT_BIN_NAME} ${PROJECT_VERSION})
 

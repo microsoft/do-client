@@ -1,4 +1,5 @@
-
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 #include "do_download_property_internal.h"
 
@@ -6,80 +7,95 @@
 #include <vector>
 #include <string>
 
-#include "do_exceptions.h"
+#include "do_errors.h"
+#include "do_error_helpers.h"
 
-using namespace microsoft::deliveryoptimization::details;
+namespace msdo = microsoft::deliveryoptimization;
 
-std::wstring UTF8toWstr(const char* str, size_t cch = 0)
+namespace microsoft
 {
-    if (cch == 0)
-    {
-        cch = strlen(str);
-    }
+namespace deliveryoptimization
+{
+namespace details
+{
 
+std::error_code UTF8toWstr(const char* str, std::wstring& wstr)
+{
+    size_t cch = strlen(str);
     if (cch == 0)
     {
-        return std::wstring();
+        wstr = std::wstring();
     }
 
     std::vector<wchar_t> dest(cch * 4);
-    const UINT result = MultiByteToWideChar(CP_UTF8, 0, str, static_cast<int>(cch), dest.data(), static_cast<int>(dest.size()));
+    const uint32_t result = MultiByteToWideChar(CP_UTF8, 0, str, static_cast<int>(cch), dest.data(), static_cast<int>(dest.size()));
     if (result == 0)
     {
-        throw std::exception();
+        return make_error_code(E_FAIL);
     }
-    return std::wstring(dest.data(), result);
+    wstr = std::wstring(dest.data(), result);
+    return DO_OK;
 }
 
-CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(const std::string& val)
+CDownloadPropertyValueInternal::CDownloadPropertyValueInternal()
+{
+    VariantInit(&_var);
+}
+
+std::error_code CDownloadPropertyValueInternal::Init(const std::string& val) noexcept
 {
     V_VT(&_var) = VT_BSTR;
 
-    std::wstring wval = UTF8toWstr(val.c_str());
+    std::wstring wval;
+    auto hr = UTF8toWstr(val.c_str(), wval);
+    DO_RETURN_IF_FAILED(hr);
 
     BSTR bstr = SysAllocString(wval.c_str());
     if (bstr == nullptr)
     {
-        throw std::bad_alloc();
+        return msdo::details::make_error_code(std::errc::not_enough_memory);
     }
     V_BSTR(&_var) = bstr;
+
+    return DO_OK;
 };
 
-CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(uint32_t val)
+std::error_code CDownloadPropertyValueInternal::Init(uint32_t val) noexcept
 {
     V_VT(&_var) = VT_UI4;
     V_UI4(&_var) = val;
+    return DO_OK;
 };
 
-CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(uint64_t val)
+std::error_code CDownloadPropertyValueInternal::Init(uint64_t val) noexcept
 {
     V_VT(&_var) = VT_UI8;
     V_UI8(&_var) = val;
+    return DO_OK;
 };
 
-CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(bool val)
+std::error_code CDownloadPropertyValueInternal::Init(bool val) noexcept
 {
     V_VT(&_var) = VT_BOOL;
     V_BOOL(&_var) = val ? VARIANT_TRUE : VARIANT_FALSE;
+    return DO_OK;
 };
 
-CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(std::vector<unsigned char>& val)
+std::error_code CDownloadPropertyValueInternal::Init(std::vector<unsigned char>& val) noexcept
 {
-    throw errc::e_not_impl;
+    return make_error_code(errc::e_not_impl);
 };
 
-CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(const download_property_value::status_callback_t& val)
+std::error_code CDownloadPropertyValueInternal::Init(const download_property_value::status_callback_t& val) noexcept
 {
     _callback = val;
+    return DO_OK;
 }
 
 CDownloadPropertyValueInternal::~CDownloadPropertyValueInternal()
 {
 #ifdef DEBUG
-    if (!_callback)
-    {
-        assert(SUCCEEDED(VariantClear(&_var)));
-    }
+    assert(SUCCEEDED(VariantClear(&_var)));
 #else
     (void)VariantClear(&_var);
 #endif
@@ -87,10 +103,14 @@ CDownloadPropertyValueInternal::~CDownloadPropertyValueInternal()
 
 CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(const CDownloadPropertyValueInternal& rhs)
 {
-    const auto res = VariantCopy(&_var, &rhs._var);
-#if (!DO_DISABLE_EXCEPTIONS)
-    microsoft::deliveryoptimization::throw_if_fail(res);
+    int32_t res = VariantCopy(&_var, &rhs._var);
+#if DEBUG
+    assert(SUCCEEDED(res));
 #endif
+    if (FAILED(res))
+    {
+        throw std::bad_alloc();
+    }
     _callback = rhs._callback;
 };
 
@@ -113,33 +133,37 @@ const CDownloadPropertyValueInternal::native_type& CDownloadPropertyValueInterna
     return _var;
 };
 
-void CDownloadPropertyValueInternal::as(bool& val) const
+std::error_code CDownloadPropertyValueInternal::As(bool& val) const noexcept
 {
-    throw errc::e_not_impl;
+    return make_error_code(errc::e_not_impl);
 };
 
-void CDownloadPropertyValueInternal::as(uint32_t& val) const
+std::error_code CDownloadPropertyValueInternal::As(uint32_t& val) const noexcept
 {
-    throw errc::e_not_impl;
+    return make_error_code(errc::e_not_impl);
 };
 
-void CDownloadPropertyValueInternal::as(uint64_t& val) const
+std::error_code CDownloadPropertyValueInternal::As(uint64_t& val) const noexcept
 {
-    throw errc::e_not_impl;
+    return make_error_code(errc::e_not_impl);
 };
 
-void CDownloadPropertyValueInternal::as(std::string& val) const
+std::error_code CDownloadPropertyValueInternal::As(std::string& val) const noexcept
 {
-    throw errc::e_not_impl;
+    return make_error_code(errc::e_not_impl);
 };
 
-void CDownloadPropertyValueInternal::as(std::vector<unsigned char>& val) const
+std::error_code CDownloadPropertyValueInternal::As(std::vector<unsigned char>& val) const noexcept
 {
-    throw errc::e_not_impl;
+    return make_error_code(errc::e_not_impl);
 }
 
-void CDownloadPropertyValueInternal::as(download_property_value::status_callback_t& val) const noexcept
+std::error_code CDownloadPropertyValueInternal::As(download_property_value::status_callback_t& val) const noexcept
 {
     val = _callback;
+    return DO_OK;
 };
 
+} // namespace details
+} // namespace deliveryoptimization
+} // namespace microsoft
