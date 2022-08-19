@@ -103,7 +103,7 @@ boost::property_tree::ptree CHttpClient::SendRequest(HttpRequest::Method method,
             return SendRequest(method, url, false);
         }
 
-        ThrowException(e.code());
+        ThrowException(e.code().value());
     }
 
     if (responseStatusCode != 200)
