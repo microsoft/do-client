@@ -553,7 +553,32 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName3)), g_smallFileSizeBytes);
 }
 
+TEST_F(DownloadTests, FileDeletionAfterPause)
+{
+    auto largeDownload = msdot::download::make(g_largeFileUrl, g_tmpFileName2);
+    largeDownload->start();
+    std::this_thread::sleep_for(2s);
+    largeDownload->pause();
+    auto status = largeDownload->get_status();
+    ASSERT_EQ(status.state(), msdo::download_state::paused) << "Download is paused";
+
+    boost::filesystem::remove(g_tmpFileName2);
+    ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName2)) << "Output file deleted";
+
+    try
+    {
+        largeDownload->resume();
+        ASSERT_TRUE(false) << "Expected resume() to throw";
+    }
+    catch (const msdod::exception& ex)
+    {
+        ASSERT_EQ(ex.error_code().value(), DO_ERROR_FROM_SYSTEM_ERROR(ENOENT)) << "Resume failed due to missing output file";
+    }
+    largeDownload->abort();
+}
+
 #if defined(DO_INTERFACE_REST)
+
 TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunning)
 {
     TestHelpers::StopService("deliveryoptimization-agent.service");
@@ -619,5 +644,4 @@ TEST_F(DownloadTests, MultipleRestPortFileExists_Download)
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
 }
 
-
-#endif // Linux
+#endif // DO_INTERFACE_REST
