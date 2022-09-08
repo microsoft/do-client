@@ -60,7 +60,9 @@ std::string MCCManager::GetHost()
         {
             mccHostName = GetHostNameFromIoTConnectionString(connString.data());
         }
-    } else {
+    }
+    else
+    {
         mccHostName = mccHostNameOpt.get();
     }
 
