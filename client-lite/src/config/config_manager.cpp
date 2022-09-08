@@ -43,10 +43,10 @@ boost::optional<std::chrono::seconds> ConfigManager::CacheHostFallbackDelay()
     return returnValue;
 }
 
-std::string ConfigManager::CacheHostServer()
+boost::optional<std::string> ConfigManager::CacheHostServer()
 {
     boost::optional<std::string> cacheHostServer = _adminConfigs.Get<std::string>(ConfigName_CacheHostServer);
-    return boost::get_optional_value_or(cacheHostServer, std::string{});
+    return cacheHostServer;
 }
 
 std::string ConfigManager::IoTConnectionString()
@@ -59,4 +59,4 @@ bool ConfigManager::RestControllerValidateRemoteAddr()
 {
     boost::optional<bool> validateRemoteAddr = _adminConfigs.Get<bool>(ConfigName_RestControllerValidateRemoteAddr);
     return boost::get_optional_value_or(validateRemoteAddr, g_RestControllerValidateRemoteAddrDefault);
-}
+}   
