@@ -53,17 +53,17 @@ std::string MCCManager::GetHost()
     boost::optional<std::string> mccHostNameOpt =_configManager.CacheHostServer();
     std::string mccHostName;
 
-    if (!mccHostNameOpt.is_initialized())
+    if (mccHostNameOpt.is_initialized())
+    {
+        mccHostName = mccHostNameOpt.get();
+    }
+    else
     {
         const std::string connString = _configManager.IoTConnectionString();
         if (!connString.empty())
         {
             mccHostName = GetHostNameFromIoTConnectionString(connString.data());
         }
-    }
-    else
-    {
-        mccHostName = mccHostNameOpt.get();
     }
 
     DoLogVerbose("Returning MCC host: [%s]", mccHostName.c_str());
