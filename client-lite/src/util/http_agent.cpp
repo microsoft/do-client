@@ -88,6 +88,7 @@ HRESULT HttpAgent::SendRequest(PCSTR szUrl, PCSTR szProxyUrl, PCSTR szRange, UIN
     _requestContext.responseHeaders.clear();
     _requestContext.responseStatusCode = 0;
     _requestContext.hrTranslatedStatusCode = S_OK;
+    _requestContext.hrCallback = S_OK;
     _requestContext.responseOnHeadersAvailableInvoked = false;
     _requestContext.responseOnCompleteInvoked = false;
     _curlOps.Add(_requestContext.curlHandle, s_CompleteCallback, this);
@@ -357,12 +358,15 @@ size_t HttpAgent::_HeaderCallback(char* pBuffer, size_t size, size_t nItems)
                 result.first->second.assign(pColon + 1, pBufferPastEnd);
             }
         }
+        return cbBuffer;
     }
-    catch (const std::exception& e)
+    catch (const std::bad_alloc&)
     {
-        DoLogWarning("Caught exception: %s", e.what());
+        _requestContext.hrTranslatedStatusCode = E_OUTOFMEMORY;
     }
-    return cbBuffer;
+    // Return value != cbBuffer causes curl to fail the request with CURLE_WRITE_ERROR.
+    // _CompleteCallback() will pass an appropriate error code to IHttpAgentEvents::OnComplete.
+    return 0;
 }
 
 size_t HttpAgent::_WriteCallback(char* pBuffer, size_t size, size_t nMemb)
@@ -371,11 +375,40 @@ size_t HttpAgent::_WriteCallback(char* pBuffer, size_t size, size_t nMemb)
 
     const auto cbBuffer = nMemb * size;
     // Forward body only for success response
-    if (SUCCEEDED(_requestContext.hrTranslatedStatusCode))
+    if (SUCCEEDED(_requestContext.hrTranslatedStatusCode) && SUCCEEDED(_requestContext.hrCallback))
     {
-        (void)_callback.OnData(reinterpret_cast<BYTE*>(pBuffer), cbBuffer);
+        _requestContext.hrCallback = _callback.OnData(reinterpret_cast<BYTE*>(pBuffer), cbBuffer);
     }
-    return cbBuffer;
+
+    if (SUCCEEDED(_requestContext.hrTranslatedStatusCode) && SUCCEEDED(_requestContext.hrCallback))
+    {
+        return cbBuffer;
+    }
+    else
+    {
+        // Return value != cbBuffer causes curl to fail the request with CURLE_WRITE_ERROR.
+        // _CompleteCallback() will pass an appropriate error code to IHttpAgentEvents::OnComplete.
+        return 0;
+    }
+}
+
+static HRESULT g_CurlErrorCodeToHResult(int curlResult)
+{
+    switch (curlResult)
+    {
+        case CURLE_URL_MALFORMAT:
+            return INET_E_INVALID_URL;
+        case CURLE_COULDNT_RESOLVE_HOST:
+            return HRESULT_FROM_WIN32(ERROR_WINHTTP_NAME_NOT_RESOLVED);
+        case CURLE_COULDNT_CONNECT:
+            return HRESULT_FROM_WIN32(ERROR_WINHTTP_CANNOT_CONNECT);
+        case CURLE_OPERATION_TIMEDOUT:
+            return WININET_E_TIMEOUT;
+        case CURLE_RANGE_ERROR:
+            return DO_E_INSUFFICIENT_RANGE_SUPPORT;
+        default:
+            return HRESULT_FROM_XPLAT_SYSERR(curlResult);
+    }
 }
 
 void HttpAgent::_CompleteCallback(int curlResult)
@@ -388,42 +421,17 @@ void HttpAgent::_CompleteCallback(int curlResult)
 
     if (curlResult == CURLE_OK)
     {
+        // OnHeadersAvailable might not have been called earlier if response did not have a body
         _TrySetStatusCodeAndInvokeOnHeadersAvailable();
-
-        _requestContext.hrTranslatedStatusCode = _ResultFromStatusCode(_requestContext.responseStatusCode);
-        (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode);
     }
-    else
+    else if (SUCCEEDED(_requestContext.hrTranslatedStatusCode))
     {
-        switch (curlResult)
-        {
-            case CURLE_URL_MALFORMAT:
-                _requestContext.hrTranslatedStatusCode = INET_E_INVALID_URL;
-                break;
-
-            case CURLE_COULDNT_RESOLVE_HOST:
-                _requestContext.hrTranslatedStatusCode = HRESULT_FROM_WIN32(ERROR_WINHTTP_NAME_NOT_RESOLVED);
-                break;
-
-            case CURLE_COULDNT_CONNECT:
-                _requestContext.hrTranslatedStatusCode = HRESULT_FROM_WIN32(ERROR_WINHTTP_CANNOT_CONNECT);
-                break;
-
-            case CURLE_OPERATION_TIMEDOUT:
-                _requestContext.hrTranslatedStatusCode = WININET_E_TIMEOUT;
-                break;
-
-            case CURLE_RANGE_ERROR:
-                _requestContext.hrTranslatedStatusCode = DO_E_INSUFFICIENT_RANGE_SUPPORT;
-                break;
-
-            default:
-                _requestContext.hrTranslatedStatusCode = HRESULT_FROM_XPLAT_SYSERR(curlResult);
-                break;
-        }
-
-        (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode);
+        // There are no prior errors to retain, report the current curl error code
+        _requestContext.hrTranslatedStatusCode = g_CurlErrorCodeToHResult(curlResult);
     }
+    // else we already have the error code to report
+
+    (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode, _requestContext.hrCallback);
 }
 
 void HttpAgent::_TrySetStatusCodeAndInvokeOnHeadersAvailable()
@@ -434,22 +442,20 @@ void HttpAgent::_TrySetStatusCodeAndInvokeOnHeadersAvailable()
     }
     _requestContext.responseOnHeadersAvailableInvoked = true;
 
-    long responseCode;
-    auto res = curl_easy_getinfo(_requestContext.curlHandle, CURLINFO_RESPONSE_CODE, &responseCode);
-    if (res == CURLE_OK)
+    long responseCode = 0;
+    auto curlResult = curl_easy_getinfo(_requestContext.curlHandle, CURLINFO_RESPONSE_CODE, &responseCode);
+    if (curlResult == CURLE_OK)
     {
         _requestContext.responseStatusCode = static_cast<unsigned int>(responseCode);
-    }
-
-    _requestContext.hrTranslatedStatusCode = _ResultFromStatusCode(_requestContext.responseStatusCode);
-    if (SUCCEEDED(_requestContext.hrTranslatedStatusCode))
-    {
-        (void)_callback.OnHeadersAvailable();
+        _requestContext.hrTranslatedStatusCode = _ResultFromStatusCode(_requestContext.responseStatusCode);
     }
     else
     {
-        // Not interested in receiving body for failure response. Notify completion immediately.
-        _requestContext.responseOnCompleteInvoked = true;
-        (void)_callback.OnComplete(_requestContext.hrTranslatedStatusCode);
+        _requestContext.hrTranslatedStatusCode = HRESULT_FROM_XPLAT_SYSERR(curlResult);
+    }
+
+    if (SUCCEEDED(_requestContext.hrTranslatedStatusCode))
+    {
+        _requestContext.hrCallback = _callback.OnHeadersAvailable();
     }
 }
