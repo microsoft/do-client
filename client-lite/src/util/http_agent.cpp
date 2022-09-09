@@ -362,7 +362,7 @@ size_t HttpAgent::_HeaderCallback(char* pBuffer, size_t size, size_t nItems)
     }
     catch (const std::bad_alloc&)
     {
-        _requestContext.hrTranslatedStatusCode = E_OUTOFMEMORY;
+        _requestContext.hrCallback = E_OUTOFMEMORY;
     }
     // Return value != cbBuffer causes curl to fail the request with CURLE_WRITE_ERROR.
     // _CompleteCallback() will pass an appropriate error code to IHttpAgentEvents::OnComplete.
