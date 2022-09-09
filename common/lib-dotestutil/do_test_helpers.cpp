@@ -13,6 +13,9 @@ namespace util
 
 void ExecuteSystemCommand(const char* command)
 {
+#ifdef DO_PLATFORM_WINDOWS
+    throw std::exception("System command not implemented");
+#else
     int ret = system(command);
     if (!WIFEXITED(ret))
     {
@@ -24,6 +27,7 @@ void ExecuteSystemCommand(const char* command)
     {
         throw DOTestException("Command [%s] completed with error: %d", command, cmdRet);
     }
+#endif
 }
 
 using btcp_t = boost::asio::ip::tcp;

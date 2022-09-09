@@ -16,9 +16,7 @@
 #include "do_download.h"
 #include "do_download_status.h"
 #include "do_errors.h"
-#if defined(DO_INTERFACE_REST)
 #include "do_test_helpers.h"
-#endif
 #include "test_data.h"
 #include "test_helpers.h"
 
@@ -556,6 +554,12 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
 TEST_F(DownloadTests, FileDeletionAfterPause)
 {
     auto largeDownload = msdot::download::make(g_largeFileUrl, g_tmpFileName2);
+    auto cleanup = dotest::util::scope_exit([&largeDownload]()
+        {
+            std::cout << "Aborting download\n";
+            largeDownload->abort();
+        });
+
     largeDownload->start();
     std::this_thread::sleep_for(2s);
     largeDownload->pause();
@@ -565,6 +569,7 @@ TEST_F(DownloadTests, FileDeletionAfterPause)
     boost::filesystem::remove(g_tmpFileName2);
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName2)) << "Output file deleted";
 
+#if defined(DO_CLIENT_AGENT)
     try
     {
         largeDownload->resume();
@@ -574,7 +579,13 @@ TEST_F(DownloadTests, FileDeletionAfterPause)
     {
         ASSERT_EQ(ex.error_code().value(), DO_ERROR_FROM_SYSTEM_ERROR(ENOENT)) << "Resume failed due to missing output file";
     }
-    largeDownload->abort();
+#else
+    TestHelpers::DeleteDoSvcTemporaryFiles(g_tmpFileName2);
+    largeDownload->resume();
+    TestHelpers::WaitForState(*largeDownload, msdo::download_state::paused);
+    status = largeDownload->get_status();
+    ASSERT_EQ(status.error_code().value(), HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND));
+#endif
 }
 
 #if defined(DO_INTERFACE_REST)

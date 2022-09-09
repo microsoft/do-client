@@ -10,6 +10,7 @@ set(sdk_tests_linked_libs_common
     Microsoft::deliveryoptimization
     ${Boost_LIBRARIES}
     GTest::GTest
+    dotestutil
 )
 
 set(dosdkcpp_private_includes_common
@@ -31,7 +32,6 @@ if(DO_PLATFORM_LINUX)
 
     set(sdk_tests_linked_libs
         stdc++fs
-        dotestutil
     )
 
     set(test_source_private
@@ -43,10 +43,6 @@ elseif (DO_PLATFORM_MAC)
     set(dosdkcpp_private_includes
         "../src/internal/rest"
         "../src/internal/rest/util"
-    )
-
-    set(sdk_tests_linked_libs
-        dotestutil
     )
 
     # Many of the rest interface tests test simple client specific functionality, should make a seperate folder for simple client
