@@ -597,6 +597,30 @@ bool Download::_ShouldFailFastPerConnectionType() const
     }
 }
 
+bool Download::_IsFatalError(HRESULT hrRequest, HRESULT hrCallback, UINT httpStatusCode) const
+{
+    if (FAILED(hrCallback))
+    {
+        return true;
+    }
+
+    if (HttpAgent::IsClientError(httpStatusCode) && _ShouldFailFastPerConnectionType())
+    {
+        return true;
+    }
+
+    switch (hrRequest)
+    {
+        case E_OUTOFMEMORY:
+        case INET_E_INVALID_URL:
+        case DO_E_INSUFFICIENT_RANGE_SUPPORT:
+        case HRESULT_FROM_XPLAT_SYSERR(CURLE_WRITE_ERROR):
+            return true;
+    }
+
+    return false;
+}
+
 // IHttpAgentEvents
 
 HRESULT Download::OnHeadersAvailable() try
@@ -641,11 +665,11 @@ HRESULT Download::OnData(_In_reads_bytes_(cbData) BYTE* pData, UINT cbData) try
     return S_OK;
 } CATCH_RETURN()
 
-HRESULT Download::OnComplete(HRESULT hResult)
+HRESULT Download::OnComplete(HRESULT hrRequest, HRESULT hrCallback)
 {
     try
     {
-        if (SUCCEEDED(hResult))
+        if (SUCCEEDED(hrRequest))
         {
             _taskThread.Sched([this]()
             {
@@ -663,7 +687,7 @@ HRESULT Download::OnComplete(HRESULT hResult)
             LOG_IF_FAILED(_httpAgent->QueryStatusCode(&httpStatusCode));
             LOG_IF_FAILED(_httpAgent->QueryHeaders(nullptr, responseHeaders));
 
-            _taskThread.Sched([this, hResult, httpStatusCode, responseHeaders = std::move(responseHeaders)]()
+            _taskThread.Sched([this, hrRequest, hrCallback, httpStatusCode, responseHeaders = std::move(responseHeaders)]()
             {
                 _fHttpRequestActive = false;
                 _httpStatusCode = httpStatusCode;
@@ -677,35 +701,35 @@ HRESULT Download::OnComplete(HRESULT hResult)
 
                 if (_UsingMcc())
                 {
-                    _mccManager.ReportHostError(hResult, _httpStatusCode, _mccHost, _url);
+                    _mccManager.ReportHostError(hrRequest, _httpStatusCode, _mccHost, _url);
                 }
 
-                const bool isFatalError = HttpAgent::IsClientError(_httpStatusCode);
+                const auto hrErrorToReport = FAILED(hrCallback) ? hrCallback : hrRequest;
 
-                // Fail fast on certain http errors
-                if (isFatalError && _ShouldFailFastPerConnectionType())
+                // Fail fast on certain http/local errors
+                if (_IsFatalError(hrRequest, hrCallback, httpStatusCode))
                 {
-                    DoLogInfoHr(hResult, "%s, fatal failure, http_status: %d, headers:\n%s",
-                        GuidToString(_id).data(), _httpStatusCode, _responseHeaders.data());
+                    DoLogWarningHr(hrRequest, "%s, fatal failure, http_status: %d, hrCallback: 0x%x, headers:\n%s",
+                        GuidToString(_id).data(), _httpStatusCode, hrCallback, _responseHeaders.data());
                     _Pause();
-                    _status._Paused(hResult);
+                    _status._Paused(hrErrorToReport);
                     return;
                 }
 
                 // Make note of the failure and stay in Transferring state for retry
-                _status.Error = hResult;
+                _status.Error = hrErrorToReport;
                 _progressTracker.OnDownloadFailure();
                 std::chrono::seconds retryDelay = _progressTracker.NextRetryDelay();
 
                 // If we must fallback from MCC due to this error, retry without a delay
-                if (_ShouldPauseMccUsage(isFatalError))
+                if (_ShouldPauseMccUsage(HttpAgent::IsClientError(_httpStatusCode)))
                 {
                     retryDelay = std::chrono::seconds(0);
                     _progressTracker.ResetRetryDelay();
                 }
 
-                DoLogInfoHr(hResult, "%s, failure, will retry in %lld seconds, http_status: %d, headers:\n%s",
-                    GuidToString(_id).data(), retryDelay.count(), _httpStatusCode, _responseHeaders.data());
+                DoLogInfoHr(hrRequest, "%s, failure, will retry in %lld seconds, http_status: %d, hrCallback: 0x%x, headers:\n%s",
+                    GuidToString(_id).data(), retryDelay.count(), _httpStatusCode, hrCallback, _responseHeaders.data());
                 _taskThread.Sched([this]()
                 {
                     // Nothing to do if we moved out of Transferring state in the meantime or

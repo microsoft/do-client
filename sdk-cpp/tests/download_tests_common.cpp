@@ -3,6 +3,10 @@
 
 #include "tests_common.h"
 
+#ifdef DO_CLIENT_DOSVC
+#include <winerror.h>   // HRESULT_FROM_WIN32, ERROR_FILE_NOT_FOUND
+#endif
+
 #include <atomic>
 #include <array>
 #include <iostream>
@@ -16,9 +20,7 @@
 #include "do_download.h"
 #include "do_download_status.h"
 #include "do_errors.h"
-#if defined(DO_INTERFACE_REST)
 #include "do_test_helpers.h"
-#endif
 #include "test_data.h"
 #include "test_helpers.h"
 
@@ -553,7 +555,45 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName3)), g_smallFileSizeBytes);
 }
 
+TEST_F(DownloadTests, FileDeletionAfterPause)
+{
+    auto largeDownload = msdot::download::make(g_largeFileUrl, g_tmpFileName2);
+    auto cleanup = dotest::util::scope_exit([&largeDownload]()
+        {
+            std::cout << "Aborting download\n";
+            largeDownload->abort();
+        });
+
+    largeDownload->start();
+    std::this_thread::sleep_for(2s);
+    largeDownload->pause();
+    auto status = largeDownload->get_status();
+    ASSERT_EQ(status.state(), msdo::download_state::paused) << "Download is paused";
+
+    boost::filesystem::remove(g_tmpFileName2);
+    ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName2)) << "Output file deleted";
+
+#if defined(DO_CLIENT_AGENT)
+    try
+    {
+        largeDownload->resume();
+        ASSERT_TRUE(false) << "Expected resume() to throw";
+    }
+    catch (const msdod::exception& ex)
+    {
+        ASSERT_EQ(ex.error_code().value(), DO_ERROR_FROM_SYSTEM_ERROR(ENOENT)) << "Resume failed due to missing output file";
+    }
+#else
+    TestHelpers::DeleteDoSvcTemporaryFiles(g_tmpFileName2);
+    largeDownload->resume();
+    TestHelpers::WaitForState(*largeDownload, msdo::download_state::paused);
+    status = largeDownload->get_status();
+    ASSERT_EQ(status.error_code().value(), HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND));
+#endif
+}
+
 #if defined(DO_INTERFACE_REST)
+
 TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunning)
 {
     TestHelpers::StopService("deliveryoptimization-agent.service");
@@ -619,5 +659,4 @@ TEST_F(DownloadTests, MultipleRestPortFileExists_Download)
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
 }
 
-
-#endif // Linux
+#endif // DO_INTERFACE_REST
