@@ -30,6 +30,7 @@ void ExecuteSystemCommand(const char* command)
 #endif
 }
 
+#ifdef DO_PLATFORM_LINUX
 using btcp_t = boost::asio::ip::tcp;
 
 BoostAsioWorker::~BoostAsioWorker()
@@ -39,16 +40,17 @@ BoostAsioWorker::~BoostAsioWorker()
 }
 
 // Returns nullptr if no address was found for the DNS query
-std::unique_ptr<btcp_t::endpoint> BoostAsioWorker::ResolveDnsQuery(const btcp_t::resolver::query& resolverQuery)
+std::unique_ptr<btcp_t::endpoint> BoostAsioWorker::ResolveDnsQuery(const btcp_t::resolver::query& resolverQuery,
+    const boost::asio::ip::tcp::resolver::protocol_type* prot)
 {
     std::promise<std::unique_ptr<btcp_t::endpoint>> epPromise;
     auto fut = epPromise.get_future();
-    auto fnResolveHandler = [&epPromise](const boost::system::error_code& ec, btcp_t::resolver::iterator endpoints) -> void
+    auto fnResolveHandler = [&epPromise, prot](const boost::system::error_code& ec, btcp_t::resolver::iterator endpoints) -> void
     {
         std::unique_ptr<btcp_t::endpoint> spFoundEp;
         if (ec)
         {
-            std::cout << FormatString("Error resolving address: %d, %s\n", ec.value(), ec.message().data());
+            std::cout << FormatString("Error resolving address: %d, %s\n", ec.value(), ec.message().c_str());
         }
         else if (endpoints == btcp_t::resolver::iterator())
         {
@@ -60,9 +62,16 @@ std::unique_ptr<btcp_t::endpoint> BoostAsioWorker::ResolveDnsQuery(const btcp_t:
             while (endpoints != btcp_t::resolver::iterator())
             {
                 const auto& ep = *endpoints++;
-                std::cout << FormatString("Host: %s, IP: %s\n", ep.host_name().data(), ep.endpoint().address().to_string().data());
-                spFoundEp = std::make_unique<btcp_t::endpoint>(ep);
+                std::cout << FormatString("Host: %s, IP: %s\n", ep.host_name().data(), ep.endpoint().address().to_string().c_str());
+                if ((prot == nullptr) || (ep.endpoint().protocol() == *prot))
+                {
+                    spFoundEp = std::make_unique<btcp_t::endpoint>(ep);
+                }
             }
+        }
+        if (spFoundEp)
+        {
+            std::cout << FormatString("Returning IP: %s\n", spFoundEp->address().to_string().c_str());
         }
         epPromise.set_value(std::move(spFoundEp));
     };
@@ -78,6 +87,7 @@ std::unique_ptr<btcp_t::endpoint> BoostAsioWorker::ResolveDnsQuery(const btcp_t:
     }
     return fut.get();
 }
+#endif // DO_PLATFORM_LINUX
 
 } // namespace util
 } // namespace dotest

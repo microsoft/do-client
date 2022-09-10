@@ -83,7 +83,8 @@ TEST_F(RestInterfaceTests, RestInterfaceUseLocalHostForLocalSocket)
 
     const auto localHostname = boost::asio::ip::host_name();
     btcp_t::resolver::query query(localHostname, "");
-    auto spLocalEp = asioService.ResolveDnsQuery(query);
+    auto prot = btcp_t::v4();
+    auto spLocalEp = asioService.ResolveDnsQuery(query, &prot);
     ASSERT_TRUE(spLocalEp) << "Found at least one address for the local hostname query";
 
     // Hostname can resolve to either a loopback address or private address depending on machine/network config

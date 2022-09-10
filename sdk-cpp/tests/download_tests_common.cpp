@@ -3,6 +3,10 @@
 
 #include "tests_common.h"
 
+#ifdef DO_CLIENT_DOSVC
+#include <winerror.h>   // HRESULT_FROM_WIN32, ERROR_FILE_NOT_FOUND
+#endif
+
 #include <atomic>
 #include <array>
 #include <iostream>
