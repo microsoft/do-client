@@ -57,7 +57,8 @@ class exception : public std::exception
 {
 public:
     exception(std::error_code code) :
-        _code(std::move(code))
+        _code(code),
+        _msg(code.message())
     {
     }
 
@@ -73,7 +74,7 @@ public:
 
     const char* what() const noexcept override
     {
-        return _code.message().c_str();
+        return _msg.c_str();
     }
 
     const std::error_code& error_code() const
@@ -83,6 +84,9 @@ public:
 
 private:
     std::error_code _code;
+
+    // std::error_code::message() has a by-value return. Store it here for implementation of what().
+    std::string _msg;
 };
 
 inline void throw_if_fail(std::error_code errorCode)

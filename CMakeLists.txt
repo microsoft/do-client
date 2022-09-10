@@ -71,7 +71,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 if (DO_PLATFORM_LINUX)
     # PIE (Position Independent Executable) ensures exe/.so can run when ASLR is enabled in the target OS
     set(COMPILER_HARDENING_FLAGS
-        "-fPIE -pie -D_FORTIFY_SOURCE=2 -fstack-protector-strong -Wformat -Werror=format-security")
+        "-fPIE -pie -D_FORTIFY_SOURCE=2 -fstack-protector-strong -Wformat -Werror=format-security -Wreturn-local-addr")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ${COMPILER_HARDENING_FLAGS} -fmerge-all-constants")
 
     # relro+now thwarts some attack vectors by reordering some ELF data structures and also by making the GOT read-only
