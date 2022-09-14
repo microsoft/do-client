@@ -20,6 +20,6 @@ void internal_free_version_buf(char** ppBuffer)
     if (*ppBuffer)
     {
         free(*ppBuffer);
-        *ppBuffer = NULL;
+        *ppBuffer = nullptr;
     }
 }

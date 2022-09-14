@@ -26,6 +26,11 @@
           "name": "DO_INCLUDE_SDK",
           "value": "True",
           "type": "BOOL"
+        },
+        {
+          "name": "DO_BUILD_TESTS",
+          "value": "False",
+          "type": "BOOL"
         }
       ]
     }

@@ -79,8 +79,20 @@ if (DO_PLATFORM_LINUX)
 endif (DO_PLATFORM_LINUX)
 
 if (DO_PLATFORM_WINDOWS AND DO_INCLUDE_SDK)
+    # Replicate some of MSEdge build config to catch issues before integration.
+    # Use Visual Studio 2019 and the x64-Clang-Debug-SDK cmake config to enable these configs.
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Wextra -Wreturn-stack-address -Wno-string-conversion")
+        set(DISABLE_WARNINGS "-Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-reserved-id-macro -Wno-global-constructors -Wno-exit-time-destructors -Wno-extra-semi-stmt")
+        # Note: Many warnings to fix before we can turn on -Werror
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wreturn-stack-address -Wno-string-conversion ${DISABLE_WARNINGS}")
+    endif ()
+    if (NOT DO_BUILD_TESTS)
+        # Disable C++ exceptions
+        string(REGEX REPLACE "/EH[a-z]+" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_HAS_EXCEPTIONS=0")
+        # Disable RTTI
+        string(REGEX REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
     endif ()
 endif ()
 

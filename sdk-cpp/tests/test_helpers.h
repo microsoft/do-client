@@ -16,7 +16,6 @@
 
 namespace msdo = microsoft::deliveryoptimization;
 namespace msdod = microsoft::deliveryoptimization::details;
-using namespace std::chrono_literals; // NOLINT(build/namespaces)
 
 namespace microsoft
 {
@@ -174,13 +173,13 @@ public:
 
     // On Windows, operations are async - there may be some delay setting a state internally
     static void WaitForState(microsoft::deliveryoptimization::test::download& download, msdo::download_state expectedState,
-        std::chrono::seconds waitTimeSecs = 10s)
+        std::chrono::seconds waitTimeSecs = std::chrono::seconds{10})
     {
         msdo::download_status status = download.get_status();
         const auto endtime = std::chrono::steady_clock::now() + waitTimeSecs;
         while ((status.state() != expectedState) && (std::chrono::steady_clock::now() < endtime))
         {
-            std::this_thread::sleep_for(1s);
+            std::this_thread::sleep_for(std::chrono::seconds{1});
             status = download.get_status();
             std::cout << "Transferred " << status.bytes_transferred() << " / " << status.bytes_total() << "\n";
         }

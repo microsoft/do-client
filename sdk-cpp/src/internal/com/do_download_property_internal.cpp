@@ -19,7 +19,7 @@ namespace deliveryoptimization
 namespace details
 {
 
-std::error_code UTF8toWstr(const char* str, std::wstring& wstr)
+static std::error_code UTF8toWstr(const char* str, std::wstring& wstr)
 {
     size_t cch = strlen(str);
     if (cch == 0)
@@ -28,12 +28,12 @@ std::error_code UTF8toWstr(const char* str, std::wstring& wstr)
     }
 
     std::vector<wchar_t> dest(cch * 4);
-    const uint32_t result = MultiByteToWideChar(CP_UTF8, 0, str, static_cast<int>(cch), dest.data(), static_cast<int>(dest.size()));
+    const int result = MultiByteToWideChar(CP_UTF8, 0, str, static_cast<int>(cch), dest.data(), static_cast<int>(dest.size()));
     if (result == 0)
     {
-        return make_error_code(E_FAIL);
+        return make_error_code(HRESULT_FROM_WIN32(::GetLastError()));
     }
-    wstr = std::wstring(dest.data(), result);
+    wstr = std::wstring(dest.data(), static_cast<UINT>(result));
     return DO_OK;
 }
 
@@ -103,13 +103,13 @@ CDownloadPropertyValueInternal::~CDownloadPropertyValueInternal()
 
 CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(const CDownloadPropertyValueInternal& rhs)
 {
-    int32_t res = VariantCopy(&_var, &rhs._var);
+    HRESULT res = VariantCopy(&_var, &rhs._var);
 #if DEBUG
     assert(SUCCEEDED(res));
 #endif
     if (FAILED(res))
     {
-        throw std::bad_alloc();
+        std::terminate();
     }
     _callback = rhs._callback;
 };

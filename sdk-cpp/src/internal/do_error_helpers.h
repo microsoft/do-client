@@ -53,6 +53,8 @@ inline std::error_code make_error_code(errc e)
     return std::error_code(static_cast<int32_t>(e), do_category());
 }
 
+#ifdef DO_ENABLE_EXCEPTIONS
+
 class exception : public std::exception
 {
 public:
@@ -116,6 +118,8 @@ inline void ThrowException(errc errorCode)
 {
     throw exception(errorCode);
 }
+
+#endif  // DO_ENABLE_EXCEPTIONS
 
 } // namespace details
 } //namespace deliveryoptimization

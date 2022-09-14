@@ -65,6 +65,8 @@ file (GLOB test_source
 )
 
 add_executable(deliveryoptimization-sdk-tests ${test_source})
+# Tests make use of C++ exceptions. MSEdge build on Windows disables C++ exceptions but also does not build our tests.
+target_compile_definitions(deliveryoptimization-sdk-tests PRIVATE DO_ENABLE_EXCEPTIONS)
 add_platform_interface_definitions(deliveryoptimization-sdk-tests)
 
 target_include_directories(deliveryoptimization-sdk-tests
