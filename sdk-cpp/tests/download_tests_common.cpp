@@ -3,10 +3,6 @@
 
 #include "tests_common.h"
 
-#ifdef DO_CLIENT_DOSVC
-#include <winerror.h>   // HRESULT_FROM_WIN32, ERROR_FILE_NOT_FOUND
-#endif
-
 #include <atomic>
 #include <array>
 #include <iostream>
@@ -588,7 +584,7 @@ TEST_F(DownloadTests, FileDeletionAfterPause)
     largeDownload->resume();
     TestHelpers::WaitForState(*largeDownload, msdo::download_state::paused);
     status = largeDownload->get_status();
-    ASSERT_EQ(status.error_code().value(), HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND));
+    ASSERT_EQ(status.error_code().value(), static_cast<int>(0x80070002));
 #endif
 }
 
