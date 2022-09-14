@@ -30,6 +30,8 @@ namespace msdoutil = microsoft::deliveryoptimization::util::details;
 
 using namespace std::chrono_literals; // NOLINT(build/namespaces) how else should we use chrono literals?
 
+extern char **environ;
+
 class ProcessController
 {
 public:
@@ -123,6 +125,16 @@ private:
     std::thread _workerThread;
 };
 
+static void g_printEnvironmentVariables()
+{
+    std::stringstream ss;
+    for (auto s = environ; *s != nullptr; ++s)
+    {
+        ss << *s << '\n';
+    }
+    DoLogInfo("Environment variables:\n%s", ss.str().c_str());
+}
+
 HRESULT Run() try
 {
     InitializeDOPaths();
@@ -145,6 +157,8 @@ HRESULT Run() try
     DOLog::Init(docli::GetLogDirectory(), DOLog::Level::Verbose);
 
     DoLogInfo("Started, %s", msdoutil::ComponentVersion().c_str());
+
+    g_printEnvironmentVariables();
 
     ProcessController procController([&downloadManager]()
     {
