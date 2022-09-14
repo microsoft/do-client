@@ -78,6 +78,12 @@ if (DO_PLATFORM_LINUX)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie -z relro -z now")
 endif (DO_PLATFORM_LINUX)
 
+if (DO_PLATFORM_WINDOWS AND DO_INCLUDE_SDK)
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Wextra -Wreturn-stack-address -Wno-string-conversion")
+    endif ()
+endif ()
+
 # Define DEBUG macro in debug builds
 string(TOLOWER ${CMAKE_BUILD_TYPE} DO_BUILD_TYPE)
 if (DO_BUILD_TYPE MATCHES debug)
