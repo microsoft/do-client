@@ -71,12 +71,30 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 if (DO_PLATFORM_LINUX)
     # PIE (Position Independent Executable) ensures exe/.so can run when ASLR is enabled in the target OS
     set(COMPILER_HARDENING_FLAGS
-        "-fPIE -pie -D_FORTIFY_SOURCE=2 -fstack-protector-strong -Wformat -Werror=format-security")
+        "-fPIE -pie -D_FORTIFY_SOURCE=2 -fstack-protector-strong -Wformat -Werror=format-security -Wreturn-local-addr")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall ${COMPILER_HARDENING_FLAGS} -fmerge-all-constants")
 
     # relro+now thwarts some attack vectors by reordering some ELF data structures and also by making the GOT read-only
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie -z relro -z now")
 endif (DO_PLATFORM_LINUX)
+
+if (DO_PLATFORM_WINDOWS AND DO_INCLUDE_SDK)
+    # Replicate some of MSEdge build config to catch issues before integration.
+    # Use Visual Studio 2019 and the x64-Clang-Debug-SDK cmake config to enable these configs.
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        set(DISABLE_WARNINGS "-Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-reserved-id-macro -Wno-global-constructors -Wno-exit-time-destructors -Wno-extra-semi-stmt")
+        # Note: Many warnings to fix before we can turn on -Werror
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wreturn-stack-address -Wno-string-conversion ${DISABLE_WARNINGS}")
+    endif ()
+    if (NOT DO_BUILD_TESTS)
+        # Disable C++ exceptions
+        string(REGEX REPLACE "/EH[a-z]+" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_HAS_EXCEPTIONS=0")
+        # Disable RTTI
+        string(REGEX REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
+    endif ()
+endif ()
 
 # Define DEBUG macro in debug builds
 string(TOLOWER ${CMAKE_BUILD_TYPE} DO_BUILD_TYPE)

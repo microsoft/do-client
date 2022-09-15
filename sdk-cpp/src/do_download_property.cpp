@@ -81,22 +81,22 @@ std::error_code download_property_value::make(const status_callback_t& val, down
 std::error_code download_property_value::as(bool& val) const noexcept
 {
     return _val->As(val);
-};
+}
 
 std::error_code download_property_value::as(uint32_t& val) const noexcept
 {
     return _val->As(val);
-};
+}
 
 std::error_code download_property_value::as(uint64_t& val) const noexcept
 {
     return _val->As(val);
-};
+}
 
 std::error_code download_property_value::as(std::string& val) const noexcept
 {
     return _val->As(val);
-};
+}
 
 std::error_code download_property_value::as(std::vector<unsigned char>& val) const noexcept
 {
@@ -106,7 +106,7 @@ std::error_code download_property_value::as(std::vector<unsigned char>& val) con
 std::error_code download_property_value::as(status_callback_t& val) const noexcept
 {
     return _val->As(val);
-};
+}
 
 } // deliveryoptimization
 } // microsoft

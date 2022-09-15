@@ -3,10 +3,6 @@
 
 #include "tests_common.h"
 
-#ifdef DO_CLIENT_DOSVC
-#include <winerror.h>   // HRESULT_FROM_WIN32, ERROR_FILE_NOT_FOUND
-#endif
-
 #include <atomic>
 #include <array>
 #include <iostream>
@@ -42,7 +38,7 @@ using namespace std::chrono_literals; // NOLINT(build/namespaces)
 #define DO_ERROR_FROM_SYSTEM_ERROR(x) (int32_t)(0xC0000000 | (FACILITY_DELIVERY_OPTIMIZATION << 16) | ((int32_t)(x) & 0x0000FFFF))
 #endif
 
-void WaitForDownloadCompletion(msdot::download& simpleDownload)
+static void WaitForDownloadCompletion(msdot::download& simpleDownload)
 {
     msdo::download_status status = simpleDownload.get_status();
     const auto endtime = std::chrono::steady_clock::now() + 5min;
@@ -161,7 +157,7 @@ TEST_F(DownloadTests, SimpleDownloadTest_WithMalformedPath)
     catch (const msdod::exception& e)
     {
 #if defined(DO_INTERFACE_COM)
-        constexpr auto c_invalidDeviceName = (int)0x8007007b;
+        constexpr auto c_invalidDeviceName = static_cast<int>(0x8007007b);
         std::array<int, 3> expectedErrors{ E_ACCESSDENIED, HTTP_E_STATUS_NOT_FOUND, c_invalidDeviceName };
         // DO returns different errors on dev machine and pipeline agents (Win10/Win11?)
         ASSERT_TRUE(std::find(expectedErrors.begin(), expectedErrors.end(), e.error_code().value()) != expectedErrors.end())
@@ -185,7 +181,7 @@ TEST_F(DownloadTests, SimpleDownloadTest_With404UrlAndMalformedPath)
     catch (const msdod::exception& e)
     {
 #if defined(DO_INTERFACE_COM)
-        constexpr auto c_invalidDeviceName = (int)0x8007007b;
+        constexpr auto c_invalidDeviceName = static_cast<int>(0x8007007b);
         std::array<int, 3> expectedErrors{ E_ACCESSDENIED, HTTP_E_STATUS_NOT_FOUND, c_invalidDeviceName };
         // DO returns different errors on dev machine and pipeline agents (Win10/Win11?)
         ASSERT_TRUE(std::find(expectedErrors.begin(), expectedErrors.end(), e.error_code().value()) != expectedErrors.end())
@@ -588,7 +584,7 @@ TEST_F(DownloadTests, FileDeletionAfterPause)
     largeDownload->resume();
     TestHelpers::WaitForState(*largeDownload, msdo::download_state::paused);
     status = largeDownload->get_status();
-    ASSERT_EQ(status.error_code().value(), HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND));
+    ASSERT_EQ(status.error_code().value(), static_cast<int>(0x80070002));
 #endif
 }
 

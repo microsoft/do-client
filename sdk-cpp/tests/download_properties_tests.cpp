@@ -165,7 +165,7 @@ TEST_F(DownloadPropertyTests, CallbackTestUseDownload)
             std::cout << msgBuf << std::endl;
 
             msdo::download_status status2;
-            ASSERT_EQ(download.get_status(status).value(), 0);
+            ASSERT_EQ(download.get_status(status2).value(), 0);
             if (fPauseDownload)
             {
                 ASSERT_EQ(download.pause().value(), 0);
@@ -186,7 +186,7 @@ TEST_F(DownloadPropertyTests, SetCallbackTest)
     auto simpleDownload = g_MakeDownload(g_smallFileUrl, g_tmpFileName);
 
     int i= 0;
-    msdo::download_property_value callback = g_MakePropertyValue([&i](msdo::download& download, msdo::download_status& status)
+    msdo::download_property_value callback = g_MakePropertyValue([&i](msdo::download&, msdo::download_status& status)
         {
             char msgBuf[1024];
             snprintf(msgBuf, sizeof(msgBuf), "Received status callback: %" PRIu64 "/%" PRIu64 ", 0x%x, 0x%x, %u",

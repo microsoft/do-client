@@ -124,6 +124,10 @@ target_compile_definitions(${DO_SDK_LIB_NAME}
 if (DO_DEV_DEBUG)
     target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE DO_DEV_DEBUG)
 endif ()
+if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
+    # TODO(shishirb) Remove internal use of exceptions on these platforms
+    target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE DO_ENABLE_EXCEPTIONS)
+endif ()
 add_platform_interface_definitions(${DO_SDK_LIB_NAME})
 
 target_link_libraries(${DO_SDK_LIB_NAME}
