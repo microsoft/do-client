@@ -35,13 +35,13 @@ void NetworkMonitorTests::TearDown()
 // We can remove this test once we have it running as part of the E2E test suite.
 TEST_F(NetworkMonitorTests, DISABLED_VerifyNetworkReconnect)
 {
-    ASSERT_TRUE(NetworkMonitor::IsConnected());
+    ASSERT_TRUE(NetworkMonitor::HasViableInterface());
 
     _DisableNetwork();
-    ASSERT_FALSE(NetworkMonitor::IsConnected());
+    ASSERT_FALSE(NetworkMonitor::HasViableInterface());
 
     _EnableNetwork();
-    ASSERT_TRUE(NetworkMonitor::IsConnected());
+    ASSERT_TRUE(NetworkMonitor::HasViableInterface());
 }
 
 // Execute this test after manually changing network interface name.
@@ -51,7 +51,7 @@ TEST_F(NetworkMonitorTests, DISABLED_VerifyNetworkReconnect)
 // Automating the name change is not feasible - requires reboot, and can make build agents go offline.
 TEST_F(NetworkMonitorTests, BasicNetworkConnected)
 {
-    ASSERT_TRUE(NetworkMonitor::IsConnected());
+    ASSERT_TRUE(NetworkMonitor::HasViableInterface());
 }
 
 void NetworkMonitorTests::_EnableNetwork()

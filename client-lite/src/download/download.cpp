@@ -357,7 +357,7 @@ void Download::_HandleTransientError(HRESULT hr)
     _status._Paused(S_OK, hr);
     _taskThread.Sched([this]()
     {
-        if (NetworkMonitor::IsConnected())
+        if (NetworkMonitor::HasViableInterface())
         {
             _ResumeAfterTransientError();
         }
@@ -693,7 +693,7 @@ HRESULT Download::OnComplete(HRESULT hrRequest, HRESULT hrCallback)
                 _httpStatusCode = httpStatusCode;
                 _responseHeaders = std::move(responseHeaders);
 
-                if (!NetworkMonitor::IsConnected())
+                if (!NetworkMonitor::HasViableInterface())
                 {
                     _HandleTransientError(DO_E_BLOCKED_BY_NO_NETWORK);
                     return;
