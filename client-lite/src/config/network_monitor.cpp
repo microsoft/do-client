@@ -6,9 +6,7 @@
 
 #include <errno.h>
 #include <ifaddrs.h>
-
-// https://www.freedesktop.org/software/systemd/man/systemd.net-naming-scheme.html
-static const char* g_publicIfNames[] = { "eth", "wlan", "en", "wl", "ww" };
+#include <net/if.h>
 
 bool NetworkMonitor::IsConnected()
 {
@@ -19,6 +17,10 @@ bool NetworkMonitor::IsConnected()
         return true;
     }
 
+    // Assume network connectivity is available if there is at least one network interface
+    // that has an IPv4/IPv6 address, is running and not a loopback interface.
+    // TODO(shishirb): Look into NetworkManager dbus API if needed (ability to distinguish among
+    //      local/portal/internet connectivity, or in case of false detections with current logic).
     for (struct ifaddrs* ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next)
     {
         if (ifa->ifa_addr == nullptr)
@@ -32,19 +34,16 @@ bool NetworkMonitor::IsConnected()
             continue;
         }
 
-        // TODO(shishirb): Look for a better way to find the relevant adapter. Naming conventions can change.
-        for (auto ifname : g_publicIfNames)
+        if ((ifa->ifa_flags & IFF_RUNNING)
+            && !(ifa->ifa_flags & IFF_LOOPBACK))
         {
-            auto foundPos = strcasestr(ifa->ifa_name, ifname);
-            if ((foundPos != nullptr) && (foundPos == ifa->ifa_name))
-            {
-                DoLogInfo("Network connectivity detected. Interface: %s, address family: %d%s.",
-                    ifa->ifa_name, family,
-                    (family == AF_INET) ? " (AF_INET)" :
-                    (family == AF_INET6) ? " (AF_INET6)" : "");
-                freeifaddrs(ifaddr);
-                return true;
-            }
+            DoLogInfo("Network connectivity detected. Interface: %s, family: %d%s, flags: 0x%x.",
+                ifa->ifa_name, family,
+                (family == AF_INET) ? " (AF_INET)" :
+                (family == AF_INET6) ? " (AF_INET6)" : "",
+                ifa->ifa_flags);
+            freeifaddrs(ifaddr);
+            return true;
         }
     }
 
