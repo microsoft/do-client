@@ -8,7 +8,7 @@
 #include <ifaddrs.h>
 #include <net/if.h>
 
-bool NetworkMonitor::IsConnected()
+bool NetworkMonitor::HasViableInterface()
 {
     struct ifaddrs* ifaddr;
     if (getifaddrs(&ifaddr) == -1)
@@ -37,7 +37,7 @@ bool NetworkMonitor::IsConnected()
         if ((ifa->ifa_flags & IFF_RUNNING)
             && !(ifa->ifa_flags & IFF_LOOPBACK))
         {
-            DoLogInfo("Network connectivity detected. Interface: %s, family: %d%s, flags: 0x%x.",
+            DoLogInfo("Viable network interface detected: %s, family: %d%s, flags: 0x%x.",
                 ifa->ifa_name, family,
                 (family == AF_INET) ? " (AF_INET)" :
                 (family == AF_INET6) ? " (AF_INET6)" : "",
@@ -47,7 +47,7 @@ bool NetworkMonitor::IsConnected()
         }
     }
 
-    DoLogWarning("No network connectivity detected");
+    DoLogWarning("No viable network interface");
     freeifaddrs(ifaddr);
     return false;
 }

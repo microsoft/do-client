@@ -6,5 +6,5 @@
 class NetworkMonitor
 {
 public:
-    static bool IsConnected();
+    static bool HasViableInterface();
 };
