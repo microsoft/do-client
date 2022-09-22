@@ -121,6 +121,16 @@ TEST_F(MCCManagerTests, AdminConfigOverride)
     _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST);
 }
 
+TEST_F(MCCManagerTests, AdminConfigEmptyString)
+{
+    SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=" TEST_MOCK_MCC_HOST);
+    SetDOCacheHostConfig("");
+    _VerifyExpectedCacheHost("");
+
+    cppfs::remove(g_adminConfigFilePath);
+    _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST);
+}
+
 // Disabled tests: Azure lab MCC instance isn't responding quickly with 404.
 // Running it locally: ./deliveryoptimization-agent-tests --gtest_also_run_disabled_tests --gtest_filter=*DISABLED_Download404WithFallback -m <MCC-host>
 TEST_F(MCCManagerTests, DISABLED_Download404WithFallback)
