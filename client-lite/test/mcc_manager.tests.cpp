@@ -116,7 +116,7 @@ TEST_F(MCCManagerTests, AdminConfigOverride)
     SetIoTConnectionString("HostName=instance-company-iothub-ver.host.tld;DeviceId=user-dev-name;SharedAccessKey=abcdefghijklmnopqrstuvwxyzABCDE123456789012=;GatewayHostName=" TEST_MOCK_MCC_HOST);
     SetDOCacheHostConfig(TEST_MOCK_MCC_HOST2);
     _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST2);
-    
+
     cppfs::remove(g_adminConfigFilePath);
     _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST);
 }
