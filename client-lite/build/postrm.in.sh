@@ -11,7 +11,7 @@ run_path=@docs_svc_run_dir_path@
 svc_name=@docs_svc_name@
 svc_config_path=@docs_systemd_cfg_path@
 
-echo "Running post-removal script for $svc_name, args: $1, $2"
+echo "**** Running post-removal script for $svc_name, args: $1 $2 ****"
 
 do_remove_daemon() {
     echo "Removing systemd unit file: $svc_config_path"
