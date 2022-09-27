@@ -58,8 +58,7 @@ case "$1" in
     # upgrade: Removing user/group/directories during an upgrade is a mistake that can impact group membership, historical logs, etc.
     # abort-install, abort-upgrade: This project does not use any package install path that requires handling these cases.
     upgrade|abort-install|abort-upgrade)
-        exit 0
     ;;
 esac
 
-echo "Done!"
+echo "**** Done! ****"

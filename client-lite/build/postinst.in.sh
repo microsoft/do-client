@@ -43,11 +43,11 @@ done
 configure_dir() {
     local dir_path="$1"
     echo "Configuring dir: $dir_path"
-    if [ ! -d $dir_path ]; then
-        mkdir $dir_path
+    if [ ! -d "$dir_path" ]; then
+        mkdir "$dir_path"
     fi
-    chgrp -R $do_group_name $dir_path
-    chown $do_user_name $dir_path
+    chgrp -R $do_group_name "$dir_path"
+    chown $do_user_name "$dir_path"
 }
 
 configure_dir "$config_path"
@@ -78,4 +78,4 @@ systemctl enable $svc_name
 systemctl reset-failed $svc_name
 systemctl stop $svc_name > /dev/null # stop if already running
 systemctl start $svc_name
-echo "Done!"
+echo "**** Done! ****"
