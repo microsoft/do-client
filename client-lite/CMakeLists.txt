@@ -5,7 +5,7 @@ if (NOT DOSVC_BIN_NAME)
     message (FATAL_ERROR "Agent daemon name not defined")
 endif ()
 
-project (${DOSVC_BIN_NAME} VERSION 0.7.0)
+project (${DOSVC_BIN_NAME} VERSION 0.7.1)
 
 option (DO_PROXY_SUPPORT "Set DO_PROXY_SUPPORT to OFF to turn off proxy support for downloads and thus remove dependency on libproxy." ON)
 
