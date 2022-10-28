@@ -149,9 +149,10 @@ private:
     bool _UsingMcc() const { return _connectionType == ConnectionType::MCC; }
     bool _ShouldPauseMccUsage(bool isFatalError) const;
     bool _ShouldFailFastPerConnectionType() const;
+    bool _IsFatalError(HRESULT hrRequest, HRESULT hrCallback, UINT httpStatusCode) const;
 
     // IHttpAgentEvents
     HRESULT OnHeadersAvailable() override;
     HRESULT OnData(_In_reads_bytes_(cbData) BYTE* pData, UINT cbData) override;
-    HRESULT OnComplete(HRESULT hResult) override;
+    HRESULT OnComplete(HRESULT hrRequest, HRESULT hrCallback) override;
 };

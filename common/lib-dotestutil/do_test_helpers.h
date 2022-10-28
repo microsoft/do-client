@@ -5,7 +5,10 @@
 
 #include <string>
 #include <thread>
+#ifdef DO_PLATFORM_LINUX
+// TODO(shishirb) Need to install boost-asio on windows/mac build agents?
 #include <boost/asio.hpp>
+#endif
 
 namespace dotest
 {
@@ -26,12 +29,14 @@ std::string FormatString(const char* fmt, Args&&... args)
 
 // Helper classes
 
+#ifdef DO_PLATFORM_LINUX
 class BoostAsioWorker
 {
 public:
     ~BoostAsioWorker();
 
-    std::unique_ptr<boost::asio::ip::tcp::endpoint> ResolveDnsQuery(const boost::asio::ip::tcp::resolver::query& resolverQuery);
+    std::unique_ptr<boost::asio::ip::tcp::endpoint> ResolveDnsQuery(const boost::asio::ip::tcp::resolver::query& resolverQuery,
+        const boost::asio::ip::tcp::resolver::protocol_type* prot = nullptr);
 
     boost::asio::io_service& Service() { return _io; }
 
@@ -40,6 +45,7 @@ private:
     boost::asio::io_service::work _work { _io };
     std::thread _myThread { [this](){ _io.run(); } };
 };
+#endif // DO_PLATFORM_LINUX
 
 class DOTestException : public std::exception
 {

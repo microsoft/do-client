@@ -142,7 +142,7 @@ std::error_code download::download_url_to_path(const std::string& uri, const std
 
 static std::error_code g_TryOverrideDownlevelOsSetPropertyError(download_property prop, std::error_code ec)
 {
-    // Temporary backward-compatibility for Chromium/Edge.
+    // Temporary backward-compatibility for MSEdge.
     // These properties were not supported in IDODownload interface until build 19041.
     if ((ec.value() == static_cast<int>(errc::do_e_unknown_property_id)) &&
         ((prop == download_property::correlation_vector) || (prop == download_property::integrity_check_info)))

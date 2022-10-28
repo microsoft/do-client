@@ -50,8 +50,14 @@ boost::optional<std::chrono::seconds> MCCManager::FallbackDelay()
 
 std::string MCCManager::GetHost()
 {
-    std::string mccHostName =_configManager.CacheHostServer();
-    if (mccHostName.empty())
+    boost::optional<std::string> mccHostNameOpt =_configManager.CacheHostServer();
+    std::string mccHostName;
+
+    if (mccHostNameOpt.is_initialized())
+    {
+        mccHostName = mccHostNameOpt.get();
+    }
+    else
     {
         const std::string connString = _configManager.IoTConnectionString();
         if (!connString.empty())

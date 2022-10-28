@@ -16,9 +16,7 @@
 #include "do_download.h"
 #include "do_download_status.h"
 #include "do_errors.h"
-#if defined(DO_INTERFACE_REST)
 #include "do_test_helpers.h"
-#endif
 #include "test_data.h"
 #include "test_helpers.h"
 
@@ -40,7 +38,7 @@ using namespace std::chrono_literals; // NOLINT(build/namespaces)
 #define DO_ERROR_FROM_SYSTEM_ERROR(x) (int32_t)(0xC0000000 | (FACILITY_DELIVERY_OPTIMIZATION << 16) | ((int32_t)(x) & 0x0000FFFF))
 #endif
 
-void WaitForDownloadCompletion(msdot::download& simpleDownload)
+static void WaitForDownloadCompletion(msdot::download& simpleDownload)
 {
     msdo::download_status status = simpleDownload.get_status();
     const auto endtime = std::chrono::steady_clock::now() + 5min;
@@ -159,7 +157,7 @@ TEST_F(DownloadTests, SimpleDownloadTest_WithMalformedPath)
     catch (const msdod::exception& e)
     {
 #if defined(DO_INTERFACE_COM)
-        constexpr auto c_invalidDeviceName = (int)0x8007007b;
+        constexpr auto c_invalidDeviceName = static_cast<int>(0x8007007b);
         std::array<int, 3> expectedErrors{ E_ACCESSDENIED, HTTP_E_STATUS_NOT_FOUND, c_invalidDeviceName };
         // DO returns different errors on dev machine and pipeline agents (Win10/Win11?)
         ASSERT_TRUE(std::find(expectedErrors.begin(), expectedErrors.end(), e.error_code().value()) != expectedErrors.end())
@@ -183,7 +181,7 @@ TEST_F(DownloadTests, SimpleDownloadTest_With404UrlAndMalformedPath)
     catch (const msdod::exception& e)
     {
 #if defined(DO_INTERFACE_COM)
-        constexpr auto c_invalidDeviceName = (int)0x8007007b;
+        constexpr auto c_invalidDeviceName = static_cast<int>(0x8007007b);
         std::array<int, 3> expectedErrors{ E_ACCESSDENIED, HTTP_E_STATUS_NOT_FOUND, c_invalidDeviceName };
         // DO returns different errors on dev machine and pipeline agents (Win10/Win11?)
         ASSERT_TRUE(std::find(expectedErrors.begin(), expectedErrors.end(), e.error_code().value()) != expectedErrors.end())
@@ -553,7 +551,45 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName3)), g_smallFileSizeBytes);
 }
 
+TEST_F(DownloadTests, FileDeletionAfterPause)
+{
+    auto largeDownload = msdot::download::make(g_largeFileUrl, g_tmpFileName2);
+    auto cleanup = dotest::util::scope_exit([&largeDownload]()
+        {
+            std::cout << "Aborting download\n";
+            largeDownload->abort();
+        });
+
+    largeDownload->start();
+    std::this_thread::sleep_for(2s);
+    largeDownload->pause();
+    auto status = largeDownload->get_status();
+    ASSERT_EQ(status.state(), msdo::download_state::paused) << "Download is paused";
+
+    boost::filesystem::remove(g_tmpFileName2);
+    ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName2)) << "Output file deleted";
+
+#if defined(DO_CLIENT_AGENT)
+    try
+    {
+        largeDownload->resume();
+        ASSERT_TRUE(false) << "Expected resume() to throw";
+    }
+    catch (const msdod::exception& ex)
+    {
+        ASSERT_EQ(ex.error_code().value(), DO_ERROR_FROM_SYSTEM_ERROR(ENOENT)) << "Resume failed due to missing output file";
+    }
+#else
+    TestHelpers::DeleteDoSvcTemporaryFiles(g_tmpFileName2);
+    largeDownload->resume();
+    TestHelpers::WaitForState(*largeDownload, msdo::download_state::paused);
+    status = largeDownload->get_status();
+    ASSERT_EQ(status.error_code().value(), static_cast<int>(0x80070002));
+#endif
+}
+
 #if defined(DO_INTERFACE_REST)
+
 TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunning)
 {
     TestHelpers::StopService("deliveryoptimization-agent.service");
@@ -619,5 +655,4 @@ TEST_F(DownloadTests, MultipleRestPortFileExists_Download)
     ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
 }
 
-
-#endif // Linux
+#endif // DO_INTERFACE_REST

@@ -12,10 +12,10 @@
 #include "do_download.h"
 #include "do_download_status.h"
 #include "do_error_helpers.h"
+#include "do_test_helpers.h"
 
 namespace msdo = microsoft::deliveryoptimization;
 namespace msdod = microsoft::deliveryoptimization::details;
-using namespace std::chrono_literals; // NOLINT(build/namespaces)
 
 namespace microsoft
 {
@@ -145,20 +145,51 @@ public:
         }
     }
 
+    // DoSvc creates temporary files with a unique name in the same directory as the output file
+    static void DeleteDoSvcTemporaryFiles(const boost::filesystem::path& outputFilePath)
+    {
+        const boost::filesystem::path parentDir = outputFilePath.parent_path();
+        for (boost::filesystem::directory_iterator itr(parentDir); itr != boost::filesystem::directory_iterator(); ++itr)
+        {
+            const boost::filesystem::directory_entry& dirEntry = *itr;
+            // Remove all files with names that match DO*.tmp
+            if (boost::filesystem::is_regular_file(dirEntry)
+                && (dirEntry.path().filename().string().find("DO") == 0)
+                && (dirEntry.path().extension() == ".tmp"))
+            {
+                boost::system::error_code ec;
+                boost::filesystem::remove(dirEntry, ec);
+                if (ec)
+                {
+                    std::cout << "Temp file deletion error: " << ec.message() << ", " << dirEntry.path() << '\n';
+                }
+                else
+                {
+                    std::cout << "Deleted DoSvc temp file: " << dirEntry.path() << '\n';
+                }
+            }
+        }
+    }
+
     // On Windows, operations are async - there may be some delay setting a state internally
     static void WaitForState(microsoft::deliveryoptimization::test::download& download, msdo::download_state expectedState,
-        std::chrono::seconds waitTimeSecs = 10s)
+        std::chrono::seconds waitTimeSecs = std::chrono::seconds{10})
     {
         msdo::download_status status = download.get_status();
         const auto endtime = std::chrono::steady_clock::now() + waitTimeSecs;
         while ((status.state() != expectedState) && (std::chrono::steady_clock::now() < endtime))
         {
-            std::this_thread::sleep_for(1s);
+            std::this_thread::sleep_for(std::chrono::seconds{1});
             status = download.get_status();
             std::cout << "Transferred " << status.bytes_transferred() << " / " << status.bytes_total() << "\n";
         }
 
-        ASSERT_EQ(status.state(), expectedState) << "Download must have reached expected state before timeout";
+        if (status.state() != expectedState)
+        {
+            // Throw exception instead of ASSERT* to let tests catch if needed
+            const auto msg = dotest::util::FormatString("State: expected = %d, actual = %d", expectedState, status.state());
+            throw std::runtime_error(msg);
+        }
     }
 
 #ifdef DO_INTERFACE_REST

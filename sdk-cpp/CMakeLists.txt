@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-project (deliveryoptimization_sdk VERSION 0.7.0)
+project (deliveryoptimization_sdk VERSION 1.0.0)
 
 if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
     message("DO configured to use shared Boost libraries")
@@ -123,6 +123,10 @@ target_compile_definitions(${DO_SDK_LIB_NAME}
 )
 if (DO_DEV_DEBUG)
     target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE DO_DEV_DEBUG)
+endif ()
+if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
+    # TODO(shishirb) Remove internal use of exceptions on these platforms
+    target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE DO_ENABLE_EXCEPTIONS)
 endif ()
 add_platform_interface_definitions(${DO_SDK_LIB_NAME})
 

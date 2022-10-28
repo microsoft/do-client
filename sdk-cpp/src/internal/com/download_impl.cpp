@@ -205,7 +205,7 @@ public:
         return S_OK;
     }
 
-    IFACEMETHODIMP OnStatusChange(IDODownload* download, const DO_DOWNLOAD_STATUS* comStatus) noexcept
+    IFACEMETHODIMP OnStatusChange(IDODownload*, const DO_DOWNLOAD_STATUS* comStatus) noexcept override
     {
         msdo::download_status status = ConvertFromComStatus(*comStatus);
         _callback(*_download, status);

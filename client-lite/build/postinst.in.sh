@@ -14,15 +14,17 @@ svc_bin_path=@docs_svc_bin_path@
 # Exit early to fail the install if any command here fails
 set -e
 
-echo "Running post-install script for $svc_name"
+echo "**** Running post-install script for $svc_name, args: $1 $2 ****"
 
-if [ ! -f $svc_bin_path ]; then echo "docs binary cannot be found"; exit 1; fi
+if [ ! -f $svc_bin_path ]; then echo "Agent binary cannot be found at $svc_bin_path"; exit 1; fi
 
 if ! getent group $do_group_name > /dev/null; then
+    echo "Creating group '$do_group_name'"
     addgroup --system $do_group_name
 fi
 
 if ! getent passwd $do_user_name > /dev/null; then
+    echo "Creating user '$do_user_name'"
     adduser --system $do_user_name --ingroup $do_group_name --shell /bin/false
 fi
 
@@ -41,11 +43,11 @@ done
 configure_dir() {
     local dir_path="$1"
     echo "Configuring dir: $dir_path"
-    if [ ! -d $dir_path ]; then
-        mkdir $dir_path
+    if [ ! -d "$dir_path" ]; then
+        mkdir "$dir_path"
     fi
-    chgrp -R $do_group_name $dir_path
-    chown $do_user_name $dir_path
+    chgrp -R $do_group_name "$dir_path"
+    chown $do_user_name "$dir_path"
 }
 
 configure_dir "$config_path"
@@ -72,6 +74,8 @@ echo "Service bin located at: $svc_bin_path"
 echo "Reloading systemd daemon list and enabling $svc_name"
 systemctl daemon-reload
 systemctl enable $svc_name
+# Installed/upgraded daemon; remove from the failed services list. No-op if never failed earlier.
+systemctl reset-failed $svc_name
 systemctl stop $svc_name > /dev/null # stop if already running
 systemctl start $svc_name
-echo "Done!"
+echo "**** Done! ****"

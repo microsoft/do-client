@@ -8,7 +8,7 @@ parameters:
   type: string
 - name: vcpkgDir
   type: string
-  default: $(Agent.TempDirectory)\deliveryoptimization_tools
+  default: $(Agent.TempDirectory)\deliveryoptimization_tools\vcpkg
 - name: dependencyScriptsLocation
   type: string 
   default: $(Build.SourcesDirectory)/build/scripts
@@ -17,12 +17,32 @@ parameters:
   default: false
 
 steps:
+- task: PowerShell@2
+  displayName: 'Find or install vcpkg'
+  inputs:
+    targetType: 'inline'
+    script: |
+      if (Test-Path "$env:VCPKG_ROOT\vcpkg.exe")
+      {
+          # Must be a version of pipeline agent that has vcpkg pre-installed
+          Write-Host "Found existing vcpkg in $env:VCPKG_ROOT"
+      }
+      else
+      {
+          $vcpkgInstallDir = ${{parameters.vcpkgDir}}
+          Write-Host "Installing vcpkg to $vcpkgInstallDir"
+          git clone https://github.com/microsoft/vcpkg $vcpkgInstallDir
+          # Build pipeline agents usually have both these defined
+          Write-Host "##vso[task.setvariable variable=VCPKG_ROOT;isoutput=true;isreadonly=true;]$vcpkgInstallDir"
+          Write-Host "##vso[task.setvariable variable=VCPKG_INSTALLATION_ROOT;isoutput=true;isreadonly=true;]$vcpkgInstallDir"
+      }
+
 # Key input is hashed to compute the cache key so when the contents of install-vcpkg-deps.ps1 changes, a new key will be generated
 # This way, anytime we modify dependencies from install-vcpkg-deps.ps1 script, we don't retrieve from the old cache
 - task: Cache@2
   inputs:
     key: '${{parameters.dependencyScriptsLocation}}/install-vcpkg-deps.ps1 | "${{parameters.targetOsArch}}"'
-    path: ${{parameters.vcpkgDir}}
+    path: $(VCPKG_ROOT)
     cacheHitVar: CACHE_RESTORED
 
 - task: PowerShell@2
@@ -30,14 +50,14 @@ steps:
   inputs:
     targetType: 'filePath'
     filePath: ${{parameters.dependencyScriptsLocation}}\install-vcpkg-deps.ps1
-    arguments: ${{parameters.vcpkgDir}}
+    arguments: $(VCPKG_ROOT)
   displayName: 'Install vcpkg dependencies'
 
 - task: PythonScript@0
   inputs:
     scriptSource: 'filePath'
     scriptPath: 'build/build.py'
-    arguments: '--project sdk --config ${{parameters.config}} --vcpkgdir ${{parameters.vcpkgDir}}\vcpkg --clean'
+    arguments: '--project sdk --config ${{parameters.config}} --vcpkgdir $(VCPKG_ROOT) --clean'
   displayName: 'Build sdk-cpp ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: CmdLine@2

@@ -27,5 +27,5 @@ public:
     virtual ~IHttpAgentEvents() = default;
     virtual HRESULT OnHeadersAvailable() = 0;
     virtual HRESULT OnData(_In_reads_bytes_(cbData) BYTE* pData, UINT cbData) = 0;
-    virtual HRESULT OnComplete(HRESULT hResult) = 0;
+    virtual HRESULT OnComplete(HRESULT hrRequest, HRESULT hrCallback) = 0;
 };

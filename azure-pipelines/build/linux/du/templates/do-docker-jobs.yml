@@ -2,7 +2,7 @@
 # Consume this jobs template in a pipeline yaml by passing in parameter values.
 
 parameters:
-- name: targetOsArch    # example: debian9_arm32
+- name: targetOsArch    # example: ubuntu2004_arm64
   type: string
 - name: imageVersion
   type: string

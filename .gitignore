@@ -55,3 +55,4 @@ CTestTestfile.cmake
 _deps
 *_CPack_Packages/
 *.deb
+out/

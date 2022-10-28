@@ -15,7 +15,7 @@ public:
     void RefreshAdminConfigs();
 
     boost::optional<std::chrono::seconds> CacheHostFallbackDelay();
-    std::string CacheHostServer();
+    boost::optional<std::string> CacheHostServer();
     std::string IoTConnectionString();
     bool RestControllerValidateRemoteAddr();
 
