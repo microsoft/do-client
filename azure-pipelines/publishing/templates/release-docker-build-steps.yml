@@ -2,7 +2,7 @@
 # Consume this steps template in one or more jobs by passing in parameter values.
 
 parameters:
-- name: targetOsArch        # example: debian9_arm32
+- name: targetOsArch        # example: ubuntu2004_arm64
   type: string
 - name: imageVersion
   type: string
@@ -60,14 +60,14 @@ jobs:
     displayName: 'Copy plugin .deb file'
 
   - task: DeleteFiles@1
-    inputs: 
+    inputs:
       SourceFolder: $(Build.ArtifactStagingDirectory)
       Contents: |
         **/*
     displayName: 'Clean build folder before creating tar file folder'
 
   - task: ArchiveFiles@2
-    inputs: 
+    inputs:
       rootFolderOrFile: /tmp/${{parameters.targetOsArch}}
       includeRootFolder: False
       archiveType: tar

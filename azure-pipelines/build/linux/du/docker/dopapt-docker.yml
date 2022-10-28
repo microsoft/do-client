@@ -27,12 +27,6 @@ pool:
 jobs:
 - template: ../templates/do-docker-jobs.yml
   parameters:
-    targetOsArch: 'debian9_arm32'
-    imageVersion: '0.8.0' #hard coded version because debian9 support will soon be removed
-    stepsTemplate: 'dopapt-docker-steps.yml'
-
-- template: ../templates/do-docker-jobs.yml
-  parameters:
     targetOsArch: 'debian10_arm32'
     imageVersion: ${{variables.containerImageVersion}}
     stepsTemplate: 'dopapt-docker-steps.yml'
