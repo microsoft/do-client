@@ -10,7 +10,7 @@ parameters:
   type: string
   default: $(Agent.TempDirectory)\deliveryoptimization_tools\vcpkg
 - name: dependencyScriptsLocation
-  type: string 
+  type: string
   default: $(Build.SourcesDirectory)/build/scripts
 - name: skipTests
   type: boolean
@@ -29,7 +29,7 @@ steps:
       }
       else
       {
-          $vcpkgInstallDir = ${{parameters.vcpkgDir}}
+          $vcpkgInstallDir = "${{parameters.vcpkgDir}}"
           Write-Host "Installing vcpkg to $vcpkgInstallDir"
           git clone https://github.com/microsoft/vcpkg $vcpkgInstallDir
           # Build pipeline agents usually have both these defined
