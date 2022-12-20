@@ -22,7 +22,7 @@ function usage {
     cat <<EOM
 $(basename $0) - Script to setup development environments for Delivery Optimization
 Usage: $(basename $0) --platform <platform to install for> --install <install command>
-    --platform          # Platform to provision, supported platforms: ubuntu1804, ubuntu2004, debian9, debian 10, osx. Required
+    --platform          # Platform to provision, supported platforms: ubuntu1804, ubuntu2004, debian 10, osx. Required
     --install           # Which command to run, supported commands: build, developertools, containertools, qemu, all. Default is all
 EOM
     exit 1
@@ -39,7 +39,7 @@ function parseArgs {
             ;;
         --platform | -p)
             PLATFORM="${2,,}"
-            if [[ "$PLATFORM" == "debian9" || "$PLATFORM" == "debian10" || "$PLATFORM" == "ubuntu1804" || "$PLATFORM" == "ubuntu2004" || "$PLATFORM" == "osx" ]];
+            if [[ "$PLATFORM" == "debian10" || "$PLATFORM" == "ubuntu1804" || "$PLATFORM" == "ubuntu2004" || "$PLATFORM" == "osx" ]];
             then
                 echo -e "[INFO] Platform set to: ${PLATFORM}"
             else
@@ -86,21 +86,7 @@ function installBuildDependencies
 
         apt-get install -y make build-essential g++ gdb gdbserver gcc git wget
         apt-get install -y python3 ninja-build
-
-        if [[ "$PLATFORM" == "debian9" ]];
-        then
-            # libmsgsl-dev package not available on Debian9. Install from source.
-            cd /tmp/
-            git clone https://github.com/Microsoft/GSL.git
-            cd GSL/
-            git checkout tags/v2.0.0
-            cmake -DGSL_TEST=OFF .
-            make
-            make install
-        else
-            apt-get -y install cmake libmsgsl-dev
-        fi
-
+        apt-get install -y cmake libmsgsl-dev
         apt-get install -y libboost-system-dev libboost-filesystem-dev libboost-program-options-dev
         apt-get install -y libproxy-dev libssl-dev uuid-dev libcurl4-openssl-dev
 
@@ -196,7 +182,7 @@ function installAll
 
 function isSupportedLinux()
 {
-    if [[ "$PLATFORM" == "debian9" || "$PLATFORM" == "debian10" || "$PLATFORM" == "ubuntu1804" || "$PLATFORM" == "ubuntu2004" ]];
+    if [[ "$PLATFORM" == "debian10" || "$PLATFORM" == "ubuntu1804" || "$PLATFORM" == "ubuntu2004" ]];
     then
         return 0
     else
