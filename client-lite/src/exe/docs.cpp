@@ -139,8 +139,11 @@ HRESULT Run() try
 
     RestPortAdvertiser portAdvertiser(controller.Port());
     DoLogInfo("Port number written to %s", portAdvertiser.OutFilePath().data());
+    
+    #ifndef UBUNTU_CORE_SNAP_ONLY
+        DropPermissions();
+    #endif
 
-    DropPermissions();
 
     DOLog::Init(docli::GetLogDirectory(), DOLog::Level::Verbose);
 

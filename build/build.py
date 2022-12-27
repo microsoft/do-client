@@ -83,6 +83,10 @@ class ArgParserBase(object):
             '--build-directory', dest='build_directory', type=str,
             help='Override default build output directory'
         )
+        self.parser.add_argument(
+            '--ubuntu-core-snap-only', dest='ubuntu_core_snap_only', action='store_true',
+            help='Only build components and features those required for the Ubuntu Core snap'
+        )
 
     def parse(self):
         return self.parser.parse_args()
@@ -412,6 +416,7 @@ class LinuxBuildRunner(BuildRunnerBase):
             self.package_type = self.script_args.package_type.lower()
 
         self.static_analysis = self.script_args.static_analysis
+        self.ubuntu_core_snap_only = self.script_args.ubuntu_core_snap_only
 
     @property
     def platform(self):
@@ -435,6 +440,9 @@ class LinuxBuildRunner(BuildRunnerBase):
 
         if self.static_analysis:
             generate_options.extend(["-DCMAKE_CXX_CPPLINT=cpplint"])
+
+        if self.ubuntu_core_snap_only:
+            generate_options.extend(["-DUBUNTU_CORE_SNAP_ONLY=1"])
 
         return generate_options
 
