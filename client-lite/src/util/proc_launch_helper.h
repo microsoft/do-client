@@ -62,7 +62,9 @@ inline void InitializePath(const std::string& path, mode_t mode = 0) try
 
         if (mode != 0)
         {
+#ifndef DO_BUILD_FOR_SNAP
             SetDOPathPermissions(path, mode);
+#endif
         }
     }
 } CATCH_LOG()

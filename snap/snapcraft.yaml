@@ -17,6 +17,11 @@ confinement: devmode # use 'strict' once you have the right plugs and slots
 #                  https://snapcraft.io/docs/parts-lifecycle
 # plugin - Specifies a plugin required for building the part.
 #
+# slot   - Specifies a code section to be shared with other snaps using Content Interface. [PROVIDER]
+#              See https://snapcraft.io/docs/content-interface
+# plug   - Specifies a target folder to access the files shared by the provider (or providers). [CONSUMER]
+#              See https://snapcraft.io/docs/content-interface
+#
 ####
 
 parts:
@@ -30,7 +35,7 @@ parts:
     plugin: python
     source: .
     override-build: |
-      python3 ./build/build.py --project agent --ubuntu-core-snap-only
+      python3 ./build/build.py --project agent --build-for-snap
       mkdir -p ../install/bin
       cp /tmp/build-deliveryoptimization-agent/linux-debug/client-lite/deliveryoptimization-agent ../install/bin/deliveryoptimization-agent
 
@@ -73,9 +78,9 @@ slots:
   port-number:
     interface: content
     content: port-number
-    read: [ $SNAP_DATA/var/run/deliveryoptimization-agent/restport ]
+    read: [ $SNAP_DATA/var/run/deliveryoptimization-agent ]
 
   config-file:
     interface: content
     content: config-file
-    read: [ $SNAP_DATA/etc/deliveryoptimization-agent/sdk-config.json ]
+    write: [ $SNAP_DATA/etc/deliveryoptimization-agent/sdk-config.json ]
