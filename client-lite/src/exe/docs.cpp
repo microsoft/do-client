@@ -139,8 +139,11 @@ HRESULT Run() try
 
     RestPortAdvertiser portAdvertiser(controller.Port());
     DoLogInfo("Port number written to %s", portAdvertiser.OutFilePath().data());
-
+    
+#ifndef DO_BUILD_FOR_SNAP
     DropPermissions();
+#endif
+
 
     DOLog::Init(docli::GetLogDirectory(), DOLog::Level::Verbose);
 

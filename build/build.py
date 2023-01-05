@@ -94,6 +94,10 @@ class LinuxArgParser(ArgParserBase):
             '--package-for', dest='package_type', type=str,
             help='Supply package type. e.g. deb, or rpm'
         )
+        self.parser.add_argument(
+            '--build-for-snap', dest='build_for_snap', action='store_true',
+            help='Only build components and features those required for the Ubuntu Core snap'
+        )
 
         '''Agent only'''
         self.parser.add_argument(
@@ -412,6 +416,7 @@ class LinuxBuildRunner(BuildRunnerBase):
             self.package_type = self.script_args.package_type.lower()
 
         self.static_analysis = self.script_args.static_analysis
+        self.build_for_snap = self.script_args.build_for_snap
 
     @property
     def platform(self):
@@ -435,6 +440,9 @@ class LinuxBuildRunner(BuildRunnerBase):
 
         if self.static_analysis:
             generate_options.extend(["-DCMAKE_CXX_CPPLINT=cpplint"])
+
+        if self.build_for_snap:
+            generate_options.extend(["-DDO_BUILD_FOR_SNAP=1"])
 
         return generate_options
 

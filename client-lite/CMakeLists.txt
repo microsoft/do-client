@@ -99,6 +99,9 @@ if (DO_PROXY_SUPPORT)
     target_compile_definitions(docs_common PRIVATE DO_PROXY_SUPPORT)
     target_link_libraries(docs_common PUBLIC libproxy::proxy)
 endif ()
+if (DO_BUILD_FOR_SNAP)
+    target_compile_definitions(docs_common PUBLIC DO_BUILD_FOR_SNAP)
+endif ()
 
 target_link_dl_lib(docs_common)
 

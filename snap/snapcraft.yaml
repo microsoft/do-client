@@ -1,0 +1,86 @@
+name: deliveryoptimization-client
+base: core20 # the base snap is the execution environment for this snap
+version: '0.1'
+summary: Ubuntu Core 20.04 DO
+description: |
+  A proof-of-concept for the Delivery Optimization Client Ubuntu Core snap.
+
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: devmode # use 'strict' once you have the right plugs and slots
+
+#####
+#
+# Keywords
+#
+# after  - Specifies part's dependencies.
+#              See https://snapcraft.io/docs/parts-lifecycle#heading--step-dependencies
+#                  https://snapcraft.io/docs/parts-lifecycle
+# plugin - Specifies a plugin required for building the part.
+#
+# slot   - Specifies a code section to be shared with other snaps using Content Interface. [PROVIDER]
+#              See https://snapcraft.io/docs/content-interface
+# plug   - Specifies a target folder to access the files shared by the provider (or providers). [CONSUMER]
+#              See https://snapcraft.io/docs/content-interface
+#
+####
+
+parts:
+  installdeps:
+    plugin: nil
+    source: .
+    override-build: |
+      ./build/scripts/bootstrap.sh --platform ubuntu2004 --install build
+
+  agent:
+    plugin: python
+    source: .
+    override-build: |
+      python3 ./build/build.py --project agent --build-for-snap
+      mkdir -p ../install/bin
+      cp /tmp/build-deliveryoptimization-agent/linux-debug/client-lite/deliveryoptimization-agent ../install/bin/deliveryoptimization-agent
+
+    after:
+      - installdeps
+
+    stage-packages:
+      - libasn1-8-heimdal
+      - libboost-filesystem1.71.0
+      - libbrotli1
+      - libcurl4
+      - libgssapi3-heimdal
+      - libhcrypto4-heimdal
+      - libheimbase1-heimdal
+      - libheimntlm0-heimdal
+      - libhx509-5-heimdal
+      - libkrb5-26-heimdal
+      - libldap-2.4-2
+      - libnghttp2-14
+      - libproxy1v5
+      - libpsl5
+      - libroken18-heimdal
+      - librtmp1
+      - libsasl2-2
+      - libssh-4
+      - libwind0-heimdal
+
+apps:
+  deliveryoptimization-client:
+    command: bin/deliveryoptimization-agent
+    daemon: simple
+    refresh-mode: restart
+    restart-condition: always
+    restart-delay: 10s
+    plugs:
+      - network
+      - network-bind
+
+slots:
+  port-number:
+    interface: content
+    content: port-number
+    read: [ $SNAP_DATA/var/run/deliveryoptimization-agent ]
+
+  config-file:
+    interface: content
+    content: config-file
+    write: [ $SNAP_DATA/etc/deliveryoptimization-agent/sdk-config.json ]
