@@ -15,7 +15,7 @@ option (DO_INCLUDE_PLUGINS "Build subproject plugins" OFF)
 option (DO_INCLUDE_SDK "Build subproject sdk-cpp" OFF)
 
 option (DO_BUILD_TESTS "Set DO_BUILD_TESTS to OFF to skip building tests." ON)
-option (DO_BUILD_FOR_SNAP "Enable DO Snap build option" ON)
+option (DO_BUILD_FOR_SNAP "Enable DO Snap build option" OFF)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
