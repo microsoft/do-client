@@ -35,9 +35,12 @@ parts:
     plugin: python
     source: .
     override-build: |
+      python3 ./build/build.py --project sdk
       python3 ./build/build.py --project agent --build-for-snap
       mkdir -p ../install/bin
+      mkdir -p ../install/lib
       cp /tmp/build-deliveryoptimization-agent/linux-debug/client-lite/deliveryoptimization-agent ../install/bin/deliveryoptimization-agent
+      cp /tmp/build-deliveryoptimization-sdk/linux-debug/sdk-cpp/libdeliveryoptimization.so ../install/lib
 
     after:
       - installdeps
