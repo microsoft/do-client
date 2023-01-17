@@ -10,7 +10,7 @@ parameters:
   type: string
   default: $(Agent.TempDirectory)\deliveryoptimization_tools\vcpkg
 - name: dependencyScriptsLocation
-  type: string 
+  type: string
   default: $(Build.SourcesDirectory)/build/scripts
 - name: skipTests
   type: boolean
@@ -22,18 +22,17 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      if (Test-Path "$env:VCPKG_ROOT\vcpkg.exe")
+      if (Test-Path "$env:VCPKG_INSTALLATION_ROOT\vcpkg.exe")
       {
           # Must be a version of pipeline agent that has vcpkg pre-installed
-          Write-Host "Found existing vcpkg in $env:VCPKG_ROOT"
+          Write-Host "Found existing vcpkg in $env:VCPKG_INSTALLATION_ROOT"
       }
       else
       {
-          $vcpkgInstallDir = ${{parameters.vcpkgDir}}
+          $vcpkgInstallDir = "${{parameters.vcpkgDir}}"
           Write-Host "Installing vcpkg to $vcpkgInstallDir"
           git clone https://github.com/microsoft/vcpkg $vcpkgInstallDir
           # Build pipeline agents usually have both these defined
-          Write-Host "##vso[task.setvariable variable=VCPKG_ROOT;isoutput=true;isreadonly=true;]$vcpkgInstallDir"
           Write-Host "##vso[task.setvariable variable=VCPKG_INSTALLATION_ROOT;isoutput=true;isreadonly=true;]$vcpkgInstallDir"
       }
 
@@ -42,7 +41,7 @@ steps:
 - task: Cache@2
   inputs:
     key: '${{parameters.dependencyScriptsLocation}}/install-vcpkg-deps.ps1 | "${{parameters.targetOsArch}}"'
-    path: $(VCPKG_ROOT)
+    path: $(VCPKG_INSTALLATION_ROOT)
     cacheHitVar: CACHE_RESTORED
 
 - task: PowerShell@2
@@ -50,14 +49,13 @@ steps:
   inputs:
     targetType: 'filePath'
     filePath: ${{parameters.dependencyScriptsLocation}}\install-vcpkg-deps.ps1
-    arguments: $(VCPKG_ROOT)
   displayName: 'Install vcpkg dependencies'
 
 - task: PythonScript@0
   inputs:
     scriptSource: 'filePath'
     scriptPath: 'build/build.py'
-    arguments: '--project sdk --config ${{parameters.config}} --vcpkgdir $(VCPKG_ROOT) --clean'
+    arguments: '--project sdk --config ${{parameters.config}} --vcpkgdir $(VCPKG_INSTALLATION_ROOT) --clean'
   displayName: 'Build sdk-cpp ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: CmdLine@2

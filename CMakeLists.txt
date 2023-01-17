@@ -77,6 +77,13 @@ if (DO_PLATFORM_LINUX)
 
     # relro+now thwarts some attack vectors by reordering some ELF data structures and also by making the GOT read-only
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie -z relro -z now")
+
+    # Depending on the ordering in PATH environment variable (observed on Ubuntu2004), cmake might search
+    # /lib instead of /usr/lib which causes Boost::headers to get the non-existent "/include" path.
+    # (Enable --trace-expand in cmake and look at lines from boost_headers-config.cmake and its callers.)
+    # Workaround: force cmake to look in "/usr" since the /lib and /bin paths are either
+    # not relevant for our usage or they are symlinks to /usr/lib and /usr/bin.
+    set(CMAKE_PREFIX_PATH "/usr")
 endif (DO_PLATFORM_LINUX)
 
 if (DO_PLATFORM_WINDOWS AND DO_INCLUDE_SDK)
