@@ -83,7 +83,9 @@ if (DO_PLATFORM_LINUX)
     # (Enable --trace-expand in cmake and look at lines from boost_headers-config.cmake and its callers.)
     # Workaround: force cmake to look in "/usr" since the /lib and /bin paths are either
     # not relevant for our usage or they are symlinks to /usr/lib and /usr/bin.
-    # set(CMAKE_PREFIX_PATH "/usr")
+    if (NOT CMAKE_PREFIX_PATH)
+        set(CMAKE_PREFIX_PATH "/usr")
+    endif () 
 endif (DO_PLATFORM_LINUX)
 
 if (DO_PLATFORM_WINDOWS AND DO_INCLUDE_SDK)
