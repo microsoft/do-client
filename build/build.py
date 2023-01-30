@@ -98,6 +98,10 @@ class LinuxArgParser(ArgParserBase):
             '--build-for-snap', dest='build_for_snap', action='store_true',
             help='Only build components and features those required for the Ubuntu Core snap'
         )
+        self.parser.add_argument(
+            '--search-prefix', dest='search_prefix', type=str,
+            help='search prefix to pass to CMake'
+        )
 
         '''Agent only'''
         self.parser.add_argument(
@@ -417,6 +421,7 @@ class LinuxBuildRunner(BuildRunnerBase):
 
         self.static_analysis = self.script_args.static_analysis
         self.build_for_snap = self.script_args.build_for_snap
+        self.search_prefix = self.script_args.search_prefix
 
     @property
     def platform(self):
@@ -443,6 +448,9 @@ class LinuxBuildRunner(BuildRunnerBase):
 
         if self.build_for_snap:
             generate_options.extend(["-DDO_BUILD_FOR_SNAP=1"])
+
+        if self.search_prefix:
+            generate_options.extend(["-DCMAKE_PREFIX_PATH={}".format(self.search_prefix)])
 
         return generate_options
 
