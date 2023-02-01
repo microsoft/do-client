@@ -30,7 +30,6 @@ download::~download() = default;
 std::error_code download::make(const std::string& uri, const std::string& downloadFilePath, std::unique_ptr<download>& out) noexcept
 {
     out.reset();
-    // using 'new' to access non-public constructor
     std::unique_ptr<download> tmp(new download());
     tmp->_download = std::make_shared<msdod::CDownloadImpl>();
     std::error_code code = tmp->_download->Init(uri, downloadFilePath);
@@ -67,6 +66,11 @@ std::error_code download::abort() noexcept
 std::error_code download::get_status(download_status& status) noexcept
 {
     return _download->GetStatus(status);
+}
+
+std::error_code download::set_status_callback(status_callback_t callback) noexcept
+{
+    return _download->SetStatusCallback(callback, *this);
 }
 
 std::error_code download::start_and_wait_until_completion(std::chrono::seconds timeOut) noexcept
@@ -157,18 +161,8 @@ static std::error_code g_TryOverrideDownlevelOsSetPropertyError(download_propert
 
 std::error_code download::set_property(download_property prop, const download_property_value& val) noexcept
 {
-    if (prop == download_property::callback_interface)
-    {
-        download_property_value::status_callback_t userCallback;
-        DO_RETURN_IF_FAILED(val.as(userCallback));
-
-        return _download->SetCallback(userCallback, *this);
-    }
-    else
-    {
-        auto ec = _download->SetProperty(prop, val);
-        return g_TryOverrideDownlevelOsSetPropertyError(prop, ec);
-    }
+    auto ec = _download->SetProperty(prop, val);
+    return g_TryOverrideDownlevelOsSetPropertyError(prop, ec);
 }
 
 std::error_code download::get_property(download_property prop, download_property_value& val) noexcept

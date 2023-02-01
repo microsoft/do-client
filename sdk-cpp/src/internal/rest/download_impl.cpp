@@ -142,7 +142,7 @@ std::error_code CDownloadImpl::SetProperty(msdo::download_property key, const ms
     return make_error_code(msdo::errc::e_not_impl);
 }
 
-std::error_code CDownloadImpl::SetCallback(const download_property_value::status_callback_t& callback, download& download) noexcept
+std::error_code CDownloadImpl::SetStatusCallback(const status_callback_t& callback, download& download) noexcept
 {
     return make_error_code(msdo::errc::e_not_impl);
 }

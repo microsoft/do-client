@@ -34,6 +34,7 @@ public:
     std::error_code finalize() noexcept;
     std::error_code abort() noexcept;
     std::error_code get_status(download_status& status) noexcept;
+    std::error_code set_status_callback(status_callback_t callback) noexcept;
 
     std::error_code start_and_wait_until_completion(std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;
     std::error_code start_and_wait_until_completion(const std::atomic_bool& isCancelled, std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;
@@ -41,13 +42,46 @@ public:
     static std::error_code download_url_to_path(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;
 
     /*
-    For devices running windows before 20H1, dosvc exposed a now-deprecated com interface for setting certain download properties.
-    After 20H1, these properties were added to newer com interface, which this SDK is using.
-    Attempting to set a download property on a version of windows earlier than 20H1 will not set the property and throw an exception with
-    error code msdo::errc::do_e_unknown_property_id.
+    Certain properties are not supported on older versions of Windows, resulting in
+    msdo::errc::do_e_unknown_property_id from the following methods. See do_download_property.h.
     */
-    std::error_code set_property(download_property key, const download_property_value& value) noexcept;
-    std::error_code get_property(download_property key, download_property_value& value) noexcept;
+    std::error_code set_property(download_property prop, const download_property_value& value) noexcept;
+    std::error_code get_property(download_property prop, download_property_value& value) noexcept;
+
+    template <typename T>
+    std::error_code set_property(download_property prop, const T& value) noexcept
+    {
+        download_property_value propVal;
+        std::error_code ec = download_property_value::make(value, propVal);
+        if (!ec)
+        {
+            ec = set_property(prop, propVal);
+        }
+        return ec;
+    }
+
+    template <typename T>
+    std::error_code get_property(download_property prop, T& value) noexcept
+    {
+        value = {};
+        download_property_value propVal;
+        std::error_code ec = get_property(prop, propVal);
+        if (!ec)
+        {
+            ec = propVal.as(value);
+        }
+        return ec;
+    }
+
+    std::error_code set_cost_policy(download_cost_policy value) noexcept
+    {
+        return set_property(download_property::cost_policy, static_cast<uint32_t>(value));
+    }
+
+    std::error_code set_security_flags(download_security_flags value) noexcept
+    {
+        return set_property(download_property::security_flags, static_cast<uint32_t>(value));
+    }
 
 private:
     download();

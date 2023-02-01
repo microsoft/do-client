@@ -53,6 +53,16 @@ inline std::error_code make_error_code(errc e)
     return std::error_code(static_cast<int32_t>(e), do_category());
 }
 
+#ifndef FAILED
+#define FAILED(hr) (((int32_t)(hr)) < 0)
+#endif
+
+#ifndef RETURN_IF_FAILED
+#define RETURN_IF_FAILED(hr)  {     \
+    int32_t __hr = (hr);            \
+    if (FAILED(__hr)) return std::error_code(__hr, do_category()); }
+#endif
+
 #ifdef DO_ENABLE_EXCEPTIONS
 
 class exception : public std::exception

@@ -495,7 +495,7 @@ class WindowsBuildRunner(BuildRunnerBase):
     def generator(self):
         # No need to specify architecture here as the default target platform name (architecture) is that of the host and is provided in the CMAKE_VS_PLATFORM_NAME_DEFAULT variable
         # https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2016%202019.html
-        return super().generator or 'Visual Studio 16 2019'
+        return super().generator or 'Visual Studio 17 2022'
 
     @property
     def generate_options(self):

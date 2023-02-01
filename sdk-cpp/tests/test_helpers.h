@@ -75,6 +75,11 @@ public:
         msdod::throw_if_fail(ec);
         return status;
     }
+    void set_status_callback(status_callback_t callback)
+    {
+        std::error_code ec = _downloadImpl->set_status_callback(callback);
+        msdod::throw_if_fail(ec);
+    }
 
     void start_and_wait_until_completion(std::chrono::seconds timeoutSecs = std::chrono::hours(24))
     {
@@ -100,22 +105,17 @@ public:
         msdod::throw_if_fail(ec);
     }
 
-    /*
-    For devices running windows before 20H1, dosvc exposed a now-deprecated com interface for setting certain download properties.
-    After 20H1, these properties were added to newer com interface, which this SDK is using.
-    Attempting to set a download property on a version of windows earlier than 20H1 will not set the property and throw an exception with error code msdo::errc::do_e_unknown_property_id
-    */
-    void set_property(msdo::download_property key, const msdo::download_property_value& value)
+    template <typename T>
+    void set_property(msdo::download_property key, const T& value)
     {
         std::error_code ec = _downloadImpl->set_property(key, value);
         msdod::throw_if_fail(ec);
     }
-    msdo::download_property_value get_property(msdo::download_property key)
+    template <typename T>
+    void get_property(msdo::download_property key, T& value)
     {
-        msdo::download_property_value propValue;
-        std::error_code ec = _downloadImpl->get_property(key, propValue);
+        std::error_code ec = _downloadImpl->get_property(key, value);
         msdod::throw_if_fail(ec);
-        return propValue;
     }
 
 private:
