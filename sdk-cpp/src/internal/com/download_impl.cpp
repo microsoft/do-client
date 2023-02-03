@@ -3,8 +3,6 @@
 
 #include "download_impl.h"
 
-#include <array>
-
 #include <wrl.h>
 #include <wrl/client.h>
 #include <wrl/implements.h>
@@ -116,6 +114,8 @@ std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& d
         RPC_C_AUTHZ_NONE, COLE_DEFAULT_PRINCIPAL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE,
         nullptr, EOAC_STATIC_CLOAKING));
 
+    _spDownload = std::move(spDownload);
+
     download_property_value propUri;
     download_property_value propDownloadFilePath;
     DO_RETURN_IF_FAILED(download_property_value::make(uri, propUri));
@@ -124,7 +124,6 @@ std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& d
     DO_RETURN_IF_FAILED(SetProperty(download_property::uri, propUri));
     DO_RETURN_IF_FAILED(SetProperty(download_property::download_file_path, propDownloadFilePath));
 
-    _spDownload = std::move(spDownload);
     return DO_OK;
 }
 
