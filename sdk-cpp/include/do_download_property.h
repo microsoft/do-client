@@ -85,7 +85,9 @@ public:
     ~download_property_value() = default;
 
     static std::error_code make(const std::string& val, download_property_value& out);
+    static std::error_code make(const std::wstring& val, download_property_value& out);
     static std::error_code make(const char* val, download_property_value& out) { return make(std::string(val), out); }
+    static std::error_code make(const wchar_t* val, download_property_value& out) { return make(std::wstring(val), out); }
     static std::error_code make(uint32_t val, download_property_value& out);
     static std::error_code make(uint64_t val, download_property_value& out);
     static std::error_code make(bool val, download_property_value& out);
@@ -94,12 +96,7 @@ public:
     std::error_code as(uint32_t& val) const noexcept;
     std::error_code as(uint64_t& val) const noexcept;
     std::error_code as(std::string& val) const noexcept;
-
-#if defined(DO_INTERFACE_COM)
-    static std::error_code make(const std::wstring& val, download_property_value& out);
-    static std::error_code make(const wchar_t* val, download_property_value& out) { return make(std::wstring(val), out); }
     std::error_code as(std::wstring& val) const noexcept;
-#endif
 
 private:
     std::shared_ptr<details::CDownloadPropertyValueInternal> _val;

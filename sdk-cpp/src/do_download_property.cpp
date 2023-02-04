@@ -28,6 +28,16 @@ std::error_code download_property_value::make(const std::string& val, download_p
     return DO_OK;
 }
 
+std::error_code download_property_value::make(const std::wstring& val, download_property_value& out)
+{
+    download_property_value temp;
+    std::error_code code = temp._val->Init(val);
+    DO_RETURN_IF_FAILED(code);
+
+    out = temp;
+    return DO_OK;
+}
+
 std::error_code download_property_value::make(uint32_t val, download_property_value& out)
 {
     download_property_value temp;
@@ -78,22 +88,10 @@ std::error_code download_property_value::as(std::string& val) const noexcept
     return _val->As(val);
 }
 
-#if defined(DO_INTERFACE_COM)
-std::error_code download_property_value::make(const std::wstring& val, download_property_value& out)
-{
-    download_property_value temp;
-    std::error_code code = temp._val->Init(val);
-    DO_RETURN_IF_FAILED(code);
-
-    out = temp;
-    return DO_OK;
-}
-
 std::error_code download_property_value::as(std::wstring& val) const noexcept
 {
     return _val->As(val);
 }
-#endif
 
 } // deliveryoptimization
 } // microsoft

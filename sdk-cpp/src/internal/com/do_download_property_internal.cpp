@@ -63,23 +63,13 @@ unique_variant::unique_variant(const VARIANT& other) noexcept :
 {
 }
 
-unique_variant::unique_variant(const unique_variant& other)
-{
-    HRESULT res = VariantCopy(this, &other);
-    assert(SUCCEEDED(res));
-    if (FAILED(res))
-    {
-        std::terminate();
-    }
-}
-
 unique_variant::unique_variant(unique_variant&& other) noexcept :
     VARIANT(other)
 {
     VariantInit(&other);
 }
 
-unique_variant& unique_variant::operator=(unique_variant&& other)
+unique_variant& unique_variant::operator=(unique_variant&& other) noexcept
 {
     VariantClear(this);
     VARIANT::operator=(other);
@@ -90,10 +80,6 @@ unique_variant& unique_variant::operator=(unique_variant&& other)
 unique_variant::~unique_variant()
 {
     VariantClear(this);
-}
-
-CDownloadPropertyValueInternal::CDownloadPropertyValueInternal()
-{
 }
 
 std::error_code CDownloadPropertyValueInternal::Init(const std::string& val) noexcept
@@ -135,31 +121,6 @@ std::error_code CDownloadPropertyValueInternal::Init(bool val) noexcept
     V_VT(&_var) = VT_BOOL;
     V_BOOL(&_var) = val ? VARIANT_TRUE : VARIANT_FALSE;
     return DO_OK;
-}
-
-CDownloadPropertyValueInternal::~CDownloadPropertyValueInternal()
-{
-}
-
-CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(const CDownloadPropertyValueInternal& rhs) :
-    _var(rhs._var)
-{
-}
-
-CDownloadPropertyValueInternal& CDownloadPropertyValueInternal::operator=(CDownloadPropertyValueInternal copy)
-{
-    swap(*this, copy);
-    return *this;
-}
-
-CDownloadPropertyValueInternal::CDownloadPropertyValueInternal(CDownloadPropertyValueInternal&& rhs) noexcept :
-    _var(std::move(rhs._var))
-{
-}
-
-const CDownloadPropertyValueInternal::native_type& CDownloadPropertyValueInternal::native_value() const noexcept
-{
-    return _var;
 }
 
 std::error_code CDownloadPropertyValueInternal::As(bool& val) const noexcept
