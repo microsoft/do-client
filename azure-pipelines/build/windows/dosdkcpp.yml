@@ -32,7 +32,7 @@ pr:
       - sdk-cpp/build/cleanup-install.sh
 
 pool:
-  vmImage: "windows-2019"
+  vmImage: "windows-2022"
 
 jobs:
 - job: Debug
