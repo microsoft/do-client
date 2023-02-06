@@ -102,7 +102,7 @@ This will handle installing to the appropriate paths, and also the necessary set
 > cd /tmp/build-deliveryoptimization-agent/linux-debug/
 > sudo apt-get install ./deliveryoptimization-agent*.deb
 > cd /tmp/build-deliveryoptimization-plugin-apt/linux-debug/
-> sudo apt get install ./deliveryoptimization-plugin-apt*.deb
+> sudo apt-get install ./deliveryoptimization-plugin-apt*.deb
 ```
 
 2. If you build and install using cmake, or through some other custom means, be sure to setup the DO user/groups correctly in your installation.
