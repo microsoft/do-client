@@ -14,7 +14,8 @@
 #if defined(DO_INTERFACE_COM)
 #include <wrl.h>
 
-#include "do.hpp" // Fwd declaration of IDODownload doesn't work well w/ all build systems
+// Future: delete the local copy of deliveryoptimization.h and require Windows SDK 22621+
+#include <deliveryoptimization.h> // IDODownload, etc.
 #endif
 
 namespace microsoft
@@ -37,16 +38,12 @@ public:
     std::error_code Abort() noexcept override;
 
     std::error_code GetStatus(download_status& status) noexcept override;
+    std::error_code SetStatusCallback(const status_callback_t& callback, download& download) noexcept override;
     std::error_code GetProperty(download_property key, download_property_value& value) noexcept override;
     std::error_code SetProperty(download_property key, const download_property_value& val) noexcept override;
-    std::error_code SetCallback(const download_property_value::status_callback_t& callback, download& download) noexcept override;
 
 private:
-
 #if defined(DO_INTERFACE_COM)
-    static std::error_code _SetPropertyHelper(IDODownload& download, download_property key, const download_property_value& val) noexcept;
-    std::error_code _GetPropertyHelper(download_property key, download_property_value& value) noexcept;
-
     Microsoft::WRL::ComPtr<IDODownload> _spDownload;
 #elif defined(DO_INTERFACE_REST)
     std::error_code _DownloadOperationCall(const std::string& type) noexcept;

@@ -5,6 +5,7 @@
 #define _DELIVERY_OPTIMIZATION_DO_DOWNLOAD_STATUS_H
 
 #include <cstdint>
+#include <functional>
 #include <system_error>
 
 #include "do_errors.h"
@@ -70,6 +71,9 @@ private:
     download_state  _state { download_state::created };
 
 };
+
+class download;
+using status_callback_t = std::function<void(download&, download_status&)>;
 
 } // namespace deliveryoptimization
 } // namespace microsoft
