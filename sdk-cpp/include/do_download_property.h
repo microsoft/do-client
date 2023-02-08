@@ -31,7 +31,7 @@ enum class download_property
     download_file_path,             // string
     http_custom_headers,            // string
     cost_policy,                    // uint32 (see download_cost_policy enum)
-    security_flags,                 // uint32 (see download_security_flags enum)
+    security_flags,                 // uint32
     callback_freq_percent,          // uint32
     callback_freq_seconds,          // uint32
     no_progress_timeout_seconds,    // uint32
@@ -63,17 +63,6 @@ enum class download_cost_policy : uint32_t
     standard,               // pause download if over or near data limit (background default)
     no_roaming,             // pause download if roaming
     no_surcharge,           // pause download if over data limit
-};
-
-// Values for download_property::security_flags
-enum class download_security_flags : uint32_t
-{
-    enable_ssl_revocation       = 0x0001, // WINHTTP_ENABLE_SSL_REVOCATION
-    ignore_unknown_ca           = 0x0100, // SECURITY_FLAG_IGNORE_UNKNOWN_CA
-    ignore_cert_wrong_usage     = 0x0200, // SECURITY_FLAG_IGNORE_CERT_WRONG_USAGE
-    ignore_cert_cn_invalid      = 0x1000, // SECURITY_FLAG_IGNORE_CERT_CN_INVALID
-    ignore_cert_date_invalid    = 0x2000, // SECURITY_FLAG_IGNORE_CERT_DATE_INVALID
-    ignore_all_cert_errors      = 0x3300, // SECURITY_FLAG_IGNORE_ALL_CERT_ERRORS
 };
 
 class download_property_value

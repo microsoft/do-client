@@ -78,11 +78,6 @@ public:
         return set_property(download_property::cost_policy, static_cast<uint32_t>(value));
     }
 
-    std::error_code set_security_flags(download_security_flags value) noexcept
-    {
-        return set_property(download_property::security_flags, static_cast<uint32_t>(value));
-    }
-
 private:
     download();
 
