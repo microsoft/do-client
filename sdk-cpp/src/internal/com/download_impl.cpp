@@ -104,7 +104,7 @@ private:
 };
 
 class DOStreamCallback :
-    public RuntimeClass<RuntimeClassFlags<RuntimeClassType::ClassicCom>, IStream>
+    public RuntimeClass<RuntimeClassFlags<RuntimeClassType::ClassicCom>, ChainInterfaces<IStream, ISequentialStream>>
 {
 public:
     HRESULT RuntimeClassInitialize(const msdo::output_stream_callback_t& callback)

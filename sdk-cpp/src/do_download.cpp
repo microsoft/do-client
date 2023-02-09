@@ -35,12 +35,9 @@ std::error_code download::make(const std::string& uri, std::unique_ptr<download>
 std::error_code download::make(const std::string& uri, const std::string& downloadFilePath, std::unique_ptr<download>& out) noexcept
 {
     out.reset();
-
     std::unique_ptr<download> tmp(new download());
-
     tmp->_download = std::make_shared<msdod::CDownloadImpl>();
     DO_RETURN_IF_FAILED(tmp->_download->Init(uri, downloadFilePath));
-
     out = std::move(tmp);
     return DO_OK;
 }
