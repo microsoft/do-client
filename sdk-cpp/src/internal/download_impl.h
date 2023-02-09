@@ -4,12 +4,7 @@
 #ifndef _DELIVERY_OPTIMIZATION_DOWNLOAD_IMPL_H
 #define _DELIVERY_OPTIMIZATION_DOWNLOAD_IMPL_H
 
-#include <string>
-
 #include "download_interface.h"
-#include "do_download_property.h"
-#include "do_download_status.h"
-#include "do_errors.h"
 
 #if defined(DO_INTERFACE_COM)
 #include <wrl.h>
@@ -39,6 +34,7 @@ public:
 
     std::error_code GetStatus(download_status& status) noexcept override;
     std::error_code SetStatusCallback(const status_callback_t& callback, download& download) noexcept override;
+    std::error_code SetStreamCallback(const output_stream_callback_t& callback) noexcept override;
     std::error_code GetProperty(download_property key, download_property_value& value) noexcept override;
     std::error_code SetProperty(download_property key, const download_property_value& val) noexcept override;
 

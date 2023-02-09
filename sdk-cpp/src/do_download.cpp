@@ -7,10 +7,9 @@
 #include <cassert>
 #include <thread>
 
+#include "download_impl.h"
 #include "do_errors.h"
 #include "do_error_helpers.h"
-#include "download_interface.h"
-#include "download_impl.h"
 
 namespace msdod = microsoft::deliveryoptimization::details;
 using namespace std::chrono_literals; // NOLINT(build/namespaces)
@@ -27,13 +26,18 @@ download::download()
 
 download::~download() = default;
 
+std::error_code download::make(const std::string& uri, std::unique_ptr<download>& out) noexcept
+{
+    std::string emptyPath;
+    return make(uri, emptyPath, out);
+}
+
 std::error_code download::make(const std::string& uri, const std::string& downloadFilePath, std::unique_ptr<download>& out) noexcept
 {
     out.reset();
     std::unique_ptr<download> tmp(new download());
     tmp->_download = std::make_shared<msdod::CDownloadImpl>();
-    std::error_code code = tmp->_download->Init(uri, downloadFilePath);
-    DO_RETURN_IF_FAILED(code);
+    DO_RETURN_IF_FAILED(tmp->_download->Init(uri, downloadFilePath));
     out = std::move(tmp);
     return DO_OK;
 }
@@ -71,6 +75,11 @@ std::error_code download::get_status(download_status& status) noexcept
 std::error_code download::set_status_callback(status_callback_t callback) noexcept
 {
     return _download->SetStatusCallback(callback, *this);
+}
+
+std::error_code download::set_output_stream(output_stream_callback_t callback) noexcept
+{
+    return _download->SetStreamCallback(callback);
 }
 
 std::error_code download::start_and_wait_until_completion(std::chrono::seconds timeOut) noexcept

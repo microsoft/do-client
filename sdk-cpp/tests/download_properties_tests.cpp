@@ -198,6 +198,25 @@ TEST_F(DownloadPropertyTests, ForegroundBackgroundRace)
     ASSERT_LT(foregroundDuration, backgroundDuration);
 }
 
+TEST_F(DownloadPropertyTests, BasicStreamTest)
+{
+    auto simpleDownload = msdot::download::make(g_smallFileUrl);
+
+    uint64_t downloadedBytes = 0;
+    simpleDownload->set_output_stream([&downloadedBytes](const unsigned char*, size_t cb) -> std::error_code { downloadedBytes += cb; return DO_OK; });
+
+    simpleDownload->start();
+    TestHelpers::WaitForState(*simpleDownload, msdo::download_state::transferred);
+
+    ASSERT_GT(downloadedBytes, 0);
+
+    uint64_t fileSize = 0;
+    simpleDownload->get_property(msdo::download_property::total_size_bytes, fileSize);
+    ASSERT_EQ(downloadedBytes, fileSize);
+
+    simpleDownload->finalize();
+}
+
 #elif defined(DO_CLIENT_AGENT)
 
 TEST_F(DownloadPropertyTests, SmallDownloadSetCallerNameFailureTest)

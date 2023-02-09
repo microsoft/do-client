@@ -103,6 +103,38 @@ private:
     msdo::download* _download;
 };
 
+class DOStreamCallback :
+    public RuntimeClass<RuntimeClassFlags<RuntimeClassType::ClassicCom>, ChainInterfaces<IStream, ISequentialStream>>
+{
+public:
+    HRESULT RuntimeClassInitialize(const msdo::output_stream_callback_t& callback)
+    {
+        _callback = callback;
+        return S_OK;
+    }
+
+    // ISequentialStream
+    IFACEMETHODIMP Read(void*, ULONG, ULONG*) override { return E_NOTIMPL; }
+    IFACEMETHODIMP Write(const void* pv, ULONG cb, ULONG* /* pcbWritten */) override
+    {
+        return HRESULT_FROM_WIN32(_callback(static_cast<const unsigned char*>(pv), cb).value());
+    }
+    
+    // IStream (ISequentialStream would be sufficient but DO QI's for IStream)
+    IFACEMETHODIMP Seek(LARGE_INTEGER, DWORD, ULARGE_INTEGER*) override { return E_NOTIMPL; }
+    IFACEMETHODIMP SetSize(ULARGE_INTEGER) override { return E_NOTIMPL; }
+    IFACEMETHODIMP CopyTo(IStream*, ULARGE_INTEGER, ULARGE_INTEGER*, ULARGE_INTEGER*) override { return E_NOTIMPL; }
+    IFACEMETHODIMP Commit(DWORD) override { return E_NOTIMPL; }
+    IFACEMETHODIMP Revert() override { return E_NOTIMPL; }
+    IFACEMETHODIMP LockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD) override { return E_NOTIMPL; }
+    IFACEMETHODIMP UnlockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD) override { return E_NOTIMPL; }
+    IFACEMETHODIMP Stat(STATSTG*, DWORD) override { return E_NOTIMPL; }
+    IFACEMETHODIMP Clone(IStream**) override { return E_NOTIMPL; }
+
+private:
+    msdo::output_stream_callback_t _callback;
+};
+
 std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& downloadFilePath) noexcept
 {
     Microsoft::WRL::ComPtr<IDOManager> manager;
@@ -117,12 +149,15 @@ std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& d
     _spDownload = std::move(spDownload);
 
     download_property_value propUri;
-    download_property_value propDownloadFilePath;
     DO_RETURN_IF_FAILED(download_property_value::make(uri, propUri));
-    DO_RETURN_IF_FAILED(download_property_value::make(downloadFilePath, propDownloadFilePath));
-
     DO_RETURN_IF_FAILED(SetProperty(download_property::uri, propUri));
-    DO_RETURN_IF_FAILED(SetProperty(download_property::download_file_path, propDownloadFilePath));
+
+    if (!downloadFilePath.empty())
+    {
+        download_property_value propDownloadFilePath;
+        DO_RETURN_IF_FAILED(download_property_value::make(downloadFilePath, propDownloadFilePath));
+        DO_RETURN_IF_FAILED(SetProperty(download_property::download_file_path, propDownloadFilePath));
+    }
 
     return DO_OK;
 }
@@ -130,9 +165,11 @@ std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& d
 // Support only full file downloads for now
 std::error_code CDownloadImpl::Start() noexcept
 {
-    _DO_DOWNLOAD_RANGES_INFO emptyRanges = {};
-    emptyRanges.RangeCount = 0;
-    return make_error_code(_spDownload->Start(&emptyRanges));
+    DO_DOWNLOAD_RANGES_INFO ranges = {};
+    ranges.RangeCount = 1;
+    ranges.Ranges[0].Offset = 0;
+    ranges.Ranges[0].Length = DO_LENGTH_TO_EOF;
+    return make_error_code(_spDownload->Start(&ranges));
 }
 
 std::error_code CDownloadImpl::Pause() noexcept
@@ -174,6 +211,17 @@ std::error_code CDownloadImpl::SetStatusCallback(const msdo::status_callback_t& 
     RETURN_IF_FAILED(_spDownload->SetProperty(DODownloadProperty_CallbackInterface, &vtCallback));
     return DO_OK;
 }
+std::error_code CDownloadImpl::SetStreamCallback(const msdo::output_stream_callback_t& callback) noexcept
+{
+    Microsoft::WRL::ComPtr<DOStreamCallback> spCallback;
+    RETURN_IF_FAILED(MakeAndInitialize<DOStreamCallback>(&spCallback, callback));
+
+    unique_variant vtCallback;
+    V_VT(&vtCallback) = VT_UNKNOWN;
+    V_UNKNOWN(&vtCallback) = spCallback.Detach();
+    RETURN_IF_FAILED(_spDownload->SetProperty(DODownloadProperty_StreamInterface, &vtCallback));
+    return DO_OK;
+}
 
 std::error_code CDownloadImpl::SetProperty(msdo::download_property key, const msdo::download_property_value& val) noexcept
 {
@@ -210,7 +258,7 @@ std::error_code CDownloadImpl::GetProperty(msdo::download_property key, msdo::do
         break;
 
     default:
-        return make_error_code(E_UNEXPECTED);
+        return make_error_code(errc::unexpected);
     }
     return DO_OK;
 }
