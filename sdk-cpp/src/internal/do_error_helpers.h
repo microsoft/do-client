@@ -5,8 +5,12 @@
 #define _DELIVERY_OPTIMIZATION_DO_ERROR_HELPERS_H
 
 #include <cstdint>
-#include <exception>
 #include <system_error>
+
+#ifdef DO_ENABLE_EXCEPTIONS
+#include <exception>
+#endif
+
 #include "do_errors.h"
 
 namespace microsoft

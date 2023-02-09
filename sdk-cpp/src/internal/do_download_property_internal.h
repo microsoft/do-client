@@ -11,7 +11,6 @@
 #endif
 
 #include <string>
-#include <vector>
 
 #include "do_download_property.h"
 #include "do_errors.h"

@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "do_errors.h"
 
@@ -19,8 +18,6 @@ namespace details
 class CDownloadImpl;
 class CDownloadPropertyValueInternal;
 }
-class download;
-class download_status;
 
 enum class download_property
 {

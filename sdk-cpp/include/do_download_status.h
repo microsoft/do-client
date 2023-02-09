@@ -69,11 +69,13 @@ private:
     int32_t         _errorCode { 0 };
     int32_t         _extendedErrorCode { 0 };
     download_state  _state { download_state::created };
-
 };
 
 class download;
 using status_callback_t = std::function<void(download&, download_status&)>;
+
+// Note: std::span might be nice here, but it requires C++20
+using output_stream_callback_t = std::function<std::error_code(const unsigned char* data, size_t size)>;
 
 } // namespace deliveryoptimization
 } // namespace microsoft

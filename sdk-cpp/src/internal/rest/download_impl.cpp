@@ -30,7 +30,10 @@ std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& d
         cpprest_web::uri_builder builder(g_downloadUriPart);
         builder.append_path("create");
         builder.append_query("Uri", uri);
-        builder.append_query("DownloadFilePath", downloadFilePath);
+        if (!downloadFilePath.empty())
+        {
+            builder.append_query("DownloadFilePath", downloadFilePath);
+        }
 
         for (int retryAttempts = 0; retryAttempts < g_maxNumRetryAttempts; retryAttempts++)
         {
@@ -143,6 +146,11 @@ std::error_code CDownloadImpl::SetProperty(msdo::download_property key, const ms
 }
 
 std::error_code CDownloadImpl::SetStatusCallback(const status_callback_t& callback, download& download) noexcept
+{
+    return make_error_code(msdo::errc::e_not_impl);
+}
+
+std::error_code CDownloadImpl::SetStreamCallback(const output_stream_callback_t& callback) noexcept
 {
     return make_error_code(msdo::errc::e_not_impl);
 }

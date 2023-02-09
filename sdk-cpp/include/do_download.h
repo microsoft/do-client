@@ -26,6 +26,7 @@ class download
 public:
     ~download();
 
+    static std::error_code make(const std::string& uri, std::unique_ptr<download>& out) noexcept;
     static std::error_code make(const std::string& uri, const std::string& downloadFilePath, std::unique_ptr<download>& out) noexcept;
 
     std::error_code start() noexcept;
@@ -35,6 +36,7 @@ public:
     std::error_code abort() noexcept;
     std::error_code get_status(download_status& status) noexcept;
     std::error_code set_status_callback(status_callback_t callback) noexcept;
+    std::error_code set_output_stream(output_stream_callback_t callback) noexcept;
 
     std::error_code start_and_wait_until_completion(std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;
     std::error_code start_and_wait_until_completion(const std::atomic_bool& isCancelled, std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;

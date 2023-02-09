@@ -29,6 +29,15 @@ namespace test
 class download
 {
 public:
+    static std::unique_ptr<download> make(const std::string& uri)
+    {
+        std::unique_ptr<msdo::download> newDownload;
+        std::error_code ec = msdo::download::make(uri, newDownload);
+        msdod::throw_if_fail(ec);
+        auto returnVal = std::make_unique<download>(std::move(newDownload));
+        return returnVal;
+    }
+
     static std::unique_ptr<download> make(const std::string& uri, const std::string& downloadFilePath)
     {
         std::unique_ptr<msdo::download> newDownload;
@@ -78,6 +87,11 @@ public:
     void set_status_callback(status_callback_t callback)
     {
         std::error_code ec = _downloadImpl->set_status_callback(callback);
+        msdod::throw_if_fail(ec);
+    }
+    void set_output_stream(output_stream_callback_t callback)
+    {
+        std::error_code ec = _downloadImpl->set_output_stream(callback);
         msdod::throw_if_fail(ec);
     }
 
