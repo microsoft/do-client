@@ -82,6 +82,11 @@ std::error_code download::set_output_stream(output_stream_callback_t callback) n
     return _download->SetStreamCallback(callback);
 }
 
+std::error_code download::set_ranges(const range* ranges, size_t count) noexcept
+{
+    return _download->SetRanges(ranges, count);
+}
+
 std::error_code download::start_and_wait_until_completion(std::chrono::seconds timeOut) noexcept
 {
     std::atomic_bool isCancelled{ false };

@@ -217,6 +217,25 @@ TEST_F(DownloadPropertyTests, BasicStreamTest)
     simpleDownload->finalize();
 }
 
+TEST_F(DownloadPropertyTests, BasicRangesTest)
+{
+    auto simpleDownload = msdot::download::make(g_largeFileUrl);
+
+    uint64_t downloadedBytes = 0;
+    simpleDownload->set_output_stream([&downloadedBytes](const unsigned char*, size_t cb) -> std::error_code { downloadedBytes += cb; return DO_OK; });
+
+    msdo::range ranges[2] =
+    {
+        {   0,   100 },
+        { 200,  1000 },
+    };
+    simpleDownload->set_ranges(ranges, 2);
+
+    simpleDownload->start_and_wait_until_completion();
+
+    ASSERT_EQ(downloadedBytes, 1100);
+}
+
 #elif defined(DO_CLIENT_AGENT)
 
 TEST_F(DownloadPropertyTests, SmallDownloadSetCallerNameFailureTest)

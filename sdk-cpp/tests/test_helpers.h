@@ -94,6 +94,11 @@ public:
         std::error_code ec = _downloadImpl->set_output_stream(callback);
         msdod::throw_if_fail(ec);
     }
+    void set_ranges(const range* ranges, size_t count)
+    {
+        std::error_code ec = _downloadImpl->set_ranges(ranges, count);
+        msdod::throw_if_fail(ec);
+    }
 
     void start_and_wait_until_completion(std::chrono::seconds timeoutSecs = std::chrono::hours(24))
     {

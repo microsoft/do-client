@@ -3,13 +3,7 @@
 
 #include "download_impl.h"
 
-#include <wrl.h>
-#include <wrl/client.h>
-#include <wrl/implements.h>
-
-#include "do_download_property.h"
 #include "do_download_property_internal.h"
-#include "do_errors.h"
 #include "do_error_helpers.h"
 
 namespace msdo = microsoft::deliveryoptimization;
@@ -137,9 +131,9 @@ private:
 
 std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& downloadFilePath) noexcept
 {
-    Microsoft::WRL::ComPtr<IDOManager> manager;
+    ComPtr<IDOManager> manager;
     RETURN_IF_FAILED(CoCreateInstance(__uuidof(DeliveryOptimization), nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&manager)));
-    Microsoft::WRL::ComPtr<IDODownload> spDownload;
+    ComPtr<IDODownload> spDownload;
     RETURN_IF_FAILED(manager->CreateDownload(&spDownload));
 
     RETURN_IF_FAILED(CoSetProxyBlanket(static_cast<IUnknown*>(spDownload.Get()), RPC_C_AUTHN_DEFAULT,
@@ -147,6 +141,10 @@ std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& d
         nullptr, EOAC_STATIC_CLOAKING));
 
     _spDownload = std::move(spDownload);
+
+    // Assume full file until told otherwise
+    _spRanges = std::make_unique<DO_DOWNLOAD_RANGES_INFO>();
+    _spRanges->RangeCount = 0; // empty == full file
 
     download_property_value propUri;
     DO_RETURN_IF_FAILED(download_property_value::make(uri, propUri));
@@ -162,14 +160,11 @@ std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& d
     return DO_OK;
 }
 
-// Support only full file downloads for now
 std::error_code CDownloadImpl::Start() noexcept
 {
-    DO_DOWNLOAD_RANGES_INFO ranges = {};
-    ranges.RangeCount = 1;
-    ranges.Ranges[0].Offset = 0;
-    ranges.Ranges[0].Length = DO_LENGTH_TO_EOF;
-    return make_error_code(_spDownload->Start(&ranges));
+    // Note: ranges are reset on Start. It is correct to pass nullptr for subsequent Start calls (i.e. "Resume").
+    std::unique_ptr<DO_DOWNLOAD_RANGES_INFO> spRanges = std::move(_spRanges);
+    return make_error_code(_spDownload->Start(spRanges.get()));
 }
 
 std::error_code CDownloadImpl::Pause() noexcept
@@ -202,7 +197,7 @@ std::error_code CDownloadImpl::GetStatus(msdo::download_status& status) noexcept
 
 std::error_code CDownloadImpl::SetStatusCallback(const msdo::status_callback_t& callback, msdo::download& download) noexcept
 {
-    Microsoft::WRL::ComPtr<DOStatusCallback> spCallback;
+    ComPtr<DOStatusCallback> spCallback;
     RETURN_IF_FAILED(MakeAndInitialize<DOStatusCallback>(&spCallback, callback, download));
 
     unique_variant vtCallback;
@@ -213,13 +208,22 @@ std::error_code CDownloadImpl::SetStatusCallback(const msdo::status_callback_t& 
 }
 std::error_code CDownloadImpl::SetStreamCallback(const msdo::output_stream_callback_t& callback) noexcept
 {
-    Microsoft::WRL::ComPtr<DOStreamCallback> spCallback;
+    ComPtr<DOStreamCallback> spCallback;
     RETURN_IF_FAILED(MakeAndInitialize<DOStreamCallback>(&spCallback, callback));
 
     unique_variant vtCallback;
     V_VT(&vtCallback) = VT_UNKNOWN;
     V_UNKNOWN(&vtCallback) = spCallback.Detach();
     RETURN_IF_FAILED(_spDownload->SetProperty(DODownloadProperty_StreamInterface, &vtCallback));
+
+    // Streamed output requires ranges. Convert empty ranges into a full file range.
+    if (_spRanges && (_spRanges->RangeCount == 0))
+    {
+        _spRanges->RangeCount = 1;
+        _spRanges->Ranges[0].Offset = 0; // [0]: Minimum struct size includes 1 array entry. No need to reallocate.
+        _spRanges->Ranges[0].Length = DO_LENGTH_TO_EOF;
+    }
+
     return DO_OK;
 }
 
@@ -260,6 +264,37 @@ std::error_code CDownloadImpl::GetProperty(msdo::download_property key, msdo::do
     default:
         return make_error_code(errc::unexpected);
     }
+    return DO_OK;
+}
+
+// msdo::range and DO_DOWNLOAD_RANGE are equivalent -- safe to typecast/copy from one to the other
+static_assert(sizeof(range) == sizeof(DO_DOWNLOAD_RANGE));
+static_assert(FIELD_OFFSET(range, offset) == FIELD_OFFSET(DO_DOWNLOAD_RANGE, Offset));
+static_assert(FIELD_OFFSET(range, length) == FIELD_OFFSET(DO_DOWNLOAD_RANGE, Length));
+static_assert(length_to_eof == DO_LENGTH_TO_EOF);
+
+std::error_code CDownloadImpl::SetRanges(const range* ranges, size_t count) noexcept
+{
+    size_t cbBufferSize = sizeof(DO_DOWNLOAD_RANGES_INFO); // includes 1 DO_DOWNLOAD_RANGE
+    if (count > 1)
+    {
+        cbBufferSize += ((count - 1) * sizeof(DO_DOWNLOAD_RANGE));
+    }
+
+    void *pvBuffer = ::operator new(cbBufferSize, std::nothrow);
+    if (pvBuffer == nullptr)
+    {
+        return make_error_code(E_OUTOFMEMORY);
+    }
+
+    std::unique_ptr<DO_DOWNLOAD_RANGES_INFO> spRanges(new(pvBuffer) DO_DOWNLOAD_RANGES_INFO());
+    spRanges->RangeCount = static_cast<uint32_t>(count);
+    if (count > 0)
+    {
+        memcpy(&spRanges->Ranges[0], ranges, count * sizeof(ranges[0]));
+    }
+
+    _spRanges = std::move(spRanges);
     return DO_OK;
 }
 
