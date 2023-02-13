@@ -3,11 +3,8 @@
 
 #include "do_download_property_internal.h"
 
-#include <cassert>
 #include <vector>
-#include <string>
 
-#include "do_errors.h"
 #include "do_error_helpers.h"
 
 namespace msdo = microsoft::deliveryoptimization;
