@@ -84,6 +84,10 @@ std::error_code download::set_output_stream(output_stream_callback_t callback) n
 
 std::error_code download::set_ranges(const download_range* ranges, size_t count) noexcept
 {
+    if ((ranges == nullptr) || (count == 0))
+    {
+        return details::make_error_code(errc::invalid_arg);
+    }
     return _download->SetRanges(ranges, count);
 }
 

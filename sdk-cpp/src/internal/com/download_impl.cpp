@@ -289,10 +289,7 @@ std::error_code CDownloadImpl::SetRanges(const download_range* ranges, size_t co
 
     std::unique_ptr<DO_DOWNLOAD_RANGES_INFO> spRanges(new(pvBuffer) DO_DOWNLOAD_RANGES_INFO());
     spRanges->RangeCount = static_cast<uint32_t>(count);
-    if (count > 0)
-    {
-        memcpy(&spRanges->Ranges[0], ranges, count * sizeof(ranges[0]));
-    }
+    memcpy(&spRanges->Ranges[0], ranges, count * sizeof(ranges[0]));
 
     _spRanges = std::move(spRanges);
     return DO_OK;
