@@ -155,7 +155,7 @@ std::error_code CDownloadImpl::SetStreamCallback(const output_stream_callback_t&
     return make_error_code(msdo::errc::e_not_impl);
 }
 
-std::error_code CDownloadImpl::SetRanges(const range* ranges, size_t count) noexcept
+std::error_code CDownloadImpl::SetRanges(const download_range* ranges, size_t count) noexcept
 {
     return make_error_code(errc::e_not_impl);
 }

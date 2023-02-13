@@ -78,7 +78,7 @@ using status_callback_t = std::function<void(download&, download_status&)>;
 using output_stream_callback_t = std::function<std::error_code(const unsigned char* data, size_t size)>;
 
 // TODO: create a new header for things that aren't 'status' related, such as output_stream_callback_t and ranges
-struct range
+struct download_range
 {
     uint64_t offset;
     uint64_t length;

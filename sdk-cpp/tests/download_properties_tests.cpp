@@ -224,7 +224,7 @@ TEST_F(DownloadPropertyTests, BasicRangesTest)
     uint64_t downloadedBytes = 0;
     simpleDownload->set_output_stream([&downloadedBytes](const unsigned char*, size_t cb) -> std::error_code { downloadedBytes += cb; return DO_OK; });
 
-    msdo::range ranges[2] =
+    msdo::download_range ranges[2] =
     {
         {   0,   100 },
         { 200,  1000 },

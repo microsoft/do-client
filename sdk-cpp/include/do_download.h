@@ -40,7 +40,7 @@ public:
 
     // start() and set_ranges() are not thread safe. Simultaneous calls to these
     // methods may have unpredictable results.
-    std::error_code set_ranges(const range* ranges, size_t count) noexcept; // Future: use std::span (requires C++20)
+    std::error_code set_ranges(const download_range* ranges, size_t count) noexcept; // Future: use std::span (requires C++20)
 
     std::error_code start_and_wait_until_completion(std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;
     std::error_code start_and_wait_until_completion(const std::atomic_bool& isCancelled, std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;

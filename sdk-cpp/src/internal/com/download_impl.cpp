@@ -267,13 +267,13 @@ std::error_code CDownloadImpl::GetProperty(msdo::download_property key, msdo::do
     return DO_OK;
 }
 
-// msdo::range and DO_DOWNLOAD_RANGE are equivalent -- safe to typecast/copy from one to the other
-static_assert(sizeof(range) == sizeof(DO_DOWNLOAD_RANGE));
-static_assert(FIELD_OFFSET(range, offset) == FIELD_OFFSET(DO_DOWNLOAD_RANGE, Offset));
-static_assert(FIELD_OFFSET(range, length) == FIELD_OFFSET(DO_DOWNLOAD_RANGE, Length));
+// msdo::download_range and DO_DOWNLOAD_RANGE are equivalent -- safe to typecast/copy from one to the other
+static_assert(sizeof(download_range) == sizeof(DO_DOWNLOAD_RANGE));
+static_assert(FIELD_OFFSET(download_range, offset) == FIELD_OFFSET(DO_DOWNLOAD_RANGE, Offset));
+static_assert(FIELD_OFFSET(download_range, length) == FIELD_OFFSET(DO_DOWNLOAD_RANGE, Length));
 static_assert(length_to_eof == DO_LENGTH_TO_EOF);
 
-std::error_code CDownloadImpl::SetRanges(const range* ranges, size_t count) noexcept
+std::error_code CDownloadImpl::SetRanges(const download_range* ranges, size_t count) noexcept
 {
     size_t cbBufferSize = sizeof(DO_DOWNLOAD_RANGES_INFO); // includes 1 DO_DOWNLOAD_RANGE
     if (count > 1)

@@ -82,7 +82,7 @@ std::error_code download::set_output_stream(output_stream_callback_t callback) n
     return _download->SetStreamCallback(callback);
 }
 
-std::error_code download::set_ranges(const range* ranges, size_t count) noexcept
+std::error_code download::set_ranges(const download_range* ranges, size_t count) noexcept
 {
     return _download->SetRanges(ranges, count);
 }
