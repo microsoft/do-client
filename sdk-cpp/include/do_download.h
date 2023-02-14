@@ -8,6 +8,7 @@
 #include <chrono>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "do_download_status.h"
 #include "do_download_property.h"
@@ -82,10 +83,17 @@ public:
         return set_property(download_property::cost_policy, static_cast<uint32_t>(value));
     }
 
+    // Returns existing downloads that are associated with the caller
+    static std::error_code get_downloads(std::vector<std::unique_ptr<download>>& out) noexcept;
+
+    // Same as above, filtered by download_property::id, uri, catalog_id, caller_name or download_file_path
+    static std::error_code get_downloads(download_property prop, const std::string& value, std::vector<std::unique_ptr<download>>& out) noexcept;
+    static std::error_code get_downloads(download_property prop, const std::wstring& value, std::vector<std::unique_ptr<download>>& out) noexcept;
+
 private:
     download();
 
-    std::shared_ptr<details::IDownload> _download;
+    std::unique_ptr<details::IDownload> _download;
 };
 
 } // namespace deliveryoptimization

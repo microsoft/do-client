@@ -70,7 +70,7 @@ TEST_F(DownloadPropertyTests, SmallDownloadWithPhfDigestandCvTest)
     std::unique_ptr<msdo::download> simpleDownload;
     ASSERT_EQ(msdo::download::make(g_smallFileUrl, g_tmpFileName, simpleDownload).value(), 0);
 
-    std::vector<int32_t> expectedErrors = { 0, static_cast<int32_t>(msdo::errc::do_e_unknown_property_id) };
+    std::vector<int32_t> expectedErrors = { 0, msdo::errc::do_e_unknown_property_id };
 
     int32_t code = simpleDownload->set_property(msdo::download_property::integrity_check_mandatory, false).value();
     VerifyError(code, expectedErrors);
@@ -91,7 +91,7 @@ TEST_F(DownloadPropertyTests, InvalidPhfDigestTest)
     std::unique_ptr<msdo::download> simpleDownload;
     ASSERT_EQ(msdo::download::make(g_smallFileUrl, g_tmpFileName, simpleDownload).value(), 0);
 
-    std::vector<int32_t> expectedErrors = { 0, static_cast<int32_t>(msdo::errc::invalid_arg) };
+    std::vector<int32_t> expectedErrors = { 0, msdo::errc::e_invalid_arg };
 
     int32_t code = simpleDownload->set_property(msdo::download_property::integrity_check_info, "blah").value();
     VerifyError(code, expectedErrors);
@@ -236,13 +236,35 @@ TEST_F(DownloadPropertyTests, BasicRangesTest)
     ASSERT_EQ(downloadedBytes, 1100);
 }
 
+TEST_F(DownloadPropertyTests, BasicEnumDownloadsTest)
+{
+    auto download1 = msdot::download::make(g_smallFileUrl, g_tmpFileName);
+
+    std::string downloadId1;
+    download1->get_property(msdo::download_property::id, downloadId1);
+
+    std::vector<std::unique_ptr<msdo::download>> downloads;
+    ASSERT_EQ(msdo::download::get_downloads(msdo::download_property::id, downloadId1, downloads).value(), 0);
+    ASSERT_EQ(downloads.size(), 1);
+
+    auto download2 = std::make_unique<msdot::download>(std::move(downloads[0]));
+    std::string downloadId2;
+    download2->get_property(msdo::download_property::id, downloadId2);
+    ASSERT_EQ(downloadId1, downloadId2);
+
+    download2->start_and_wait_until_completion();
+
+    ASSERT_EQ(msdo::download::get_downloads(msdo::download_property::id, downloadId1, downloads).value(), msdo::errc::do_e_no_downloads);
+    ASSERT_EQ(downloads.size(), 0);
+}
+
 #elif defined(DO_CLIENT_AGENT)
 
 TEST_F(DownloadPropertyTests, SmallDownloadSetCallerNameFailureTest)
 {
     msdo::download_property_value callerName;
     auto ec = msdo::download_property_value::make("dosdkcpp_tests", callerName);
-    ASSERT_EQ(ec.value(), static_cast<int>(msdo::errc::e_not_impl));
+    ASSERT_EQ(ec.value(), msdo::errc::e_not_impl);
 }
 
 #else

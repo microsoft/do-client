@@ -21,7 +21,7 @@ namespace deliveryoptimization
 
 download::download()
 {
-    _download = std::make_shared<msdod::CDownloadImpl>();
+    _download = std::make_unique<msdod::CDownloadImpl>();
 }
 
 download::~download() = default;
@@ -36,7 +36,6 @@ std::error_code download::make(const std::string& uri, const std::string& downlo
 {
     out.reset();
     std::unique_ptr<download> tmp(new download());
-    tmp->_download = std::make_shared<msdod::CDownloadImpl>();
     DO_RETURN_IF_FAILED(tmp->_download->Init(uri, downloadFilePath));
     out = std::move(tmp);
     return DO_OK;
@@ -86,7 +85,7 @@ std::error_code download::set_ranges(const download_range* ranges, size_t count)
 {
     if ((ranges == nullptr) || (count == 0))
     {
-        return details::make_error_code(errc::invalid_arg);
+        return details::make_error_code(errc::e_invalid_arg);
     }
     return _download->SetRanges(ranges, count);
 }
@@ -186,6 +185,48 @@ std::error_code download::set_property(download_property prop, const download_pr
 std::error_code download::get_property(download_property prop, download_property_value& val) noexcept
 {
     return _download->GetProperty(prop, val);
+}
+
+std::error_code download::get_downloads(std::vector<std::unique_ptr<download>>& out) noexcept
+{
+    out.clear();
+    std::vector<std::unique_ptr<details::IDownload>> results;
+    DO_RETURN_IF_FAILED(msdod::CDownloadImpl::EnumDownloads(results));
+    for (auto& result : results)
+    {
+        std::unique_ptr<download> tmp(new download());
+        tmp->_download = std::move(result);
+        out.push_back(std::move(tmp));
+    }
+    return DO_OK;
+}
+
+std::error_code download::get_downloads(download_property prop, const std::string& value, std::vector<std::unique_ptr<download>>& out) noexcept
+{
+    out.clear();
+    std::vector<std::unique_ptr<details::IDownload>> results;
+    DO_RETURN_IF_FAILED(msdod::CDownloadImpl::EnumDownloads(prop, value, results));
+    for (auto& result : results)
+    {
+        std::unique_ptr<download> tmp(new download());
+        tmp->_download = std::move(result);
+        out.push_back(std::move(tmp));
+    }
+    return DO_OK;
+}
+
+std::error_code download::get_downloads(download_property prop, const std::wstring& value, std::vector<std::unique_ptr<download>>& out) noexcept
+{
+    out.clear();
+    std::vector<std::unique_ptr<details::IDownload>> results;
+    DO_RETURN_IF_FAILED(msdod::CDownloadImpl::EnumDownloads(prop, value, results));
+    for (auto& result : results)
+    {
+        std::unique_ptr<download> tmp(new download());
+        tmp->_download = std::move(result);
+        out.push_back(std::move(tmp));
+    }
+    return DO_OK;
 }
 
 } // namespace deliveryoptimization

@@ -4,6 +4,8 @@
 #ifndef _DELIVERY_OPTIMIZATION_DOWNLOAD_IMPL_H
 #define _DELIVERY_OPTIMIZATION_DOWNLOAD_IMPL_H
 
+#include <vector>
+
 #include "download_interface.h"
 
 #if defined(DO_INTERFACE_COM)
@@ -39,8 +41,14 @@ public:
     std::error_code SetProperty(download_property key, const download_property_value& val) noexcept override;
     std::error_code SetRanges(const download_range* ranges, size_t count) noexcept override;
 
+    static std::error_code EnumDownloads(std::vector<std::unique_ptr<IDownload>>& out) noexcept;
+    static std::error_code EnumDownloads(download_property prop, const std::string& value, std::vector<std::unique_ptr<IDownload>>& out) noexcept;
+    static std::error_code EnumDownloads(download_property prop, const std::wstring& value, std::vector<std::unique_ptr<IDownload>>& out) noexcept;
+
 private:
 #if defined(DO_INTERFACE_COM)
+    static std::error_code CDownloadImpl::_EnumDownloads(const DO_DOWNLOAD_ENUM_CATEGORY* pCategory, std::vector<std::unique_ptr<IDownload>>& out) noexcept;
+
     Microsoft::WRL::ComPtr<IDODownload> _spDownload;
     std::unique_ptr<DO_DOWNLOAD_RANGES_INFO> _spRanges;
 #elif defined(DO_INTERFACE_REST)

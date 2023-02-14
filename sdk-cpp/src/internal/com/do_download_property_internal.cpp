@@ -16,7 +16,7 @@ namespace deliveryoptimization
 namespace details
 {
 
-static std::error_code UTF8toWstr(const std::string& str, std::wstring& wstr)
+std::error_code UTF8toWstr(const std::string& str, std::wstring& wstr)
 {
     wstr.clear();
     size_t cch = str.size();
@@ -33,7 +33,7 @@ static std::error_code UTF8toWstr(const std::string& str, std::wstring& wstr)
     return DO_OK;
 }
 
-static std::error_code WstrToUTF8(const std::wstring& wstr, std::string& str)
+std::error_code WstrToUTF8(const std::wstring& wstr, std::string& str)
 {
     str.clear();
     size_t cch = wstr.size();

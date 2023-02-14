@@ -78,7 +78,7 @@ void CHttpClient::_InitializeDOConnection(bool launchClientFirst)
     if (ec)
     {
         // TODO(shishirb) Log the actual error when logging is available
-        ThrowException(microsoft::deliveryoptimization::errc::no_service);
+        ThrowException(microsoft::deliveryoptimization::errc::do_e_no_service);
     }
 
     std::unique_lock<std::mutex> lock(_mutex);

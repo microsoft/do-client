@@ -48,7 +48,7 @@ std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& d
                 // Handle DOCS in Shutdown state while Create request was issued, client will restart and this loop will break
                 // TODO(jimson): SDK doesn't have the capability to start do-client-lite.service if not running already. Test this
                 // code path when it is implemented.
-                if (e.error_code().value() != static_cast<int>(msdo::errc::no_service))
+                if (e.error_code().value() != msdo::errc::do_e_no_service)
                 {
                     return e.error_code();
                 }
@@ -58,7 +58,7 @@ std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& d
                 }
             }
         }
-        return make_error_code(msdo::errc::no_service);
+        return make_error_code(msdo::errc::do_e_no_service);
     }
     catch (msdo::details::exception& e)
     {
@@ -122,7 +122,7 @@ std::error_code CDownloadImpl::GetStatus(msdo::download_status& outStatus) noexc
         }
         else
         {
-            ThrowException(msdo::errc::unexpected);
+            ThrowException(msdo::errc::e_unexpected);
         }
 
         msdo::download_status out(bytesTotal, bytesTransferred, errorCode, extendedErrorCode, status);
@@ -156,6 +156,21 @@ std::error_code CDownloadImpl::SetStreamCallback(const output_stream_callback_t&
 }
 
 std::error_code CDownloadImpl::SetRanges(const download_range* ranges, size_t count) noexcept
+{
+    return make_error_code(errc::e_not_impl);
+}
+
+std::error_code CDownloadImpl::EnumDownloads(std::vector<std::unique_ptr<IDownload>>& out) noexcept
+{
+    return make_error_code(errc::e_not_impl);
+}
+
+std::error_code CDownloadImpl::EnumDownloads(download_property prop, const std::string& value, std::vector<std::unique_ptr<IDownload>>& out) noexcept
+{
+    return make_error_code(errc::e_not_impl);
+}
+
+std::error_code CDownloadImpl::EnumDownloads(download_property prop, const std::wstring& value, std::vector<std::unique_ptr<IDownload>>& out) noexcept
 {
     return make_error_code(errc::e_not_impl);
 }
