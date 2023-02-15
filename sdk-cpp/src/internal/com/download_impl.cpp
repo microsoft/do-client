@@ -136,7 +136,7 @@ std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& d
     ComPtr<IDODownload> spDownload;
     RETURN_IF_FAILED(manager->CreateDownload(&spDownload));
 
-    RETURN_IF_FAILED(CoSetProxyBlanket(static_cast<IUnknown*>(spDownload.Get()), RPC_C_AUTHN_DEFAULT,
+    RETURN_IF_FAILED(CoSetProxyBlanket(spDownload.Get(), RPC_C_AUTHN_DEFAULT,
         RPC_C_AUTHZ_NONE, COLE_DEFAULT_PRINCIPAL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE,
         nullptr, EOAC_STATIC_CLOAKING));
 
@@ -292,6 +292,72 @@ std::error_code CDownloadImpl::SetRanges(const download_range* ranges, size_t co
     memcpy(&spRanges->Ranges[0], ranges, count * sizeof(ranges[0]));
 
     _spRanges = std::move(spRanges);
+    return DO_OK;
+}
+
+std::error_code CDownloadImpl::EnumDownloads(std::vector<std::unique_ptr<IDownload>>& out) noexcept
+{
+    out.clear();
+    return _EnumDownloads(nullptr, out);
+}
+
+std::error_code CDownloadImpl::EnumDownloads(download_property prop, const std::string& value, std::vector<std::unique_ptr<IDownload>>& out) noexcept
+{
+    out.clear();
+    std::wstring wval;
+    DO_RETURN_IF_FAILED(UTF8toWstr(value, wval));
+    return EnumDownloads(prop, wval, out);
+}
+
+std::error_code CDownloadImpl::EnumDownloads(download_property prop, const std::wstring& value, std::vector<std::unique_ptr<IDownload>>& out) noexcept
+{
+    out.clear();
+    DO_DOWNLOAD_ENUM_CATEGORY category;
+    DO_RETURN_IF_FAILED(ConvertToComProperty(prop, category.Property));
+    category.Value = value.c_str();
+    return _EnumDownloads(&category, out);
+}
+
+std::error_code CDownloadImpl::_EnumDownloads(const DO_DOWNLOAD_ENUM_CATEGORY* pCategory, std::vector<std::unique_ptr<IDownload>>& out) noexcept
+{
+    out.clear();
+    ComPtr<IDOManager> manager;
+    RETURN_IF_FAILED(CoCreateInstance(__uuidof(DeliveryOptimization), nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&manager)));
+    ComPtr<IEnumUnknown> spEnum;
+    RETURN_IF_FAILED(manager->EnumDownloads(pCategory, &spEnum));
+
+    std::vector<std::unique_ptr<IDownload>> results;
+    ULONG cFetched = 0;
+    do
+    {
+        ComPtr<IUnknown> spunk;
+        RETURN_IF_FAILED(spEnum->Next(1, &spunk, &cFetched));
+        if (cFetched == 1)
+        {
+            ComPtr<IDODownload> spDownload;
+            RETURN_IF_FAILED(spunk->QueryInterface(IID_PPV_ARGS(&spDownload)));
+
+            RETURN_IF_FAILED(CoSetProxyBlanket(spDownload.Get(), RPC_C_AUTHN_DEFAULT,
+                RPC_C_AUTHZ_NONE, COLE_DEFAULT_PRINCIPAL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE,
+                nullptr, EOAC_STATIC_CLOAKING));
+
+            auto tmp = std::make_unique<CDownloadImpl>();
+            tmp->_spDownload = std::move(spDownload);
+
+            // Assume full file in created state, else leave ranges null
+            msdo::download_status status;
+            DO_RETURN_IF_FAILED(tmp->GetStatus(status));
+            if (status.state() == msdo::download_state::created)
+            {
+                tmp->_spRanges = std::make_unique<DO_DOWNLOAD_RANGES_INFO>();
+                tmp->_spRanges->RangeCount = 0; // empty == full file
+            }
+
+            results.push_back(std::move(tmp));
+        }
+    } while (cFetched > 0);
+
+    out = std::move(results);
     return DO_OK;
 }
 

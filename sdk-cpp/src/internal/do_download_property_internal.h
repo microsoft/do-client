@@ -23,6 +23,9 @@ namespace details
 {
 
 #if defined(DO_INTERFACE_COM)
+std::error_code UTF8toWstr(const std::string& str, std::wstring& wstr);
+std::error_code WstrToUTF8(const std::wstring& wstr, std::string& str);
+
 struct unique_variant : VARIANT
 {
     unique_variant();

@@ -8,6 +8,7 @@
 #include <chrono>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "do_download_status.h"
 #include "do_download_property.h"
@@ -48,7 +49,7 @@ public:
     static std::error_code download_url_to_path(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;
 
     // Certain properties are not supported on older versions of Windows, resulting in
-    // msdo::errc::do_e_unknown_property_id from the following methods. See do_download_property.h.
+    // msdo::errc::unknown_property_id from the following methods. See do_download_property.h.
     std::error_code set_property(download_property prop, const download_property_value& value) noexcept;
     std::error_code get_property(download_property prop, download_property_value& value) noexcept;
 
@@ -82,10 +83,17 @@ public:
         return set_property(download_property::cost_policy, static_cast<uint32_t>(value));
     }
 
+    // Returns existing downloads
+    static std::error_code get_downloads(std::vector<std::unique_ptr<download>>& out) noexcept;
+
+    // Returns existing downloads, filtered by download_property::id, uri, catalog_id, caller_name or download_file_path
+    static std::error_code get_downloads(download_property prop, const std::string& value, std::vector<std::unique_ptr<download>>& out) noexcept;
+    static std::error_code get_downloads(download_property prop, const std::wstring& value, std::vector<std::unique_ptr<download>>& out) noexcept;
+
 private:
     download();
 
-    std::shared_ptr<details::IDownload> _download;
+    std::unique_ptr<details::IDownload> _download;
 };
 
 } // namespace deliveryoptimization

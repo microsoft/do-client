@@ -52,19 +52,10 @@ inline std::error_code make_error_code(int32_t e)
     return std::error_code(e, do_category());
 }
 
-inline std::error_code make_error_code(errc e)
-{
-    return std::error_code(static_cast<int32_t>(e), do_category());
-}
-
-#ifndef FAILED
-#define FAILED(hr) (((int32_t)(hr)) < 0)
-#endif
-
 #ifndef RETURN_IF_FAILED
 #define RETURN_IF_FAILED(hr)  {     \
     int32_t __hr = (hr);            \
-    if (FAILED(__hr)) return std::error_code(__hr, do_category()); }
+    if (__hr < 0) return std::error_code(__hr, do_category()); }
 #endif
 
 #ifdef DO_ENABLE_EXCEPTIONS
@@ -80,11 +71,6 @@ public:
 
     exception(int32_t code) :
         exception(std::error_code(code, do_category()))
-    {
-    }
-
-    exception(errc code) :
-        exception(std::error_code(static_cast<int32_t>(code), do_category()))
     {
     }
 
@@ -124,11 +110,6 @@ inline void ThrowException(std::errc errorCode)
 }
 
 inline void ThrowException(int32_t errorCode)
-{
-    throw exception(errorCode);
-}
-
-inline void ThrowException(errc errorCode)
 {
     throw exception(errorCode);
 }
