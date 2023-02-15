@@ -68,7 +68,7 @@ static std::error_code ConvertToComProperty(msdo::download_property prop, DODown
     auto index = static_cast<size_t>(prop);
     if (index >= ARRAYSIZE(c_propMap))
     {
-        return make_error_code(errc::e_invalid_arg);
+        return make_error_code(errc::invalid_arg);
     }
     comProperty = c_propMap[index];
     return DO_OK;
@@ -262,7 +262,7 @@ std::error_code CDownloadImpl::GetProperty(msdo::download_property key, msdo::do
         break;
 
     default:
-        return make_error_code(errc::e_unexpected);
+        return make_error_code(errc::unexpected);
     }
     return DO_OK;
 }

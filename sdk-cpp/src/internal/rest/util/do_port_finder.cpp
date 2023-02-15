@@ -72,7 +72,7 @@ std::string CPortFinder::GetDOPort(bool launchClientFirst)
     }
     if (port.empty())
     {
-        ThrowException(errc::do_e_no_service);
+        ThrowException(errc::no_service);
     }
     return port;
 }

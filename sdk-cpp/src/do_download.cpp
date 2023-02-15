@@ -85,7 +85,7 @@ std::error_code download::set_ranges(const download_range* ranges, size_t count)
 {
     if ((ranges == nullptr) || (count == 0))
     {
-        return details::make_error_code(errc::e_invalid_arg);
+        return details::make_error_code(errc::invalid_arg);
     }
     return _download->SetRanges(ranges, count);
 }
@@ -165,7 +165,7 @@ static std::error_code g_TryOverrideDownlevelOsSetPropertyError(download_propert
 {
     // Temporary backward-compatibility for MSEdge.
     // These properties were not supported in IDODownload interface until build 19041.
-    if ((ec.value() == static_cast<int>(errc::do_e_unknown_property_id)) &&
+    if ((ec.value() == errc::unknown_property_id) &&
         ((prop == download_property::correlation_vector) || (prop == download_property::integrity_check_info)))
     {
         return DO_OK;

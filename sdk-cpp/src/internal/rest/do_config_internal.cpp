@@ -15,7 +15,7 @@
 #include "do_persistence.h"
 #include "do_version.h"
 #elif defined(DO_CLIENT_DOSVC)
-#include "do_errors.h" // msdo::errc::e_not_impl
+#include "do_errors.h" // msdo::errc::not_impl
 #endif
 
 namespace msdo = microsoft::deliveryoptimization;
@@ -190,7 +190,7 @@ void internal_free_version_buf(char** ppBuffer)
 
 int internal_set_iot_connection_string(const char* value)
 {
-    return static_cast<int>(msdo::errc::e_not_impl);
+    return msdo::errc::not_impl;
 }
 
 char* internal_get_components_version()

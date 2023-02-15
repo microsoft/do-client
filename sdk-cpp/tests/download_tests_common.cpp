@@ -296,7 +296,7 @@ TEST_F(DownloadTests, Download1NeverStartedDownload2CancelledSameFileTest)
     }
     catch (const msdod::exception& e)
     {
-        ASSERT_EQ(e.error_code().value(), msdo::errc::e_not_found);
+        ASSERT_EQ(e.error_code().value(), msdo::errc::not_found);
     }
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
 }
@@ -325,9 +325,9 @@ TEST_F(DownloadTests, ResumeOnAlreadyDownloadedFileTest)
     catch (const msdod::exception& e)
     {
 #if defined(DO_INTERFACE_COM)
-        ASSERT_EQ(e.error_code().value(), msdo::errc::do_e_invalid_state);
+        ASSERT_EQ(e.error_code().value(), msdo::errc::invalid_state);
 #elif defined(DO_INTERFACE_REST)
-        ASSERT_EQ(e.error_code().value(), msdo::errc::e_not_found);
+        ASSERT_EQ(e.error_code().value(), msdo::errc::not_found);
 #endif
     }
 }
@@ -357,9 +357,9 @@ TEST_F(DownloadTests, CancelDownloadOnCompletedState)
     catch (const msdod::exception& e)
     {
 #if defined(DO_INTERFACE_COM)
-        ASSERT_EQ(e.error_code().value(), msdo::errc::do_e_invalid_state);
+        ASSERT_EQ(e.error_code().value(), msdo::errc::invalid_state);
 #elif defined(DO_INTERFACE_REST)
-        ASSERT_EQ(e.error_code().value(), msdo::errc::e_not_found);
+        ASSERT_EQ(e.error_code().value(), msdo::errc::not_found);
 #endif
     };
 }
@@ -389,9 +389,9 @@ TEST_F(DownloadTests, CancelDownloadInTransferredState)
     catch (const msdod::exception& e)
     {
 #if defined(DO_INTERFACE_COM)
-        ASSERT_EQ(e.error_code().value(), msdo::errc::do_e_invalid_state);
+        ASSERT_EQ(e.error_code().value(), msdo::errc::invalid_state);
 #elif defined(DO_INTERFACE_REST)
-        ASSERT_EQ(e.error_code().value(), msdo::errc::e_not_found);
+        ASSERT_EQ(e.error_code().value(), msdo::errc::not_found);
 #endif
     }
 }
@@ -607,7 +607,7 @@ TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunning)
     }
     catch (const msdod::exception& e)
     {
-        ASSERT_EQ(e.error_code().value(), msdo::errc::do_e_no_service);
+        ASSERT_EQ(e.error_code().value(), msdo::errc::no_service);
     }
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
 }
@@ -631,7 +631,7 @@ TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunningPortFilePresent
     }
     catch (const msdod::exception& e)
     {
-        ASSERT_EQ(e.error_code().value(), msdo::errc::do_e_no_service);
+        ASSERT_EQ(e.error_code().value(), msdo::errc::no_service);
     }
     ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
 }

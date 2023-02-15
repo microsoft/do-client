@@ -49,7 +49,7 @@ public:
     static std::error_code download_url_to_path(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;
 
     // Certain properties are not supported on older versions of Windows, resulting in
-    // msdo::errc::do_e_unknown_property_id from the following methods. See do_download_property.h.
+    // msdo::errc::unknown_property_id from the following methods. See do_download_property.h.
     std::error_code set_property(download_property prop, const download_property_value& value) noexcept;
     std::error_code get_property(download_property prop, download_property_value& value) noexcept;
 
