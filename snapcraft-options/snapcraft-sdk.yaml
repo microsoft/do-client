@@ -1,0 +1,77 @@
+name: deliveryoptimization-sdk
+base: core20 # the base snap is the execution environment for this snap
+version: '0.1'
+summary: Ubuntu Core 20.04 DO
+description: |
+  SDK snap to simulate and test the communication between the Delivery Optimization Client Ubuntu Core snap and the ADU Snap.
+
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: devmode # use 'strict' once you have the right plugs and slots
+
+#####
+#
+# Keywords
+#
+# after  - Specifies part's dependencies.
+#              See https://snapcraft.io/docs/parts-lifecycle#heading--step-dependencies
+#                  https://snapcraft.io/docs/parts-lifecycle
+# plugin - Specifies a plugin required for building the part.
+#
+# slot   - Specifies a code section to be shared with other snaps using Content Interface. [PROVIDER]
+#              See https://snapcraft.io/docs/content-interface
+# plug   - Specifies a target folder to access the files shared by the provider (or providers). [CONSUMER]
+#              See https://snapcraft.io/docs/content-interface
+#
+####
+
+parts:
+  installdeps:
+    plugin: nil
+    source: .
+    override-build: |
+      ./build/scripts/bootstrap.sh --platform ubuntu2004 --install build
+
+  sdk:
+    plugin: python
+    source: .
+    override-build: |
+      python3 ./build/build.py --project sdk --build-for-snap
+      mkdir -p ../install/bin
+      mkdir -p ../install/lib
+      mkdir -p ../install/var/lib/deliveryoptimization-snap-downloads-root
+      cp /tmp/build-deliveryoptimization-sdk/linux-debug/sdk-cpp/tests/deliveryoptimization-sdk-tests ../install/bin/deliveryoptimization-sdk-tests
+      cp /tmp/build-deliveryoptimization-sdk/linux-debug/sdk-cpp/libdeliveryoptimization* ../install/lib
+
+    after:
+      - installdeps
+  
+    stage-packages:
+      - libboost-program-options1.71.0
+      - libboost-filesystem1.71.0
+
+apps:
+  sdk-tests:
+    command: bin/deliveryoptimization-sdk-tests
+
+plugs:
+  do-port-number:
+    interface: content
+    content: do-port-number
+    target: $SNAP_DATA/do-port-number
+
+  do-config-file:
+    interface: content
+    content: do-config-file
+    target: $SNAP_DATA/do-config-file
+
+slots:
+  downloads-folder:
+    interface: content
+    content: downloads-folder
+    write:
+        - $SNAP_DATA/var/lib/deliveryoptimization-snap-downloads-root
+
+layout:
+
+  /var/lib/deliveryoptimization-snap-downloads-root:
+    symlink: $SNAP_DATA/deliveryoptimization-snap-downloads-root

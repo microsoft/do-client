@@ -37,6 +37,7 @@ parts:
     override-build: |
       python3 ./build/build.py --project agent --build-for-snap
       mkdir -p ../install/bin
+      mkdir -p ../install/var/run/deliveryoptimization-agent
       cp /tmp/build-deliveryoptimization-agent/linux-debug/client-lite/deliveryoptimization-agent ../install/bin/deliveryoptimization-agent
 
     after:
@@ -64,7 +65,7 @@ parts:
       - libwind0-heimdal
 
 apps:
-  deliveryoptimization-client:
+  agent:
     command: bin/deliveryoptimization-agent
     daemon: simple
     refresh-mode: restart
@@ -80,7 +81,19 @@ slots:
     content: port-number
     read: [ $SNAP_DATA/var/run/deliveryoptimization-agent ]
 
+  # Share a folder containing sdk-config.json
   config-file:
     interface: content
     content: config-file
-    write: [ $SNAP_DATA/etc/deliveryoptimization-agent/sdk-config.json ]
+    write: [ $SNAP_DATA/etc/deliveryoptimization-agent/configs ]
+
+plugs:
+  client-downloads-folder:
+    interface: content
+    content: client-downloads-folder
+    target: $SNAP_DATA/deliveryoptimization-snap-downloads-root
+
+layout:
+# adu_data_dir
+  /var/lib/deliveryoptimization-snap-downloads-root:
+    symlink: $SNAP_DATA/deliveryoptimization-snap-downloads-root
