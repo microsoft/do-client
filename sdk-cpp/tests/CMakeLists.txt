@@ -69,6 +69,10 @@ add_executable(deliveryoptimization-sdk-tests ${test_source})
 target_compile_definitions(deliveryoptimization-sdk-tests PRIVATE DO_ENABLE_EXCEPTIONS)
 add_platform_interface_definitions(deliveryoptimization-sdk-tests)
 
+if (DO_BUILD_FOR_SNAP)
+    target_compile_definitions(deliveryoptimization-sdk-tests PUBLIC DO_BUILD_FOR_SNAP)
+endif ()
+
 target_include_directories(deliveryoptimization-sdk-tests
     PRIVATE
         ${dosdkcpp_private_includes}

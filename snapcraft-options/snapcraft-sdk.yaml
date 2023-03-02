@@ -72,6 +72,5 @@ slots:
         - $SNAP_DATA/var/lib/deliveryoptimization-snap-downloads-root
 
 layout:
-
   /var/lib/deliveryoptimization-snap-downloads-root:
-    symlink: $SNAP_DATA/deliveryoptimization-snap-downloads-root
+    symlink: $SNAP_DATA/var/lib/deliveryoptimization-snap-downloads-root

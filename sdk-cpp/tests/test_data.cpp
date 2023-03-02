@@ -10,13 +10,11 @@ const uint64_t g_smallFileSizeBytes = 1837u;
 const uint64_t g_largeFileSizeBytes = 536870440u;
 const uint64_t g_prodFileSizeBytes = 25006511u;
 
-std::string downloadPath = "/var/lib/deliveryoptimization-snap-downloads-root";
-
-// #ifdef DO_BUILD_FOR_SNAP
-//     downloadPath = "/var/lib/deliveryoptimization-snap-downloads-root";
-// #else
-//     downloadPath = (boost::filesystem::temp_directory_path()).string();
-// #endif
+#ifdef DO_BUILD_FOR_SNAP
+    std::string downloadPath = "/var/lib/deliveryoptimization-snap-downloads-root";
+#else
+    std::string downloadPath = (boost::filesystem::temp_directory_path()).string();
+#endif
 
 const std::string g_largeFileUrl = "http://main.oremdl.microsoft.com.nsatc.net/dotc/ReplacementDCATFile.txt";
 const std::string g_malformedFilePath = "?f309adfasdf///dfasdfj39fjasldfjasdf///           ///.1";
