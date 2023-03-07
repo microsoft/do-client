@@ -10,11 +10,17 @@ const uint64_t g_smallFileSizeBytes = 1837u;
 const uint64_t g_largeFileSizeBytes = 536870440u;
 const uint64_t g_prodFileSizeBytes = 25006511u;
 
+#ifdef DO_BUILD_FOR_SNAP
+    std::string downloadPath = "/var/lib/deliveryoptimization-snap-downloads-root";
+#else
+    std::string downloadPath = (boost::filesystem::temp_directory_path()).string();
+#endif
+
 const std::string g_largeFileUrl = "http://main.oremdl.microsoft.com.nsatc.net/dotc/ReplacementDCATFile.txt";
 const std::string g_malformedFilePath = "?f309adfasdf///dfasdfj39fjasldfjasdf///           ///.1";
-const std::string g_tmpFileName = (boost::filesystem::temp_directory_path() / boost::filesystem::path("docsdk_testfile.txt")).string();
-const std::string g_tmpFileName2 = (boost::filesystem::temp_directory_path() / boost::filesystem::path("docsdk_testfile2.txt")).string();
-const std::string g_tmpFileName3 = (boost::filesystem::temp_directory_path() / boost::filesystem::path("docsdk_testfile3.txt")).string();
+const std::string g_tmpFileName = (downloadPath / boost::filesystem::path("docsdk_testfile.txt")).string();
+const std::string g_tmpFileName2 = (downloadPath / boost::filesystem::path("docsdk_testfile2.txt")).string();
+const std::string g_tmpFileName3 = (downloadPath / boost::filesystem::path("docsdk_testfile3.txt")).string();
 const std::string g_smallFileUrl = "http://main.oremdl.microsoft.com.nsatc.net/dotc/49c591d405d307e25e72a19f7e79b53d69f19954/43A54FC03C6A979E9AAEAE2493757D1429A5C8A8D093FB7B8103E8CC8DF7B6B6";
 const std::string g_smallFilePhfInfoJson = R"(
     {

@@ -1,9 +1,9 @@
-name: deliveryoptimization-client
+name: deliveryoptimization-sdk-tests
 base: core20 # the base snap is the execution environment for this snap
 version: '0.1'
-summary: Ubuntu Core 20.04 DO
+summary: Ubuntu Core 20.04 DO SDK Tests
 description: |
-  A proof-of-concept for the Delivery Optimization Client Ubuntu Core snap.
+  SDK snap (consumer) to test communication with the DO agent snap (producer).
 
 grade: devel # must be 'stable' to release into candidate/stable channels
 confinement: devmode # use 'strict' once you have the right plugs and slots
@@ -31,56 +31,45 @@ parts:
     override-build: |
       ./build/scripts/bootstrap.sh --platform ubuntu2004 --install build
 
-  agent:
+  sdk:
     plugin: python
     source: .
     override-build: |
-      python3 ./build/build.py --project agent --build-for-snap
+      python3 ./build/build.py --project sdk --build-for-snap
       mkdir -p ../install/bin
-      cp /tmp/build-deliveryoptimization-agent/linux-debug/client-lite/deliveryoptimization-agent ../install/bin/deliveryoptimization-agent
+      mkdir -p ../install/lib
+      cp /tmp/build-deliveryoptimization-sdk/linux-debug/sdk-cpp/tests/deliveryoptimization-sdk-tests ../install/bin/deliveryoptimization-sdk-tests
+      cp /tmp/build-deliveryoptimization-sdk/linux-debug/sdk-cpp/libdeliveryoptimization* ../install/lib
 
     after:
       - installdeps
 
     stage-packages:
-      - libasn1-8-heimdal
+      - libboost-program-options1.71.0
       - libboost-filesystem1.71.0
-      - libbrotli1
-      - libcurl4
-      - libgssapi3-heimdal
-      - libhcrypto4-heimdal
-      - libheimbase1-heimdal
-      - libheimntlm0-heimdal
-      - libhx509-5-heimdal
-      - libkrb5-26-heimdal
-      - libldap-2.4-2
-      - libnghttp2-14
-      - libproxy1v5
-      - libpsl5
-      - libroken18-heimdal
-      - librtmp1
-      - libsasl2-2
-      - libssh-4
-      - libwind0-heimdal
 
 apps:
-  deliveryoptimization-client:
-    command: bin/deliveryoptimization-agent
-    daemon: simple
-    refresh-mode: restart
-    restart-condition: always
-    restart-delay: 10s
-    plugs:
-      - network
-      - network-bind
+  sdk-tests:
+    command: bin/deliveryoptimization-sdk-tests
+
+plugs:
+  do-port-number:
+    interface: content
+    content: do-port-number
+    target: $SNAP_DATA/do-port-number
+
+  do-config-file:
+    interface: content
+    content: do-config-file
+    target: $SNAP_DATA/do-config-file
 
 slots:
-  port-number:
+  downloads-folder:
     interface: content
-    content: port-number
-    read: [ $SNAP_DATA/var/run/deliveryoptimization-agent ]
+    content: downloads-folder
+    write:
+        - $SNAP_DATA/var/lib/deliveryoptimization-snap-downloads-root
 
-  config-file:
-    interface: content
-    content: config-file
-    write: [ $SNAP_DATA/etc/deliveryoptimization-agent/sdk-config.json ]
+layout:
+  /var/lib/deliveryoptimization-snap-downloads-root:
+    symlink: $SNAP_DATA/var/lib/deliveryoptimization-snap-downloads-root
