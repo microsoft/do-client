@@ -1,7 +1,7 @@
 name: deliveryoptimization-client
 base: core20 # the base snap is the execution environment for this snap
 version: '0.1'
-summary: Ubuntu Core 20.04 DO
+summary: Ubuntu Core 20.04 DO Agent
 description: |
   A proof-of-concept for the Delivery Optimization Client Ubuntu Core snap.
 
@@ -37,7 +37,6 @@ parts:
     override-build: |
       python3 ./build/build.py --project agent --build-for-snap
       mkdir -p ../install/bin
-      mkdir -p ../install/var/run/deliveryoptimization-agent
       cp /tmp/build-deliveryoptimization-agent/linux-debug/client-lite/deliveryoptimization-agent ../install/bin/deliveryoptimization-agent
 
     after:
@@ -81,11 +80,10 @@ slots:
     content: port-number
     read: [ $SNAP_DATA/var/run/deliveryoptimization-agent ]
 
-  # Share a folder containing sdk-config.json
   config-file:
     interface: content
     content: config-file
-    write: [ $SNAP_DATA/etc/deliveryoptimization-agent/configs ]
+    write: [ $SNAP_DATA/etc/deliveryoptimization-agent/sdk-config.json ]
 
 plugs:
   client-downloads-folder:

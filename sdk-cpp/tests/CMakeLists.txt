@@ -70,7 +70,7 @@ target_compile_definitions(deliveryoptimization-sdk-tests PRIVATE DO_ENABLE_EXCE
 add_platform_interface_definitions(deliveryoptimization-sdk-tests)
 
 if (DO_BUILD_FOR_SNAP)
-    target_compile_definitions(deliveryoptimization-sdk-tests PUBLIC DO_BUILD_FOR_SNAP)
+    target_compile_definitions(deliveryoptimization-sdk-tests PRIVATE DO_BUILD_FOR_SNAP)
 endif ()
 
 target_include_directories(deliveryoptimization-sdk-tests
