@@ -75,23 +75,24 @@ apps:
       - network-bind
 
 slots:
-  port-number:
+  do-port-numbers:
     interface: content
-    content: port-number
-    read: [ $SNAP_DATA/var/run/deliveryoptimization-agent ]
+    content: do-port-numbers
+    read: [ $SNAP_DATA/run ]
 
-  config-file:
+  do-configs:
     interface: content
-    content: config-file
-    write: [ $SNAP_DATA/etc/deliveryoptimization-agent/sdk-config.json ]
+    content: do-configs
+    write: [ $SNAP_DATA/etc ]
 
 plugs:
-  client-downloads-folder:
+  deviceupdate-agent-downloads:
     interface: content
-    content: client-downloads-folder
-    target: $SNAP_DATA/deliveryoptimization-snap-downloads-root
+    content: deviceupdate-agent-downloads
+    target: $SNAP_DATA/deviceupdate-agent-downloads
 
 layout:
-# adu_data_dir
-  /var/lib/deliveryoptimization-snap-downloads-root:
-    symlink: $SNAP_DATA/deliveryoptimization-snap-downloads-root
+  # DU agent will provide the /var/lib path as download location.
+  # Map it to the correct path within this snap.
+  /var/lib/deviceupdate-agent-downloads:
+    symlink: $SNAP_DATA/deviceupdate-agent-downloads
