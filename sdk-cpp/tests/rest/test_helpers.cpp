@@ -46,21 +46,24 @@ int TestHelpers::ShutdownProcess(std::string procName)
 
 void TestHelpers::RestartService(const std::string& name)
 {
+#ifndef DO_BUILD_FOR_SNAP
+    // 'snap' does not support reset-failed
     const auto resetCmd = dtu::FormatString("systemctl reset-failed %s", name.c_str());
     dtu::ExecuteSystemCommand(resetCmd.data()); // avoids hitting start-limit-hit error in systemd
+#endif
 
-    const auto restartCmd = dtu::FormatString("systemctl restart %s", name.c_str());
+    const auto restartCmd = dtu::FormatString(DO_SERVICE_CONTROLLER " restart %s", name.c_str());
     dtu::ExecuteSystemCommand(restartCmd.data());
 }
 
 void TestHelpers::StartService(const std::string& name)
 {
-    dtu::ExecuteSystemCommand(dtu::FormatString("systemctl start %s", name.c_str()).data());
+    dtu::ExecuteSystemCommand(dtu::FormatString(DO_SERVICE_CONTROLLER " start %s", name.c_str()).data());
 }
 
 void TestHelpers::StopService(const std::string& name)
 {
-    dtu::ExecuteSystemCommand(dtu::FormatString("systemctl stop %s", name.c_str()).data());
+    dtu::ExecuteSystemCommand(dtu::FormatString(DO_SERVICE_CONTROLLER " stop %s", name.c_str()).data());
 }
 
 int TestHelpers::_KillProcess(int pid, int signal)
