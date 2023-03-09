@@ -588,7 +588,8 @@ TEST_F(DownloadTests, FileDeletionAfterPause)
 #endif
 }
 
-#if defined(DO_INTERFACE_REST)
+// SNAP: tests only have read permissions into the 'port numbers' directory
+#if defined(DO_INTERFACE_REST) and !defined(DO_BUILD_FOR_SNAP)
 
 TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunning)
 {

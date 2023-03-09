@@ -96,3 +96,8 @@ layout:
   # Map it to the correct path within this snap.
   /var/lib/deviceupdate-agent-downloads:
     symlink: $SNAP_DATA/deviceupdate-agent-downloads
+
+  # Not using layout for /var/run because /var/run is already a symlink in Ubuntu 20.04,
+  #   and package startup fails if we want another symlink there.
+  # Not using /var/log and /etc just for consistency: snap adn non-snap versions do not use
+  #   the same directory paths.

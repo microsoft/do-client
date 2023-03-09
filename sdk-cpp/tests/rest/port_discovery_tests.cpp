@@ -52,8 +52,13 @@ void PortDiscoveryTests::TearDown()
     TestHelpers::StartService(g_docsSvcName);
 }
 
+// SNAP: tests only have read permissions into the 'port numbers' directory
+#ifndef DO_BUILD_FOR_SNAP
+
 TEST_F(PortDiscoveryTests, DiscoverPortTest)
 {
     std::string foundPort = msdod::CPortFinder::GetDOPort(false);
     ASSERT_EQ(foundPort, samplePortNumber);
 }
+
+#endif

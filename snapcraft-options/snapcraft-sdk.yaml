@@ -74,3 +74,8 @@ layout:
   # The path is referred to in sdk-cpp/tests/test_data.cpp.
   /var/lib/deviceupdate-agent-downloads:
     symlink: $SNAP_DATA/var/lib/deviceupdate-agent-downloads
+
+  # Not using layout for agent's restport files because /var/run is already a symlink in Ubuntu 20.04,
+  #   and package startup fails if we want another symlink there.
+  # Not using layout for the configs, the /etc directory, just for consistency: snap and non-snap versions use
+  #   different directory paths.
