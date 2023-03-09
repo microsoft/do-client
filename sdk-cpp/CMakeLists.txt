@@ -124,6 +124,9 @@ target_compile_definitions(${DO_SDK_LIB_NAME}
 if (DO_DEV_DEBUG)
     target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE DO_DEV_DEBUG)
 endif ()
+if (DO_BUILD_FOR_SNAP)
+    target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE DO_BUILD_FOR_SNAP)
+endif ()
 if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
     # TODO(shishirb) Remove internal use of exceptions on these platforms
     target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE DO_ENABLE_EXCEPTIONS)

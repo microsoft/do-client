@@ -53,23 +53,29 @@ apps:
     command: bin/deliveryoptimization-sdk-tests
 
 plugs:
-  do-port-number:
+  do-port-numbers:
     interface: content
-    content: do-port-number
-    target: $SNAP_DATA/do-port-number
+    content: do-port-numbers
+    target: $SNAP_DATA/do-port-numbers
 
-  do-config-file:
+  do-configs:
     interface: content
-    content: do-config-file
-    target: $SNAP_DATA/do-config-file
+    content: do-configs
+    target: $SNAP_DATA/do-configs
 
 slots:
   downloads-folder:
     interface: content
     content: downloads-folder
-    write:
-        - $SNAP_DATA/var/lib/deliveryoptimization-snap-downloads-root
+    write: [ $SNAP_DATA/var/lib/deviceupdate-agent-downloads ]
 
 layout:
-  /var/lib/deliveryoptimization-snap-downloads-root:
-    symlink: $SNAP_DATA/var/lib/deliveryoptimization-snap-downloads-root
+  # For testing production scenario, use the same path DU agent will use.
+  # The path is referred to in sdk-cpp/tests/test_data.cpp.
+  /var/lib/deviceupdate-agent-downloads:
+    symlink: $SNAP_DATA/var/lib/deviceupdate-agent-downloads
+
+  # Not using layout for agent's restport files because /var/run is already a symlink in Ubuntu 20.04,
+  #   and package startup fails if we want another symlink there.
+  # Not using layout for the configs, the /etc directory, just for consistency: snap and non-snap versions use
+  #   different directory paths.

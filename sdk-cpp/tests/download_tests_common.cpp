@@ -588,14 +588,15 @@ TEST_F(DownloadTests, FileDeletionAfterPause)
 #endif
 }
 
-#if defined(DO_INTERFACE_REST)
+// SNAP: tests only have read permissions into the 'port numbers' directory
+#if defined(DO_INTERFACE_REST) and !defined(DO_BUILD_FOR_SNAP)
 
 TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunning)
 {
-    TestHelpers::StopService("deliveryoptimization-agent.service");
+    TestHelpers::StopService(g_docsSvcName.c_str());
     auto startService = dotest::util::scope_exit([]()
         {
-            TestHelpers::StartService("deliveryoptimization-agent.service");
+            TestHelpers::StartService(g_docsSvcName.c_str());
         });
     TestHelpers::DeleteRestPortFiles(); // can be removed if docs deletes file on shutdown
 
@@ -614,11 +615,10 @@ TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunning)
 
 TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunningPortFilePresent)
 {
-    // TODO(shishirb) Service name should come from cmake
-    TestHelpers::StopService("deliveryoptimization-agent.service");
+    TestHelpers::StopService(g_docsSvcName.c_str());
     auto startService = dotest::util::scope_exit([]()
         {
-            TestHelpers::StartService("deliveryoptimization-agent.service");
+            TestHelpers::StartService(g_docsSvcName.c_str());
         });
     TestHelpers::DeleteRestPortFiles();
     TestHelpers::CreateRestPortFiles(1);
@@ -638,10 +638,10 @@ TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunningPortFilePresent
 
 TEST_F(DownloadTests, MultipleRestPortFileExists_Download)
 {
-    TestHelpers::StopService("deliveryoptimization-agent.service");
+    TestHelpers::StopService(g_docsSvcName.c_str());
     auto startService = dotest::util::scope_exit([]()
         {
-            TestHelpers::StartService("deliveryoptimization-agent.service");
+            TestHelpers::StartService(g_docsSvcName.c_str());
         });
     TestHelpers::CreateRestPortFiles(5);
     ASSERT_GE(TestHelpers::CountRestPortFiles(), 5u);

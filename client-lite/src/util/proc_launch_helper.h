@@ -57,8 +57,8 @@ inline void InitializePath(const std::string& path, mode_t mode = 0) try
     boost::filesystem::path dirPath(path);
     if (!boost::filesystem::exists(dirPath))
     {
-        DoLogInfo("Creating directory at %s", path.c_str());
-        boost::filesystem::create_directory(dirPath);
+        DoLogInfo("Creating directories for %s", path.c_str());
+        boost::filesystem::create_directories(dirPath);
 
         if (mode != 0)
         {
@@ -80,8 +80,6 @@ inline void InitializeDOPaths()
 
 inline void DropPermissions()
 {
-    uid_t userid = GetUserIdByName("do");
-
     // process is running as root, drop privileges
     if (getuid() == 0)
     {
@@ -94,6 +92,8 @@ inline void DropPermissions()
         {
             THROW_HR_MSG(E_FAIL, "setgid: Unable to drop group privileges: %u, errno: %d", groupid, errno);
         }
+
+        uid_t userid = GetUserIdByName("do");
         if (setuid(userid) != 0)
         {
             THROW_HR_MSG(E_FAIL, "setuid: Unable to drop user privileges: %u, errno: %d", userid, errno);

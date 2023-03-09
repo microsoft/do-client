@@ -11,9 +11,10 @@ const uint64_t g_largeFileSizeBytes = 536870440u;
 const uint64_t g_prodFileSizeBytes = 25006511u;
 
 #ifdef DO_BUILD_FOR_SNAP
-    std::string downloadPath = "/var/lib/deliveryoptimization-snap-downloads-root";
+// For testing production scenario, use the same path DU agent will use
+static const std::string downloadPath = "/var/lib/deviceupdate-agent-downloads";
 #else
-    std::string downloadPath = (boost::filesystem::temp_directory_path()).string();
+static const std::string downloadPath = boost::filesystem::temp_directory_path().string();
 #endif
 
 const std::string g_largeFileUrl = "http://main.oremdl.microsoft.com.nsatc.net/dotc/ReplacementDCATFile.txt";
@@ -35,8 +36,13 @@ const std::chrono::seconds g_smallFileWaitTime = 10s;
 const std::chrono::seconds g_largeFileWaitTime = 5min;
 
 #if defined(DO_INTERFACE_REST)
-const std::string g_docsProcName = "deliveryoptimization-agent";
+
+#ifdef DO_BUILD_FOR_SNAP
+const std::string g_docsSvcName = "deliveryoptimization-client.agent";
+#else
 const std::string g_docsSvcName = "deliveryoptimization-agent.service";
+#endif
+
 #endif
 
 // This MCC instance only works within our test lab azure VMs. Can be overriden via cmdline.

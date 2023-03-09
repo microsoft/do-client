@@ -68,8 +68,16 @@ file (GLOB files_docs_common
     src/util/*.cpp
 )
 
-# Enable easy debugging in devdebug mode by not requiring running as root
-if (DO_DEV_DEBUG)
+if (DO_BUILD_FOR_SNAP)
+    # Use relative paths here. Agent will prefix them with $SNAP_DATA environment variable at runtime.
+    # This should match the slots declared in snapcraft-agent.yaml.
+    # These cmake vars are used in Debian maintainer scripts like postrm/postinst but snap does not use those scripts.
+    message("Agent: Build to create an Ubuntu Snap package")
+    set(docs_svc_config_dir_path "etc")
+    set(docs_svc_log_dir_path "log")
+    set(docs_svc_run_dir_path "run")
+elseif (DO_DEV_DEBUG)
+    # Enable easy debugging in devdebug mode by not requiring running as root
     message("Agent: Dev debug mode")
     set(docs_svc_config_dir_path "/tmp/etc/${DOSVC_BIN_NAME}")
     set(docs_svc_log_dir_path "/tmp/log/${DOSVC_BIN_NAME}")

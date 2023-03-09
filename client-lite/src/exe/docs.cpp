@@ -139,15 +139,17 @@ HRESULT Run() try
 
     RestPortAdvertiser portAdvertiser(controller.Port());
     DoLogInfo("Port number written to %s", portAdvertiser.OutFilePath().data());
-    
+
 #ifndef DO_BUILD_FOR_SNAP
     DropPermissions();
 #endif
 
-
     DOLog::Init(docli::GetLogDirectory(), DOLog::Level::Verbose);
 
     DoLogInfo("Started, %s", msdoutil::ComponentVersion().c_str());
+    DoLogInfo("**Paths**\nLog: %s\nRun: %s\nConfig: %s\nSdkConfig: %s\nAdminConfig: %s",
+        docli::GetLogDirectory().c_str(), docli::GetRuntimeDirectory().c_str(), docli::GetConfigDirectory().c_str(),
+        docli::GetSDKConfigFilePath().c_str(), docli::GetAdminConfigFilePath().c_str());
 
     ProcessController procController([&downloadManager]()
     {
