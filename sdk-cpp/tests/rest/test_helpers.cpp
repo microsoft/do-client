@@ -29,21 +29,6 @@ namespace dtu = dotest::util;
 
 namespace msdod = microsoft::deliveryoptimization::details;
 
-bool TestHelpers::IsActiveProcess(std::string procName)
-{
-    return _GetPidFromProcName(procName) != -1;
-}
-
-// TODO(jimson): Enable starting/shutting down docs as service
-int TestHelpers::ShutdownProcess(std::string procName)
-{
-    if (IsActiveProcess(procName))
-    {
-        return _KillProcess(_GetPidFromProcName(procName), SIGINT);
-    }
-    return -1;
-}
-
 void TestHelpers::RestartService(const std::string& name)
 {
 #ifndef DO_BUILD_FOR_SNAP
@@ -64,62 +49,6 @@ void TestHelpers::StartService(const std::string& name)
 void TestHelpers::StopService(const std::string& name)
 {
     dtu::ExecuteSystemCommand(dtu::FormatString(DO_SERVICE_CONTROLLER " stop %s", name.c_str()).data());
-}
-
-int TestHelpers::_KillProcess(int pid, int signal)
-{
-    try
-    {
-        return kill(pid, signal);
-    }
-    catch (...)
-    {
-        // TODO(jimson): Implement Logging for Tests
-        return -1;
-    }
-}
-
-int TestHelpers::_GetPidFromProcName(std::string procName)
-{
-    int pid = -1;
-
-    // Open the /proc directory
-    DIR *dp = opendir("/proc");
-    if (dp != NULL)
-    {
-        // Enumerate all entries in directory until process found
-        struct dirent *dirp;
-        while (pid < 0 && (dirp = readdir(dp)))
-        {
-            // Skip non-numeric entries
-            int id = atoi(dirp->d_name);
-            if (id > 0)
-            {
-                // Read contents of virtual /proc/{pid}/cmdline file
-                std::string cmdPath = std::string("/proc/") + dirp->d_name + "/cmdline";
-                std::ifstream cmdFile(cmdPath.c_str());
-                std::string cmdLine;
-                getline(cmdFile, cmdLine);
-                if (!cmdLine.empty())
-                {
-                    // Keep first cmdline item which contains the program path
-                    size_t pos = cmdLine.find('\0');
-                    if (pos != std::string::npos)
-                        cmdLine = cmdLine.substr(0, pos);
-                    // Keep program name only, removing the path
-                    pos = cmdLine.rfind('/');
-                    if (pos != std::string::npos)
-                        cmdLine = cmdLine.substr(pos + 1);
-                    // Compare against requested process name
-                    if (procName == cmdLine)
-                        pid = id;
-                }
-            }
-        }
-    }
-    closedir(dp);
-
-    return pid;
 }
 
 void TestHelpers::CreateRestPortFiles(int numFiles)

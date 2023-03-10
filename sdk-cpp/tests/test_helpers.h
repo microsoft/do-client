@@ -212,8 +212,6 @@ public:
     }
 
 #ifdef DO_INTERFACE_REST
-    static bool IsActiveProcess(std::string name);
-    static int ShutdownProcess(std::string name);
     static void RestartService(const std::string& name);
     static void StartService(const std::string& name);
     static void StopService(const std::string& name);
@@ -227,11 +225,6 @@ public:
 #endif // DO_INTERFACE_REST
 
 private:
-#ifdef DO_INTERFACE_REST
-    static int _GetPidFromProcName(std::string name);
-    static int _KillProcess(int pid, int signal);
-#endif // DO_INTERFACE_REST
-
     // Disallow creating an instance of this object
     TestHelpers() {}
 
