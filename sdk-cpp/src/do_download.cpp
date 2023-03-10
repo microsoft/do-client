@@ -90,6 +90,15 @@ std::error_code download::set_ranges(const download_range* ranges, size_t count)
     return _download->SetRanges(ranges, count);
 }
 
+std::error_code download::set_client_cert(const unsigned char* data, size_t size) noexcept
+{
+    if ((data == nullptr) || (size == 0))
+    {
+        return details::make_error_code(errc::invalid_arg);
+    }
+    return _download->SetClientCert(data, size);
+}
+
 std::error_code download::start_and_wait_until_completion(std::chrono::seconds timeOut) noexcept
 {
     std::atomic_bool isCancelled{ false };

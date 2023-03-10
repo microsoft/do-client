@@ -295,6 +295,22 @@ std::error_code CDownloadImpl::SetRanges(const download_range* ranges, size_t co
     return DO_OK;
 }
 
+std::error_code CDownloadImpl::SetClientCert(const unsigned char* data, size_t size) noexcept
+{
+    unique_variant var;
+    V_ARRAY(&var) = SafeArrayCreateVector(VT_UI1, 0, static_cast<uint32_t>(size));
+    if (V_ARRAY(&var) == nullptr)
+    {
+        return make_error_code(E_OUTOFMEMORY);
+    }
+    V_VT(&var) = VT_ARRAY | VT_UI1;
+
+    memcpy(V_ARRAY(&var)->pvData, data, size);
+
+    RETURN_IF_FAILED(_spDownload->SetProperty(DODownloadProperty_SecurityContext, &var));
+    return DO_OK;
+}
+
 std::error_code CDownloadImpl::EnumDownloads(std::vector<std::unique_ptr<IDownload>>& out) noexcept
 {
     out.clear();
