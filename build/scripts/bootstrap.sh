@@ -17,14 +17,10 @@ set -e
 # Defaults
 INSTALL=all
 
-# Distro and arch info
 OS=""
+DISTRO=""
 VER=""
-is_linux=false
-is_macos=false
-is_amd64=false
-is_arm64=false
-is_arm32=false
+ARCH=""
 
 function usage {
     cat <<EOM
@@ -60,14 +56,14 @@ function installBuildDependencies
 {
     echo "[INFO] Installing build dependencies"
 
-    if [ "$is_macos" = true ];
+    if [ $OS == "macos" ];
     then
         # Need to install homebrew to get all the above stuff
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         brew install cmake ninja g++ gdb gdbserver python3 git curl unzip tar pkg-config
 
         ./install-vcpkg-deps.sh ~/deliveryoptimization_tools/
-    elif [ "$is_linux" = true ];
+    elif [ $OS == "linux" ];
     then
 
         apt-get install -y make build-essential g++ gdb gdbserver gcc git wget
@@ -80,7 +76,7 @@ function installBuildDependencies
         mkdir /tmp/gtest
         pushd /tmp/gtest
 
-        if [[ ($OS == "ubuntu" && $VER == "20.04") || ($OS == "debian" && $VER == "10") ]];
+        if [[ ($DISTRO == "ubuntu" && $VER == "20.04") || ($DISTRO == "debian" && $VER == "10") ]];
         then
             # The latest native-version of gtest on ubuntu2004 and debian10 currently has a bug where
             # CMakeLists doesn't declare an install target, causing 'make install' to fail.
@@ -111,10 +107,10 @@ function installBuildDependencies
 function installDeveloperTools
 {
     echo "[INFO] Installing developer tools"
-    if [ "$is_macos" = true ];
+    if [ $OS == "macos" ];
     then
         brew install cpplint
-    elif [ "$is_linux" = true ];
+    elif [ $OS == "linux" ];
     then
         apt-get install -y python-pip
         pip install cpplint
@@ -128,7 +124,7 @@ function installDeveloperTools
 
 function installContainerTools
 {
-    if [ "$is_linux" = true ];
+    if [ $OS == "linux" ];
     then
         apt-get install -y curl
 
@@ -144,7 +140,7 @@ function installContainerTools
 
 function installQemu
 {
-    if [ "$is_linux" = true ];
+    if [ $OS == "linux" ];
     then
         echo "[INFO] Installing Qemu for cross-arch support"
         # Install qemu for cross-arch support
@@ -168,8 +164,8 @@ function installAll
 
 function isSupportedLinux()
 {
-    if [[ ("$OS" == "ubuntu" && ($VER == "18.04" || $VER == "20.04"))
-        || ("$OS" == "debian" && ($VER == "10" || $VER == "11")) ]];
+    if [[ ($DISTRO == "ubuntu" && ($VER == "18.04" || $VER == "20.04"))
+        || ($DISTRO == "debian" && ($VER == "10" || $VER == "11")) ]];
     then
         return 0
     else
@@ -194,11 +190,11 @@ function determine_machine_architecture()
         return 1
     else
         if [[ $arch == aarch64* || $arch == armv8* ]]; then
-            is_arm64=true
+            ARCH="arm64"
         elif [[ $arch == armv7* || $arch == 'arm' ]]; then
-            is_arm32=true
+            ARCH="arm32"
         elif [[ $arch == 'x86_64' || $arch == 'amd64' ]]; then
-            is_amd64=true
+            ARCH="amd64"
         else
             echo "Machine architecture '$arch' is not supported."
             return 1
@@ -211,29 +207,29 @@ function determine_linux_distro()
     # Checking distro name and version
     if [ -r /etc/os-release ]; then
         # freedesktop.org and systemd
-        OS=$(grep "^ID\s*=\s*" /etc/os-release | sed -e "s/^ID\s*=\s*//")
+        DISTRO=$(grep "^ID\s*=\s*" /etc/os-release | sed -e "s/^ID\s*=\s*//")
         VER=$(grep "^VERSION_ID=" /etc/os-release | sed -e "s/^VERSION_ID=//")
         VER=$(sed -e 's/^"//' -e 's/"$//' <<< "$VER")
     elif type lsb_release > /dev/null 2>&1; then
         # linuxbase.org
-        OS=$(lsb_release -si)
+        DISTRO=$(lsb_release -si)
         VER=$(lsb_release -sr)
     elif [ -f /etc/lsb-release ]; then
         # For some versions of Debian/Ubuntu without lsb_release command
-        OS=$(grep DISTRIB_ID /etc/lsb-release | awk -F'=' '{ print $2 }')
+        DISTRO=$(grep DISTRIB_ID /etc/lsb-release | awk -F'=' '{ print $2 }')
         VER=$(grep DISTRIB_RELEASE /etc/lsb-release | awk -F'=' '{ print $2 }')
     elif [ -f /etc/debian_version ]; then
         # Older Debian/Ubuntu/etc.
-        OS=Debian
+        DISTRO=Debian
         VER=$(cat /etc/debian_version)
     else
         # Fall back to uname, e.g. "Linux <version>", also works for BSD, etc.
-        OS=$(uname -s)
+        DISTRO=$(uname -s)
         VER=$(uname -r)
     fi
 
-    # Convert OS to lowercase
-    OS="$(echo "$OS" | tr '[:upper:]' '[:lower:]')"
+    # Convert to lowercase
+    DISTRO="$(echo "$DISTRO" | tr '[:upper:]' '[:lower:]')"
 }
 
 function determine_osx_ver()
@@ -246,11 +242,11 @@ function determine_os_and_arch()
 {
     if [[ $OSTYPE == linux* ]]; then
         echo "Running on a linux-based OS"
-        is_linux=true
+        OS="linux"
         determine_linux_distro || return 1
     elif [[ $OSTYPE == darwin* ]]; then
         echo "Running on MacOS"
-        is_macos=true
+        OS="macos"
         determine_osx_ver || return 1
     else
         echo "Unsupported OS '$OSTYPE'"
@@ -262,12 +258,12 @@ function determine_os_and_arch()
 
 function isSupportedOS()
 {
-    if [ "$is_linux" = true ]; then
+    if [ $OS == "linux" ]; then
         if ! isSupportedLinux; then
             echo "Unsupported Linux distro/version"
             return 1
         fi
-    elif [ "$is_macos" = true ]; then
+    elif [ $OS == "macos" ]; then
         if ! isSupportedMacOS; then
             echo "Unsupported MacOS version"
             return 1
@@ -284,17 +280,15 @@ main()
     determine_os_and_arch || return 1
 
     echo "OS = $OS"
+    echo "DISTRO = $DISTRO"
     echo "VER = $VER"
-    if [ "$is_amd64" = true ]; then echo "Arch = amd64"
-    elif [ "$is_arm32" = true ]; then echo "Arch = arm32"
-    elif [ "$is_arm64" = true ]; then echo "Arch = arm64"
-    fi
+    echo "ARCH = $ARCH"
 
     isSupportedOS || return 1
 
     parseArgs "$@"
 
-    if [ "$is_linux" = true ]; then
+    if [ $OS == "linux" ]; then
         echo "[INFO] Updating package manager"
         apt-get update -y --fix-missing
     fi
