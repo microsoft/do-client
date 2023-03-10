@@ -179,7 +179,8 @@ function isSupportedLinux()
 
 function isSupportedMacOS()
 {
-    return 1
+    # No specific version check needed at present
+    return 0
 }
 
 # From DU project: https://github.com/Azure/iot-hub-device-update/blob/main/scripts/install-deps.sh
@@ -284,9 +285,9 @@ main()
 
     echo "OS = $OS"
     echo "VER = $VER"
-    if [ $is_amd64 ]; then echo "Arch = amd64"
-    elif [ $is_arm32 ]; then echo "Arch = arm32"
-    elif [ $is_arm64 ]; then echo "Arch = arm64"
+    if [ "$is_amd64" = true ]; then echo "Arch = amd64"
+    elif [ "$is_arm32" = true ]; then echo "Arch = arm32"
+    elif [ "$is_arm64" = true ]; then echo "Arch = arm64"
     fi
 
     isSupportedOS || return 1
