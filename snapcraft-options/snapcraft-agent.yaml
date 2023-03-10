@@ -29,7 +29,7 @@ parts:
     plugin: nil
     source: .
     override-build: |
-      ./build/scripts/bootstrap.sh --platform ubuntu2004 --install build
+      ./build/scripts/bootstrap.sh --install build
 
   agent:
     plugin: python
