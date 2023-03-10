@@ -28,8 +28,8 @@ is_arm32=false
 
 function usage {
     cat <<EOM
-$(basename $0) - Script to setup development environments for Delivery Optimization
-Usage: $(basename $0) --install <install command>
+$(basename "$0") - Script to setup development environments for Delivery Optimization
+Usage: $(basename "$0") --install <install command>
     --install           # Which command to run, supported commands: build, developertools, containertools, qemu, all. Default is all
 EOM
 }
