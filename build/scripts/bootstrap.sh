@@ -60,14 +60,14 @@ function installBuildDependencies
 {
     echo "[INFO] Installing build dependencies"
 
-    if [[ $is_macos ]];
+    if [ "$is_macos" = true ];
     then
         # Need to install homebrew to get all the above stuff
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         brew install cmake ninja g++ gdb gdbserver python3 git curl unzip tar pkg-config
 
         ./install-vcpkg-deps.sh ~/deliveryoptimization_tools/
-    elif [[ $is_linux ]];
+    elif [ "$is_linux" = true ];
     then
 
         apt-get install -y make build-essential g++ gdb gdbserver gcc git wget
@@ -111,10 +111,10 @@ function installBuildDependencies
 function installDeveloperTools
 {
     echo "[INFO] Installing developer tools"
-    if [[ $is_macos ]]
+    if [ "$is_macos" = true ];
     then
         brew install cpplint
-    elif [[ $is_linux ]]
+    elif [ "$is_linux" = true ];
     then
         apt-get install -y python-pip
         pip install cpplint
@@ -128,7 +128,7 @@ function installDeveloperTools
 
 function installContainerTools
 {
-    if [[ $is_linux ]]
+    if [ "$is_linux" = true ];
     then
         apt-get install -y curl
 
@@ -144,7 +144,7 @@ function installContainerTools
 
 function installQemu
 {
-    if [[ $is_linux ]]
+    if [ "$is_linux" = true ];
     then
         echo "[INFO] Installing Qemu for cross-arch support"
         # Install qemu for cross-arch support
@@ -249,6 +249,7 @@ function determine_os_and_arch()
         determine_linux_distro || return 1
     elif [[ $OSTYPE == darwin* ]]; then
         echo "Running on MacOS"
+        is_macos=true
         determine_osx_ver || return 1
     else
         echo "Unsupported OS '$OSTYPE'"
@@ -260,12 +261,12 @@ function determine_os_and_arch()
 
 function isSupportedOS()
 {
-    if [[ $is_linux ]]; then
+    if [ "$is_linux" = true ]; then
         if ! isSupportedLinux; then
             echo "Unsupported Linux distro/version"
             return 1
         fi
-    elif [[ $is_macos ]]; then
+    elif [ "$is_macos" = true ]; then
         if ! isSupportedMacOS; then
             echo "Unsupported MacOS version"
             return 1
@@ -292,7 +293,7 @@ main()
 
     parseArgs "$@"
 
-    if [[ $is_linux ]]; then
+    if [ "$is_linux" = true ]; then
         echo "[INFO] Updating package manager"
         apt-get update -y --fix-missing
     fi
