@@ -30,7 +30,7 @@ COPY bootstrap.sh /tmp/bootstrap.sh
 
 WORKDIR /tmp/
 RUN chmod +x bootstrap.sh
-RUN ./bootstrap.sh --platform ubuntu1804 --install build
+RUN ./bootstrap.sh --install build
 
 VOLUME /code
 WORKDIR /code
