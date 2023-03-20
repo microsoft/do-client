@@ -27,6 +27,7 @@ class download
 public:
     ~download();
 
+    // Future: use std::string_view for all input string params (requires C++17)
     static std::error_code make(const std::string& uri, std::unique_ptr<download>& out) noexcept;
     static std::error_code make(const std::string& uri, const std::string& downloadFilePath, std::unique_ptr<download>& out) noexcept;
 
@@ -49,7 +50,7 @@ public:
     static std::error_code download_url_to_path(const std::string& uri, const std::string& downloadFilePath, const std::atomic_bool& isCancelled, std::chrono::seconds timeoutSecs = std::chrono::hours(24)) noexcept;
 
     // Certain properties are not supported on older versions of Windows, resulting in
-    // msdo::errc::unknown_property_id from the following methods. See do_download_property.h.
+    // errc::unknown_property_id from the following methods. See do_download_property.h.
     std::error_code set_property(download_property prop, const download_property_value& value) noexcept;
     std::error_code get_property(download_property prop, download_property_value& value) noexcept;
 
@@ -82,6 +83,10 @@ public:
     {
         return set_property(download_property::cost_policy, static_cast<uint32_t>(value));
     }
+
+    // Serialized certificate, for use with http requests
+    // Future: use std::span (requires C++20)
+    std::error_code set_client_cert(const unsigned char* data, size_t size) noexcept;
 
     // Returns existing downloads
     static std::error_code get_downloads(std::vector<std::unique_ptr<download>>& out) noexcept;

@@ -160,6 +160,11 @@ std::error_code CDownloadImpl::SetRanges(const download_range* ranges, size_t co
     return make_error_code(errc::not_impl);
 }
 
+std::error_code CDownloadImpl::SetClientCert(const unsigned char* data, size_t size) noexcept
+{
+    return make_error_code(errc::not_impl);
+}
+
 std::error_code CDownloadImpl::EnumDownloads(std::vector<std::unique_ptr<IDownload>>& out) noexcept
 {
     return make_error_code(errc::not_impl);

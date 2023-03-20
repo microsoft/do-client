@@ -40,6 +40,7 @@ public:
     std::error_code GetProperty(download_property key, download_property_value& value) noexcept override;
     std::error_code SetProperty(download_property key, const download_property_value& val) noexcept override;
     std::error_code SetRanges(const download_range* ranges, size_t count) noexcept override;
+    std::error_code SetClientCert(const unsigned char* data, size_t size) noexcept override;
 
     static std::error_code EnumDownloads(std::vector<std::unique_ptr<IDownload>>& out) noexcept;
     static std::error_code EnumDownloads(download_property prop, const std::string& value, std::vector<std::unique_ptr<IDownload>>& out) noexcept;

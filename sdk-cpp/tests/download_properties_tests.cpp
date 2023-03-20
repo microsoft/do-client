@@ -260,6 +260,24 @@ TEST_F(DownloadPropertyTests, BasicEnumDownloadsTest)
     ASSERT_EQ(downloads.size(), 0);
 }
 
+TEST_F(DownloadPropertyTests, InvalidClientCertTest)
+{
+    std::unique_ptr<msdo::download> download;
+    ASSERT_EQ(msdo::download::make(g_smallFileUrl, g_tmpFileName, download).value(), 0);
+
+    // A convenient piece of data that isn't a valid cert
+    auto data = reinterpret_cast<const unsigned char*>(g_largeFileUrl.data());
+    auto size = g_largeFileUrl.size();
+
+    ASSERT_EQ(download->set_client_cert(nullptr, 0).value(), msdo::errc::invalid_arg);
+    ASSERT_EQ(download->set_client_cert(nullptr, size).value(), msdo::errc::invalid_arg);
+    ASSERT_EQ(download->set_client_cert(data, 0).value(), msdo::errc::invalid_arg);
+
+    ASSERT_EQ(download->set_client_cert(data, size).value(), static_cast<int32_t>(0x80092003)); // CRYPT_E_FILE_ERROR
+
+    ASSERT_EQ(download->abort().value(), 0);
+}
+
 #elif defined(DO_CLIENT_AGENT)
 
 TEST_F(DownloadPropertyTests, SmallDownloadSetCallerNameFailureTest)

@@ -39,6 +39,8 @@ public:
     virtual std::error_code SetProperty(download_property key, const download_property_value& val) noexcept = 0;
 
     virtual std::error_code SetRanges(const download_range* ranges, size_t count) noexcept = 0;
+    virtual std::error_code SetClientCert(const unsigned char* data, size_t size) noexcept = 0;
+
 };
 } // namespace details
 } // namespace deliveryoptimization
