@@ -46,7 +46,6 @@ parts:
 
     stage-packages:
       - libboost-program-options1.71.0
-      - libboost-filesystem1.71.0
 
 apps:
   sdk-tests:
