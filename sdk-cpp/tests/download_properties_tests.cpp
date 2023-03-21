@@ -22,7 +22,7 @@ public:
     void SetUp() override
     {
         TestHelpers::CleanTestDir();
-        ASSERT_FALSE(boost::filesystem::exists(g_tmpFileName));
+        ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
     }
     void TearDown() override
     {
@@ -62,7 +62,7 @@ TEST_F(DownloadPropertyTests, SmallDownloadSetCallerNameTest)
     ASSERT_EQ(strCallerName, outCallerName);
 
     simpleDownload->start_and_wait_until_completion();
-    ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName));
+    ASSERT_TRUE(std::filesystem::exists(g_tmpFileName));
 }
 
 TEST_F(DownloadPropertyTests, SmallDownloadWithPhfDigestandCvTest)
@@ -83,7 +83,7 @@ TEST_F(DownloadPropertyTests, SmallDownloadWithPhfDigestandCvTest)
 
     ASSERT_EQ(simpleDownload->start_and_wait_until_completion().value(), 0);
 
-    ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName));
+    ASSERT_TRUE(std::filesystem::exists(g_tmpFileName));
 }
 
 TEST_F(DownloadPropertyTests, InvalidPhfDigestTest)
@@ -102,7 +102,7 @@ TEST_F(DownloadPropertyTests, SmallDownloadWithCustomHeaders)
     auto simpleDownload = msdot::download::make(g_smallFileUrl, g_tmpFileName);
     simpleDownload->set_property(msdo::download_property::http_custom_headers, "XCustom1=someData\nXCustom2=moreData\n");
     simpleDownload->start_and_wait_until_completion();
-    ASSERT_TRUE(boost::filesystem::exists(g_tmpFileName));
+    ASSERT_TRUE(std::filesystem::exists(g_tmpFileName));
 }
 
 TEST_F(DownloadPropertyTests, CallbackTestUseDownload)

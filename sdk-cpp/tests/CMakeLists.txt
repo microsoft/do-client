@@ -3,7 +3,7 @@
 
 ## Tests for DO SDK
 
-find_package(Boost COMPONENTS filesystem program_options REQUIRED)
+find_package(Boost COMPONENTS program_options REQUIRED)
 find_package(GTest REQUIRED)
 
 set(sdk_tests_linked_libs_common
@@ -28,10 +28,6 @@ if(DO_PLATFORM_LINUX)
     set(dosdkcpp_private_includes
         "../src/internal/rest"
         "../src/internal/rest/util"
-    )
-
-    set(sdk_tests_linked_libs
-        stdc++fs
     )
 
     set(test_source_private
@@ -77,9 +73,9 @@ target_include_directories(deliveryoptimization-sdk-tests
     PRIVATE
         ${dosdkcpp_private_includes}
         ${dosdkcpp_private_includes_common}
+        ${Boost_INCLUDE_DIRS}
 )
 
 target_link_libraries(deliveryoptimization-sdk-tests
-    ${sdk_tests_linked_libs}
     ${sdk_tests_linked_libs_common}
 )

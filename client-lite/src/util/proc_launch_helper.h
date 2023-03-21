@@ -9,7 +9,7 @@
 #include <pwd.h>
 #include <grp.h>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "do_common.h"
 #include "do_persistence.h"
@@ -54,11 +54,11 @@ inline void SetDOPathPermissions(const std::string& path, mode_t mode)
 
 inline void InitializePath(const std::string& path, mode_t mode = 0) try
 {
-    boost::filesystem::path dirPath(path);
-    if (!boost::filesystem::exists(dirPath))
+    std::filesystem::path dirPath(path);
+    if (!std::filesystem::exists(dirPath))
     {
         DoLogInfo("Creating directories for %s", path.c_str());
-        boost::filesystem::create_directories(dirPath);
+        std::filesystem::create_directories(dirPath);
 
         if (mode != 0)
         {
