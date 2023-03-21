@@ -10,7 +10,8 @@ Run the commands in the root of the repo.
     - `$ ./build/build-snaps.sh agent`
     - `$ ./build/build-snaps.sh sdk-tests`
 
-- By default snapcraft doesn't allow multiple snaps definition in the same code base, so this build-snaps.sh file was created so that we can copy the different snap files into the main snapcraft.yaml file and then build it.
+- By default snapcraft doesn't allow multiple snaps definition in the same code base, so this build-snaps.sh file was created so that
+we can copy the different snap files into the main snapcraft.yaml file and then build it.
 
 - Subsequent builds of the same component without modifying the corresponding yaml file:
     - `$ snapcraft`
@@ -35,7 +36,9 @@ It is a fruitful exercise to look around in the host file system and see how sna
 
 ## Connecting to Other Snaps
 
-- Snapcraft allows communication between different snaps by using a content interface to handle connections with the purpose of sharing code and data between them. These connections are composed by plugs and slots, where a slot is the producer snap and the plug is the consumer snap.
+- Snapcraft allows communication between different snaps by using a content interface to handle connections with the purpose
+of sharing code and data between them. These connections are composed by plugs and slots, where a slot is the producer snap
+and the plug is the consumer snap.
 
 - For the SDK test snap to work, the plugs and slots must be connected. Run the **connect-snaps.sh** script after both snaps are installed.
 - The connections can be listed using this command:
