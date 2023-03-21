@@ -12,7 +12,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-const cppfs::path g_jsonTestFilePath = g_testTempDir / "docs_config.json";
+const std::filesystem::path g_jsonTestFilePath = g_testTempDir / "docs_config.json";
 
 const std::map<std::string, std::string> g_testData =
 {
@@ -70,9 +70,9 @@ public:
     void SetUp() override
     {
         JsonParser::RefreshInterval = std::chrono::seconds(10); // for faster test times
-        if (cppfs::exists(g_jsonTestFilePath))
+        if (std::filesystem::exists(g_jsonTestFilePath))
         {
-            cppfs::remove(g_jsonTestFilePath);
+            std::filesystem::remove(g_jsonTestFilePath);
         }
     }
 };
@@ -111,7 +111,7 @@ TEST_F(JsonParserTests, ReadConfigsWithUpdates)
     VerifyItemFound(reader, "newkey", "newvalue");
 
     // Delete config file and verify
-    cppfs::remove(g_jsonTestFilePath);
+    std::filesystem::remove(g_jsonTestFilePath);
     VerifyItemFound(reader, "newkey", "newvalue"); // within refresh interval
     VerifyTestData(reader, true);
 
@@ -122,9 +122,9 @@ TEST_F(JsonParserTests, ReadConfigsWithUpdates)
 
 TEST_F(JsonParserTests, ReadConfigsWithFileCreatedLater)
 {
-    if (cppfs::exists(g_jsonTestFilePath))
+    if (std::filesystem::exists(g_jsonTestFilePath))
     {
-        cppfs::remove(g_jsonTestFilePath);
+        std::filesystem::remove(g_jsonTestFilePath);
     }
 
     JsonParser reader(g_jsonTestFilePath);

@@ -8,7 +8,7 @@
 #include <string>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -31,9 +31,9 @@ static int WriteIoTConnectionStringToConfigFile(const char* value) noexcept
     int returnValue = 0;
     // ptree's exceptions do not provide an error code, and SDK has no logging of its own.
     // Return specific errors as a workaround.
-    boost::filesystem::path filePath{microsoft::deliveryoptimization::details::GetConfigFilePath()};
-    boost::system::error_code ec;
-    if (boost::filesystem::exists(filePath.parent_path(), ec))
+    std::filesystem::path filePath{microsoft::deliveryoptimization::details::GetConfigFilePath()};
+    std::error_code ec;
+    if (std::filesystem::exists(filePath.parent_path(), ec))
     {
         try
         {
@@ -74,10 +74,10 @@ static std::string GetSdkVersion()
     return msdoutil::ComponentVersion(false);
 }
 
-static std::string GetBinaryVersion(const boost::filesystem::path& binaryFilePath)
+static std::string GetBinaryVersion(const std::filesystem::path& binaryFilePath)
 {
     std::string version;
-    if (boost::filesystem::exists(binaryFilePath))
+    if (std::filesystem::exists(binaryFilePath))
     {
         FILE* fp = nullptr;
         try
@@ -118,7 +118,7 @@ static void AppendBinaryVersion(const char* binFileName, std::stringstream& allV
     // to cover special cases (for example, installed not via our deb/rpm packages).
     // We do not use bp::search_path() in order to avoid executing a malicious program with the
     // same name and which appears earlier in the PATH environment variable.
-    boost::filesystem::path binFilePath("/usr/local/bin");
+    std::filesystem::path binFilePath("/usr/local/bin");
     binFilePath /= binFileName;
     std::string version = GetBinaryVersion(binFilePath);
     if (version.empty())

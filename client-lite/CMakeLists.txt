@@ -9,8 +9,6 @@ project (${DOSVC_BIN_NAME} VERSION 1.0.0)
 
 option (DO_PROXY_SUPPORT "Set DO_PROXY_SUPPORT to OFF to turn off proxy support for downloads and thus remove dependency on libproxy." ON)
 
-add_definitions(-DBOOST_ALL_DYN_LINK=1)
-
 # -Wno-noexcept-type, the offending function is SetResultLoggingCallback, this warning is fixed in C++17 because exception specification
 # is part of a function type. Since the offending function is not public when compiled into docs_common just add the compiler flag here
 # to disable the warning.
@@ -29,7 +27,6 @@ function (target_link_dl_lib target)
 endfunction ()
 
 # Include external libraries here:
-find_package(Boost COMPONENTS filesystem REQUIRED)
 find_package(CURL REQUIRED)
 # g++ requires explicit specification of the thread library to be used
 find_package(Threads REQUIRED)
@@ -124,7 +121,6 @@ add_platform_interface_definitions(${DOSVC_BIN_NAME})
 target_include_directories(${DOSVC_BIN_NAME} PRIVATE ${docs_common_includes})
 target_link_libraries(${DOSVC_BIN_NAME}
     docs_common
-    ${Boost_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
 )
 

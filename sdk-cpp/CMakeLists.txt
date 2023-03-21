@@ -3,14 +3,6 @@
 
 project (deliveryoptimization_sdk VERSION 1.0.0)
 
-if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
-    message("DO configured to use shared Boost libraries")
-    add_definitions(-DBOOST_ALL_DYN_LINK=1)
-
-    # Include external libraries here
-    find_package(Boost COMPONENTS filesystem REQUIRED)
-endif()
-
 if (DO_PLATFORM_LINUX)
     fixup_compile_options_for_arm()
 endif()
@@ -65,10 +57,6 @@ if(DO_PLATFORM_LINUX)
         dohttp
     )
 
-    set(sdk_public_linked_libs
-        ${Boost_LIBRARIES}
-    )
-
     strip_symbols(${DO_SDK_LIB_NAME})
 
 elseif(DO_PLATFORM_MAC)
@@ -90,9 +78,6 @@ elseif(DO_PLATFORM_MAC)
         dohttp
     )
 
-    set(sdk_public_linked_libs
-        ${Boost_LIBRARIES}
-    )
 elseif(DO_PLATFORM_WINDOWS)
     file(GLOB sdk_source
         ${sdk_source_common}
@@ -134,8 +119,6 @@ endif ()
 add_platform_interface_definitions(${DO_SDK_LIB_NAME})
 
 target_link_libraries(${DO_SDK_LIB_NAME}
-    PUBLIC
-        ${sdk_public_linked_libs}
     PRIVATE
         ${sdk_private_linked_libs}
 )

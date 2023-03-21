@@ -4,6 +4,7 @@
 #ifndef _DELIVERY_OPTIMIZATION_TEST_HELPERS_H
 #define _DELIVERY_OPTIMIZATION_TEST_HELPERS_H
 
+#include <filesystem>
 #include <string>
 #include <thread>
 
@@ -150,34 +151,34 @@ class TestHelpers
 public:
     static void CleanTestDir()
     {
-        if (boost::filesystem::exists(g_tmpFileName))
+        if (std::filesystem::exists(g_tmpFileName))
         {
-            boost::filesystem::remove(g_tmpFileName);
+            std::filesystem::remove(g_tmpFileName);
         }
-        if (boost::filesystem::exists(g_tmpFileName2))
+        if (std::filesystem::exists(g_tmpFileName2))
         {
-            boost::filesystem::remove(g_tmpFileName2);
+            std::filesystem::remove(g_tmpFileName2);
         }
-        if (boost::filesystem::exists(g_tmpFileName3))
+        if (std::filesystem::exists(g_tmpFileName3))
         {
-            boost::filesystem::remove(g_tmpFileName3);
+            std::filesystem::remove(g_tmpFileName3);
         }
     }
 
     // DoSvc creates temporary files with a unique name in the same directory as the output file
-    static void DeleteDoSvcTemporaryFiles(const boost::filesystem::path& outputFilePath)
+    static void DeleteDoSvcTemporaryFiles(const std::filesystem::path& outputFilePath)
     {
-        const boost::filesystem::path parentDir = outputFilePath.parent_path();
-        for (boost::filesystem::directory_iterator itr(parentDir); itr != boost::filesystem::directory_iterator(); ++itr)
+        const std::filesystem::path parentDir = outputFilePath.parent_path();
+        for (std::filesystem::directory_iterator itr(parentDir); itr != std::filesystem::directory_iterator(); ++itr)
         {
-            const boost::filesystem::directory_entry& dirEntry = *itr;
+            const std::filesystem::directory_entry& dirEntry = *itr;
             // Remove all files with names that match DO*.tmp
-            if (boost::filesystem::is_regular_file(dirEntry)
+            if (std::filesystem::is_regular_file(dirEntry)
                 && (dirEntry.path().filename().string().find("DO") == 0)
                 && (dirEntry.path().extension() == ".tmp"))
             {
-                boost::system::error_code ec;
-                boost::filesystem::remove(dirEntry, ec);
+                std::error_code ec;
+                std::filesystem::remove(dirEntry, ec);
                 if (ec)
                 {
                     std::cout << "Temp file deletion error: " << ec.message() << ", " << dirEntry.path() << '\n';

@@ -28,13 +28,13 @@ using btcp_t = boost::asio::ip::tcp;
 #define TEST_MOCK_MCC_HOST   "10.130.48.179"
 #define TEST_MOCK_MCC_HOST2  "10.130.48.180"
 
-const cppfs::path g_adminConfigFilePath = g_testTempDir / "admin-config.json";
-const cppfs::path g_sdkConfigFilePath = g_testTempDir / "sdk-config.json";
+const std::filesystem::path g_adminConfigFilePath = g_testTempDir / "admin-config.json";
+const std::filesystem::path g_sdkConfigFilePath = g_testTempDir / "sdk-config.json";
 
 static void SetIoTConnectionString(const char* connectionString)
 {
     boost::property_tree::ptree json;
-    if (cppfs::exists(g_sdkConfigFilePath))
+    if (std::filesystem::exists(g_sdkConfigFilePath))
     {
         boost::property_tree::read_json(g_sdkConfigFilePath, json);
     }
@@ -45,7 +45,7 @@ static void SetIoTConnectionString(const char* connectionString)
 static void SetDOCacheHostConfig(const char* server)
 {
     boost::property_tree::ptree json;
-    if (cppfs::exists(g_adminConfigFilePath))
+    if (std::filesystem::exists(g_adminConfigFilePath))
     {
         boost::property_tree::read_json(g_adminConfigFilePath, json);
     }
@@ -56,7 +56,7 @@ static void SetDOCacheHostConfig(const char* server)
 static void SetFallbackDelayConfig(std::chrono::seconds delay)
 {
     boost::property_tree::ptree json;
-    if (cppfs::exists(g_adminConfigFilePath))
+    if (std::filesystem::exists(g_adminConfigFilePath))
     {
         boost::property_tree::read_json(g_adminConfigFilePath, json);
     }
@@ -71,13 +71,13 @@ public:
     {
         ClearTestTempDir();
 
-        if (cppfs::exists(g_adminConfigFilePath))
+        if (std::filesystem::exists(g_adminConfigFilePath))
         {
-            cppfs::remove(g_adminConfigFilePath);
+            std::filesystem::remove(g_adminConfigFilePath);
         }
-        if (cppfs::exists(g_sdkConfigFilePath))
+        if (std::filesystem::exists(g_sdkConfigFilePath))
         {
-            cppfs::remove(g_sdkConfigFilePath);
+            std::filesystem::remove(g_sdkConfigFilePath);
         }
     }
 
@@ -107,7 +107,7 @@ TEST_F(MCCManagerTests, ParseIoTConnectionString)
     _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST);
 
     // No gateway specified
-    cppfs::remove(g_sdkConfigFilePath);
+    std::filesystem::remove(g_sdkConfigFilePath);
     _VerifyExpectedCacheHost("");
 }
 
@@ -117,7 +117,7 @@ TEST_F(MCCManagerTests, AdminConfigOverride)
     SetDOCacheHostConfig(TEST_MOCK_MCC_HOST2);
     _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST2);
 
-    cppfs::remove(g_adminConfigFilePath);
+    std::filesystem::remove(g_adminConfigFilePath);
     _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST);
 }
 
@@ -127,7 +127,7 @@ TEST_F(MCCManagerTests, AdminConfigEmptyString)
     SetDOCacheHostConfig("");
     _VerifyExpectedCacheHost("");
 
-    cppfs::remove(g_adminConfigFilePath);
+    std::filesystem::remove(g_adminConfigFilePath);
     _VerifyExpectedCacheHost(TEST_MOCK_MCC_HOST);
 }
 
