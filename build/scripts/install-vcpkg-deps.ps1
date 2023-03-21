@@ -13,5 +13,4 @@ git checkout 2021.05.12
 .\vcpkg integrate install
 .\vcpkg update
 .\vcpkg install gtest:x64-windows
-.\vcpkg install boost-filesystem:x64-windows
 .\vcpkg install boost-program-options:x64-windows

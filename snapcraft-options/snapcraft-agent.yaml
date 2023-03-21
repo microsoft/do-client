@@ -44,7 +44,6 @@ parts:
 
     stage-packages:
       - libasn1-8-heimdal
-      - libboost-filesystem1.71.0
       - libbrotli1
       - libcurl4
       - libgssapi3-heimdal
