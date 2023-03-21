@@ -17,7 +17,10 @@ Run the commands in the root of the repo.
 
 - The build will generate *.snap files in the current working directory. Example: **deliveryoptimization-sdk-tests_0.1_amd64.snap**.
 
-- In the snapcraft.yaml the regular script to build for both the delivery optimization agent and sdk is called (`build.py`), but since there are some different behaviors the code should have when inside a snap, for that we use a flag `--build-for-snap` on the build. Below you can see the usage of this flag, but **is not** necessary to execute them, those lines will be executed inside the snapcraft.yaml file when you call the `build-snaps.sh` file.
+- In the snapcraft.yaml the regular script to build for both the delivery optimization agent and sdk is called (`build.py`), but since
+there are some different behaviors the code should have when inside a snap, for that we use a flag `--build-for-snap` on the build.
+Below you can see the usage of this flag, but **is not** necessary to execute them, those lines will be executed inside the snapcraft.yaml
+file when you call the `build-snaps.sh` file.
     - `$ python3 ./build/build.py --project agent --build-for-snap`  
     - `$ python3 ./build/build.py --project sdk --build-for-snap`  
 
@@ -32,7 +35,7 @@ It is a fruitful exercise to look around in the host file system and see how sna
 
 ## Connecting to Other Snaps
 
-- Snapcraft allows communication between different snaps by using a content interface to handle connections with the purpose share code and data between them. These connections are composed by plugs and slots, where a slot is the producer snap and the plug is the consumer snap.
+- Snapcraft allows communication between different snaps by using a content interface to handle connections with the purpose of sharing code and data between them. These connections are composed by plugs and slots, where a slot is the producer snap and the plug is the consumer snap.
 
 - For the SDK test snap to work, the plugs and slots must be connected. Run the **connect-snaps.sh** script after both snaps are installed.
 - The connections can be listed using this command:
