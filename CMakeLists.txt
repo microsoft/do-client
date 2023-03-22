@@ -58,8 +58,9 @@ else()
     message(FATAL_ERROR "Unknown platform for client")
 endif()
 
+# C++17 is required to use std::filesystem but Edge builds on Windows is not ready to move up yet.
+# Luckily, we do not need std::filesystem on Windows.
 if (DO_INCLUDE_SDK AND DO_PLATFORM_WINDOWS)
-    # Edge build is not ready to move up to C++17 yet.
     set(CMAKE_CXX_STANDARD 14)
 else ()
     set(CMAKE_CXX_STANDARD 17)
@@ -119,6 +120,7 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/common/cmake)
 include (do-build-helpers)
+include (do-filesystem)
 include (do-packaging-helpers)
 
 # For contributors, please modify builder name here if changes are made to project source

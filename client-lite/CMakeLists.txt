@@ -44,6 +44,8 @@ if (GSL_INCLUDE_DIR STREQUAL "GSL_INCLUDE_DIR-NOTFOUND")
   message(FATAL_ERROR "Could not find MS Guidelines Support Library.")
 endif()
 
+try_set_filesystem_lib()
+
 set (docs_common_includes
     ${include_directories_for_arm}
     ${GSL_INCLUDE_DIR}
@@ -129,6 +131,7 @@ target_include_directories(${DOSVC_BIN_NAME} PRIVATE ${docs_common_includes})
 target_link_libraries(${DOSVC_BIN_NAME}
     docs_common
     ${CMAKE_THREAD_LIBS_INIT}
+    ${CXX_FILESYSTEM_LIBS}
 )
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")

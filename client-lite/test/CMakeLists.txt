@@ -13,4 +13,5 @@ target_link_libraries(deliveryoptimization-agent-tests
     dotestutil
     ${Boost_LIBRARIES}
     GTest::GTest
+    ${CXX_FILESYSTEM_LIBS}
 )
