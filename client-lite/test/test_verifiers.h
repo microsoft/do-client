@@ -10,12 +10,12 @@
 
 inline void VerifyFileSize(const std::string& path, UINT64 cbExpectedSize)
 {
-    ASSERT_EQ(std::filesystem::file_size(path), cbExpectedSize) << "File size check: " << path;
+    ASSERT_EQ(fs::file_size(path), cbExpectedSize) << "File size check: " << path;
 }
 
 inline void VerifyFileNotFound(const std::string& path)
 {
-    ASSERT_FALSE(std::filesystem::exists(path)) << "File absent check: " << path;
+    ASSERT_FALSE(fs::exists(path)) << "File absent check: " << path;
 }
 
 inline void VerifyNoError(const DownloadStatus& status)

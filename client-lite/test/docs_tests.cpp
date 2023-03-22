@@ -6,7 +6,7 @@
 #include <boost/program_options.hpp>
 #include "test_data.h"
 
-const std::filesystem::path g_testTempDir = "/tmp/docs_test_scratch";
+const fs::path g_testTempDir = "/tmp/docs_test_scratch";
 
 int main(int argc, char** argv)
 {
@@ -15,7 +15,7 @@ int main(int argc, char** argv)
     // TODO(shishirb) enable console only logging
 
     std::error_code ec;
-    std::filesystem::create_directories(g_testTempDir, ec);
+    fs::create_directories(g_testTempDir, ec);
     if (ec)
     {
         printf("Failed to create test dir: %s\n", g_testTempDir.string().data());
