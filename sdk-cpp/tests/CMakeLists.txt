@@ -78,4 +78,5 @@ target_include_directories(deliveryoptimization-sdk-tests
 
 target_link_libraries(deliveryoptimization-sdk-tests
     ${sdk_tests_linked_libs_common}
+    ${CXX_FILESYSTEM_LIBS}
 )

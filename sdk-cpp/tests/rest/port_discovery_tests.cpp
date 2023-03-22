@@ -2,8 +2,6 @@
 
 #include <fstream>
 
-#include <filesystem>
-
 #include "do_persistence.h"
 #include "do_port_finder.h"
 #include "test_data.h"
@@ -34,9 +32,9 @@ void PortDiscoveryTests::SetUp()
 {
     TestHelpers::StopService(g_docsSvcName); // ensure agent does not write to port file
     TestHelpers::DeleteRestPortFiles();
-    if (!std::filesystem::exists(msdod::GetRuntimeDirectory()))
+    if (!fs::exists(msdod::GetRuntimeDirectory()))
     {
-        std::filesystem::create_directories(msdod::GetRuntimeDirectory());
+        fs::create_directories(msdod::GetRuntimeDirectory());
     }
 
     std::ofstream file(_testFilePath);
@@ -45,9 +43,9 @@ void PortDiscoveryTests::SetUp()
 
 void PortDiscoveryTests::TearDown()
 {
-    if (std::filesystem::exists(_testFilePath))
+    if (fs::exists(_testFilePath))
     {
-        std::filesystem::remove(_testFilePath);
+        fs::remove(_testFilePath);
     }
     TestHelpers::StartService(g_docsSvcName);
 }

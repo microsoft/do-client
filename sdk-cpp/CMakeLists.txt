@@ -13,6 +13,7 @@ endif()
 
 set(DO_SDK_LIB_NAME "deliveryoptimization")
 add_do_version_lib("${DO_SDK_LIB_NAME}-lib" ${PROJECT_VERSION})
+try_set_filesystem_lib()
 
 ### Region CMake Build ###
 
@@ -121,6 +122,7 @@ add_platform_interface_definitions(${DO_SDK_LIB_NAME})
 target_link_libraries(${DO_SDK_LIB_NAME}
     PRIVATE
         ${sdk_private_linked_libs}
+        ${CXX_FILESYSTEM_LIBS}
 )
 
 ### Endregion CMake Build ###

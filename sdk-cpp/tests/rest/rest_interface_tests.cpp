@@ -3,7 +3,6 @@
 
 #include "tests_common.h"
 
-#include <filesystem>
 #include <fstream>
 
 #include <boost/asio.hpp>
@@ -22,9 +21,9 @@ class RestInterfaceTests : public ::testing::Test
 public:
     void SetUp() override
     {
-        if (std::filesystem::exists(msdod::GetAdminConfigFilePath()))
+        if (fs::exists(msdod::GetAdminConfigFilePath()))
         {
-            std::filesystem::remove(msdod::GetAdminConfigFilePath());
+            fs::remove(msdod::GetAdminConfigFilePath());
         }
     }
 

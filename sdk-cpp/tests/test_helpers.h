@@ -4,7 +4,6 @@
 #ifndef _DELIVERY_OPTIMIZATION_TEST_HELPERS_H
 #define _DELIVERY_OPTIMIZATION_TEST_HELPERS_H
 
-#include <filesystem>
 #include <string>
 #include <thread>
 
@@ -151,34 +150,34 @@ class TestHelpers
 public:
     static void CleanTestDir()
     {
-        if (std::filesystem::exists(g_tmpFileName))
+        if (fs::exists(g_tmpFileName))
         {
-            std::filesystem::remove(g_tmpFileName);
+            fs::remove(g_tmpFileName);
         }
-        if (std::filesystem::exists(g_tmpFileName2))
+        if (fs::exists(g_tmpFileName2))
         {
-            std::filesystem::remove(g_tmpFileName2);
+            fs::remove(g_tmpFileName2);
         }
-        if (std::filesystem::exists(g_tmpFileName3))
+        if (fs::exists(g_tmpFileName3))
         {
-            std::filesystem::remove(g_tmpFileName3);
+            fs::remove(g_tmpFileName3);
         }
     }
 
     // DoSvc creates temporary files with a unique name in the same directory as the output file
-    static void DeleteDoSvcTemporaryFiles(const std::filesystem::path& outputFilePath)
+    static void DeleteDoSvcTemporaryFiles(const fs::path& outputFilePath)
     {
-        const std::filesystem::path parentDir = outputFilePath.parent_path();
-        for (std::filesystem::directory_iterator itr(parentDir); itr != std::filesystem::directory_iterator(); ++itr)
+        const fs::path parentDir = outputFilePath.parent_path();
+        for (fs::directory_iterator itr(parentDir); itr != fs::directory_iterator(); ++itr)
         {
-            const std::filesystem::directory_entry& dirEntry = *itr;
+            const fs::directory_entry& dirEntry = *itr;
             // Remove all files with names that match DO*.tmp
-            if (std::filesystem::is_regular_file(dirEntry)
+            if (fs::is_regular_file(dirEntry)
                 && (dirEntry.path().filename().string().find("DO") == 0)
                 && (dirEntry.path().extension() == ".tmp"))
             {
                 std::error_code ec;
-                std::filesystem::remove(dirEntry, ec);
+                fs::remove(dirEntry, ec);
                 if (ec)
                 {
                     std::cout << "Temp file deletion error: " << ec.message() << ", " << dirEntry.path() << '\n';

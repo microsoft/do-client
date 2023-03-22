@@ -17,8 +17,6 @@
 #include <stdio.h>
 #include <signal.h>
 
-#include <filesystem>
-
 #include "do_persistence.h"
 #include "do_port_finder.h"
 
@@ -64,12 +62,12 @@ void TestHelpers::CreateRestPortFiles(int numFiles)
 
 void TestHelpers::DeleteRestPortFiles()
 {
-    for (std::filesystem::directory_iterator itr(msdod::GetRuntimeDirectory()); itr != std::filesystem::directory_iterator(); ++itr)
+    for (fs::directory_iterator itr(msdod::GetRuntimeDirectory()); itr != fs::directory_iterator(); ++itr)
     {
         auto& dirEntry = itr->path();
         if (dirEntry.filename().string().find("restport") != std::string::npos)
         {
-            std::filesystem::remove(dirEntry);
+            fs::remove(dirEntry);
         }
     }
 }
@@ -77,7 +75,7 @@ void TestHelpers::DeleteRestPortFiles()
 unsigned int TestHelpers::CountRestPortFiles()
 {
     unsigned int count = 0;
-    for (std::filesystem::directory_iterator itr(msdod::GetRuntimeDirectory()); itr != std::filesystem::directory_iterator(); ++itr)
+    for (fs::directory_iterator itr(msdod::GetRuntimeDirectory()); itr != fs::directory_iterator(); ++itr)
     {
         auto& dirEntry = itr->path();
         if (dirEntry.filename().string().find("restport") != std::string::npos)

@@ -2,13 +2,13 @@
 
 #include <chrono>
 #include <ctime>
-#include <filesystem>
 #include <fstream>
 #include <string>
 #include <thread>
 
 #include "do_errors.h"
 #include "do_error_helpers.h"
+#include "do_filesystem.h"
 #include "do_persistence.h"
 
 using namespace std::chrono_literals; // NOLINT(build/namespaces)
@@ -25,19 +25,19 @@ namespace details
 static std::string g_DiscoverDOPort()
 {
     const std::string runtimeDirectory = GetRuntimeDirectory();
-    if (!std::filesystem::exists(runtimeDirectory))
+    if (!fs::exists(runtimeDirectory))
     {
         return std::string();
     }
 
-    std::filesystem::path mostRecentFile("");
-    auto mostRecentTime = std::filesystem::file_time_type::min();
-    for (std::filesystem::directory_iterator itr(runtimeDirectory); itr != std::filesystem::directory_iterator(); ++itr)
+    fs::path mostRecentFile("");
+    auto mostRecentTime = fs::file_time_type::min();
+    for (fs::directory_iterator itr(runtimeDirectory); itr != fs::directory_iterator(); ++itr)
     {
-        const std::filesystem::path& dirEntry = itr->path();
+        const fs::path& dirEntry = itr->path();
         if (dirEntry.filename().string().find("restport") != std::string::npos)
         {
-            auto currTime = std::filesystem::last_write_time(dirEntry);
+            auto currTime = fs::last_write_time(dirEntry);
             if (currTime > mostRecentTime)
             {
                 mostRecentTime = currTime;

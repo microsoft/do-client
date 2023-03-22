@@ -3,7 +3,6 @@
 
 #include "tests_common.h"
 
-#include <filesystem>
 #include <random>
 #include <thread>
 #include "do_config.h"
@@ -24,9 +23,9 @@ public:
     void SetUp() override
     {
         TestHelpers::CleanTestDir();
-        if (std::filesystem::exists(msdod::GetConfigFilePath()))
+        if (fs::exists(msdod::GetConfigFilePath()))
         {
-            std::filesystem::remove(msdod::GetConfigFilePath());
+            fs::remove(msdod::GetConfigFilePath());
         }
     }
 

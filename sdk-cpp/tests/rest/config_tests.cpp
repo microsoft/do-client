@@ -4,7 +4,6 @@
 #include "tests_common.h"
 
 #include <cstring>
-#include <filesystem>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include "do_config.h"
@@ -21,9 +20,9 @@ public:
     void SetUp() override
     {
         TestHelpers::CleanTestDir();
-        if (std::filesystem::exists(msdod::GetConfigFilePath()))
+        if (fs::exists(msdod::GetConfigFilePath()))
         {
-            std::filesystem::remove(msdod::GetConfigFilePath());
+            fs::remove(msdod::GetConfigFilePath());
         }
     }
 

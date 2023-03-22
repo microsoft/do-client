@@ -11,8 +11,6 @@
 #include <signal.h>
 #include <sys/types.h>
 
-#include <filesystem>
-
 #include "do_download.h"
 #include "do_download_status.h"
 #include "do_errors.h"
@@ -80,21 +78,21 @@ TEST_F(DownloadTests, SimpleDownloadTest)
     ASSERT_EQ(status.bytes_total(), g_smallFileSizeBytes);
 
     simpleDownload->finalize();
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName)), g_smallFileSizeBytes);
 }
 
 TEST_F(DownloadTests, SimpleBlockingDownloadTest)
 {
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
     msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
-    ASSERT_TRUE(std::filesystem::exists(g_tmpFileName));
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
+    ASSERT_TRUE(fs::exists(g_tmpFileName));
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName)), g_smallFileSizeBytes);
 }
 
 TEST_F(DownloadTests, CancelBlockingDownloadTest)
 {
     std::atomic_bool cancelToken { false };
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
     std::thread downloadThread([&]()
     {
         try
@@ -110,7 +108,7 @@ TEST_F(DownloadTests, CancelBlockingDownloadTest)
     std::this_thread::sleep_for(1s);
     cancelToken = true;
     downloadThread.join();
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
 }
 
 TEST_F(DownloadTests, BlockingDownloadTimeout)
@@ -128,13 +126,13 @@ TEST_F(DownloadTests, BlockingDownloadTimeout)
         ASSERT_GE(elapsedTime, std::chrono::seconds(2));
         ASSERT_LE(elapsedTime, std::chrono::seconds(5));
     }
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
 }
 
 // Note: This test takes a long time to execute due to 30 retry intervals from DOCS
 TEST_F(DownloadTests, SimpleDownloadTest_With404Url)
 {
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
 
     try
     {
@@ -165,13 +163,13 @@ TEST_F(DownloadTests, SimpleDownloadTest_WithMalformedPath)
 #elif defined(DO_INTERFACE_REST)
         ASSERT_EQ(e.error_code().value(), DO_ERROR_FROM_SYSTEM_ERROR(ENOENT));
 #endif
-        ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+        ASSERT_FALSE(fs::exists(g_tmpFileName));
     }
 }
 
 TEST_F(DownloadTests, SimpleDownloadTest_With404UrlAndMalformedPath)
 {
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
 
     try
     {
@@ -189,7 +187,7 @@ TEST_F(DownloadTests, SimpleDownloadTest_With404UrlAndMalformedPath)
 #elif defined(DO_INTERFACE_REST)
         ASSERT_EQ(e.error_code().value(), DO_ERROR_FROM_SYSTEM_ERROR(ENOENT));
 #endif
-        ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+        ASSERT_FALSE(fs::exists(g_tmpFileName));
     }
     catch (const std::exception& se)
     {
@@ -200,7 +198,7 @@ TEST_F(DownloadTests, SimpleDownloadTest_With404UrlAndMalformedPath)
 
 TEST_F(DownloadTests, Download1PausedDownload2SameDestTest)
 {
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
     auto simpleDownload = msdot::download::make(g_largeFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload->get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
@@ -214,7 +212,7 @@ TEST_F(DownloadTests, Download1PausedDownload2SameDestTest)
 
 #ifdef DO_CLIENT_AGENT
     // Only DO Agent creates the output file upon calling start()
-    ASSERT_TRUE(std::filesystem::exists(g_tmpFileName)) << "Verify output file created for first download";
+    ASSERT_TRUE(fs::exists(g_tmpFileName)) << "Verify output file created for first download";
 
     // DO Agent does not support downloading to an already existing path (yet?).
     // Verify second download fails and the first download resumes successfully.
@@ -229,23 +227,23 @@ TEST_F(DownloadTests, Download1PausedDownload2SameDestTest)
        ASSERT_EQ(e.error_code().value(), DO_ERROR_FROM_SYSTEM_ERROR(EEXIST));
     }
     simpleDownload2->abort();
-    ASSERT_TRUE(std::filesystem::exists(g_tmpFileName)); // not deleted, the earlier download is still active
+    ASSERT_TRUE(fs::exists(g_tmpFileName)); // not deleted, the earlier download is still active
 
     simpleDownload->abort();
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
 
     // download2 should now succeed
     simpleDownload2 = msdot::download::make(g_smallFileUrl, g_tmpFileName);
     simpleDownload2->start();
     WaitForDownloadCompletion(*simpleDownload2);
-    ASSERT_EQ(std::filesystem::file_size(g_tmpFileName), g_smallFileSizeBytes);
+    ASSERT_EQ(fs::file_size(g_tmpFileName), g_smallFileSizeBytes);
 
 #elif defined(DO_CLIENT_DOSVC)
     // DoSvc does support downloading to an already existing path via
     // aborting the first download. Verify this and that the second download succeeds.
 
     msdo::test::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName)), g_smallFileSizeBytes);
 
     status = simpleDownload->get_status();
     ASSERT_EQ(status.state(), msdo::download_state::aborted);
@@ -257,7 +255,7 @@ TEST_F(DownloadTests, Download1PausedDownload2SameDestTest)
 
 TEST_F(DownloadTests, Download1PausedDownload2SameFileDownload1Resume)
 {
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
     auto simpleDownload = msdot::download::make(g_largeFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload->get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
@@ -271,19 +269,19 @@ TEST_F(DownloadTests, Download1PausedDownload2SameFileDownload1Resume)
 
     std::cout << "Downloading the same file with a second download" << std::endl;
     msdot::download::download_url_to_path(g_largeFileUrl, g_tmpFileName2);
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName2)), g_largeFileSizeBytes);
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName2)), g_largeFileSizeBytes);
 
     std::cout << "Resuming and waiting for completion of first download" << std::endl;
     simpleDownload->resume();
     TestHelpers::WaitForState(*simpleDownload, msdo::download_state::transferred, g_largeFileWaitTime);
 
     simpleDownload->finalize();
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName)), g_largeFileSizeBytes);
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName)), g_largeFileSizeBytes);
 }
 
 TEST_F(DownloadTests, Download1NeverStartedDownload2CancelledSameFileTest)
 {
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
     auto simpleDownload = msdot::download::make(g_largeFileUrl, g_tmpFileName);
     msdo::download_status status = simpleDownload->get_status();
     ASSERT_EQ(status.state(), msdo::download_state::created);
@@ -298,7 +296,7 @@ TEST_F(DownloadTests, Download1NeverStartedDownload2CancelledSameFileTest)
     {
         ASSERT_EQ(e.error_code().value(), msdo::errc::not_found);
     }
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
 }
 
 TEST_F(DownloadTests, ResumeOnAlreadyDownloadedFileTest)
@@ -316,7 +314,7 @@ TEST_F(DownloadTests, ResumeOnAlreadyDownloadedFileTest)
     ASSERT_EQ(status.bytes_total(), g_smallFileSizeBytes);
 
     simpleDownload->finalize();
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName)), g_smallFileSizeBytes);
 
     try
     {
@@ -348,7 +346,7 @@ TEST_F(DownloadTests, CancelDownloadOnCompletedState)
     ASSERT_EQ(status.bytes_total(), g_smallFileSizeBytes);
 
     simpleDownload->finalize();
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName)), g_smallFileSizeBytes);
 
     try
     {
@@ -380,7 +378,7 @@ TEST_F(DownloadTests, CancelDownloadInTransferredState)
 
 #if defined(DO_INTERFACE_REST)
     // On Windows need to finalize in order for file to show up on disk, so exclude check here
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName)), g_smallFileSizeBytes);
 #endif
     try
     {
@@ -422,7 +420,7 @@ static void _PauseResumeTest(bool delayAfterStart = false)
     ASSERT_EQ(status.state(), msdo::download_state::transferred);
     ASSERT_EQ(status.bytes_total(), status.bytes_transferred());
     simpleDownload->finalize();
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName)), g_largeFileSizeBytes);
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName)), g_largeFileSizeBytes);
 }
 
 TEST_F(DownloadTests, PauseResumeTest)
@@ -437,25 +435,25 @@ TEST_F(DownloadTests, PauseResumeTestWithDelayAfterStart)
 
 TEST_F(DownloadTests, MultipleConsecutiveDownloadTest)
 {
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
     msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
-    ASSERT_TRUE(std::filesystem::exists(g_tmpFileName));
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
+    ASSERT_TRUE(fs::exists(g_tmpFileName));
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName)), g_smallFileSizeBytes);
 
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName2));
+    ASSERT_FALSE(fs::exists(g_tmpFileName2));
     msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName2);
-    ASSERT_TRUE(std::filesystem::exists(g_tmpFileName2));
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName2)), g_smallFileSizeBytes);
+    ASSERT_TRUE(fs::exists(g_tmpFileName2));
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName2)), g_smallFileSizeBytes);
 
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName3));
+    ASSERT_FALSE(fs::exists(g_tmpFileName3));
     msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName3);
-    ASSERT_TRUE(std::filesystem::exists(g_tmpFileName3));
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName3)), g_smallFileSizeBytes);
+    ASSERT_TRUE(fs::exists(g_tmpFileName3));
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName3)), g_smallFileSizeBytes);
 }
 
 TEST_F(DownloadTests, MultipleConcurrentDownloadTest)
 {
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
     std::thread downloadThread([&]()
     {
         try
@@ -495,9 +493,9 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest)
     downloadThread2.join();
     downloadThread3.join();
 
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName2)), g_smallFileSizeBytes);
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName3)), g_smallFileSizeBytes);
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName)), g_smallFileSizeBytes);
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName2)), g_smallFileSizeBytes);
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName3)), g_smallFileSizeBytes);
 }
 
 TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
@@ -546,9 +544,9 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
     downloadThread2.join();
     downloadThread3.join();
 
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName2));
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName3)), g_smallFileSizeBytes);
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName)), g_smallFileSizeBytes);
+    ASSERT_FALSE(fs::exists(g_tmpFileName2));
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName3)), g_smallFileSizeBytes);
 }
 
 TEST_F(DownloadTests, FileDeletionAfterPause)
@@ -566,8 +564,8 @@ TEST_F(DownloadTests, FileDeletionAfterPause)
     auto status = largeDownload->get_status();
     ASSERT_EQ(status.state(), msdo::download_state::paused) << "Download is paused";
 
-    std::filesystem::remove(g_tmpFileName2);
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName2)) << "Output file deleted";
+    fs::remove(g_tmpFileName2);
+    ASSERT_FALSE(fs::exists(g_tmpFileName2)) << "Output file deleted";
 
 #if defined(DO_CLIENT_AGENT)
     try
@@ -600,7 +598,7 @@ TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunning)
         });
     TestHelpers::DeleteRestPortFiles(); // can be removed if docs deletes file on shutdown
 
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
     try
     {
         msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
@@ -610,7 +608,7 @@ TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunning)
     {
         ASSERT_EQ(e.error_code().value(), msdo::errc::no_service);
     }
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
 }
 
 TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunningPortFilePresent)
@@ -623,7 +621,7 @@ TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunningPortFilePresent
     TestHelpers::DeleteRestPortFiles();
     TestHelpers::CreateRestPortFiles(1);
 
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
     try
     {
         msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
@@ -633,7 +631,7 @@ TEST_F(DownloadTests, SimpleBlockingDownloadTest_ClientNotRunningPortFilePresent
     {
         ASSERT_EQ(e.error_code().value(), msdo::errc::no_service);
     }
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
 }
 
 TEST_F(DownloadTests, MultipleRestPortFileExists_Download)
@@ -649,10 +647,10 @@ TEST_F(DownloadTests, MultipleRestPortFileExists_Download)
     std::this_thread::sleep_for(std::chrono::seconds(2));
     ASSERT_EQ(TestHelpers::CountRestPortFiles(), 1u) << "All other restport files must be deleted by the agent";
 
-    ASSERT_FALSE(std::filesystem::exists(g_tmpFileName));
+    ASSERT_FALSE(fs::exists(g_tmpFileName));
     msdot::download::download_url_to_path(g_smallFileUrl, g_tmpFileName);
-    ASSERT_TRUE(std::filesystem::exists(g_tmpFileName));
-    ASSERT_EQ(std::filesystem::file_size(std::filesystem::path(g_tmpFileName)), g_smallFileSizeBytes);
+    ASSERT_TRUE(fs::exists(g_tmpFileName));
+    ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName)), g_smallFileSizeBytes);
 }
 
 #endif // DO_INTERFACE_REST
