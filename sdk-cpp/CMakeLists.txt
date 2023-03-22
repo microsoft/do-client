@@ -3,6 +3,10 @@
 
 project (deliveryoptimization_sdk VERSION 1.0.0)
 
+if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
+    find_package(Boost REQUIRED)
+endif()
+
 if (DO_PLATFORM_LINUX)
     fixup_compile_options_for_arm()
 endif()
@@ -45,6 +49,8 @@ if(DO_PLATFORM_LINUX)
     set(sdk_compile_definitions
         DOSVC_BIN_NAME="${DOSVC_BIN_NAME}"
         DO_PLUGIN_APT_BIN_NAME="${DO_PLUGIN_APT_BIN_NAME}"
+        BOOST_ERROR_CODE_HEADER_ONLY
+        BOOST_SYSTEM_NO_DEPRECATED
     )
 
     set(sdk_private_includes
@@ -68,6 +74,11 @@ elseif(DO_PLATFORM_MAC)
     )
 
     add_library(${DO_SDK_LIB_NAME} SHARED "${sdk_source}")
+
+    set(sdk_compile_definitions
+        BOOST_ERROR_CODE_HEADER_ONLY
+        BOOST_SYSTEM_NO_DEPRECATED
+    )
 
     set(sdk_private_includes
         "src/internal/rest"
