@@ -27,6 +27,7 @@ function (target_link_dl_lib target)
 endfunction ()
 
 # Include external libraries here:
+find_package(Boost REQUIRED)
 find_package(CURL REQUIRED)
 # g++ requires explicit specification of the thread library to be used
 find_package(Threads REQUIRED)
@@ -87,12 +88,18 @@ endif ()
 
 add_do_version_lib(${PROJECT_NAME} ${PROJECT_VERSION})
 
-# Build product files into a lib for use by other targets
+# Build product files into a lib for use by other targets.
+# BOOST_ERROR_CODE_HEADER_ONLY and BOOST_SYSTEM_NO_DEPRECATED are required to use header-only components
+# like boost.asio without linking to the boost.system shared library.
 add_library(docs_common STATIC ${files_docs_common})
 target_compile_definitions(docs_common
-    PRIVATE DO_CONFIG_DIRECTORY_PATH="${docs_svc_config_dir_path}"
-            DO_AGENT_LOG_DIRECTORY_PATH="${docs_svc_log_dir_path}"
-            DO_RUN_DIRECTORY_PATH="${docs_svc_run_dir_path}"
+    PUBLIC
+        BOOST_ERROR_CODE_HEADER_ONLY
+        BOOST_SYSTEM_NO_DEPRECATED
+    PRIVATE
+        DO_CONFIG_DIRECTORY_PATH="${docs_svc_config_dir_path}"
+        DO_AGENT_LOG_DIRECTORY_PATH="${docs_svc_log_dir_path}"
+        DO_RUN_DIRECTORY_PATH="${docs_svc_run_dir_path}"
 )
 if (DO_DEV_DEBUG)
     target_compile_definitions(docs_common PUBLIC DO_DEV_DEBUG)
