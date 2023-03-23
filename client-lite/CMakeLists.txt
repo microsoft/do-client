@@ -9,8 +9,6 @@ project (${DOSVC_BIN_NAME} VERSION 1.0.0)
 
 option (DO_PROXY_SUPPORT "Set DO_PROXY_SUPPORT to OFF to turn off proxy support for downloads and thus remove dependency on libproxy." ON)
 
-add_definitions(-DBOOST_ALL_DYN_LINK=1)
-
 # -Wno-noexcept-type, the offending function is SetResultLoggingCallback, this warning is fixed in C++17 because exception specification
 # is part of a function type. Since the offending function is not public when compiled into docs_common just add the compiler flag here
 # to disable the warning.
@@ -29,7 +27,7 @@ function (target_link_dl_lib target)
 endfunction ()
 
 # Include external libraries here:
-find_package(Boost COMPONENTS filesystem REQUIRED)
+find_package(Boost REQUIRED)
 find_package(CURL REQUIRED)
 # g++ requires explicit specification of the thread library to be used
 find_package(Threads REQUIRED)
@@ -45,6 +43,8 @@ find_path(GSL_INCLUDE_DIR gsl)
 if (GSL_INCLUDE_DIR STREQUAL "GSL_INCLUDE_DIR-NOTFOUND")
   message(FATAL_ERROR "Could not find MS Guidelines Support Library.")
 endif()
+
+try_set_filesystem_lib()
 
 set (docs_common_includes
     ${include_directories_for_arm}
@@ -90,13 +90,15 @@ endif ()
 
 add_do_version_lib(${PROJECT_NAME} ${PROJECT_VERSION})
 
-# Build product files into a lib for use by other targets
+# Build product files into a lib for use by other targets.
 add_library(docs_common STATIC ${files_docs_common})
 target_compile_definitions(docs_common
-    PRIVATE DO_CONFIG_DIRECTORY_PATH="${docs_svc_config_dir_path}"
-            DO_AGENT_LOG_DIRECTORY_PATH="${docs_svc_log_dir_path}"
-            DO_RUN_DIRECTORY_PATH="${docs_svc_run_dir_path}"
+    PRIVATE
+        DO_CONFIG_DIRECTORY_PATH="${docs_svc_config_dir_path}"
+        DO_AGENT_LOG_DIRECTORY_PATH="${docs_svc_log_dir_path}"
+        DO_RUN_DIRECTORY_PATH="${docs_svc_run_dir_path}"
 )
+add_boost_definitions(docs_common PUBLIC)
 if (DO_DEV_DEBUG)
     target_compile_definitions(docs_common PUBLIC DO_DEV_DEBUG)
 endif ()
@@ -124,8 +126,8 @@ add_platform_interface_definitions(${DOSVC_BIN_NAME})
 target_include_directories(${DOSVC_BIN_NAME} PRIVATE ${docs_common_includes})
 target_link_libraries(${DOSVC_BIN_NAME}
     docs_common
-    ${Boost_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
+    ${CXX_FILESYSTEM_LIBS}
 )
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")

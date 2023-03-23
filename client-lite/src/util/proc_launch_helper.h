@@ -9,9 +9,8 @@
 #include <pwd.h>
 #include <grp.h>
 
-#include <boost/filesystem.hpp>
-
 #include "do_common.h"
+#include "do_filesystem.h"
 #include "do_persistence.h"
 
 inline gid_t GetGroupIdByName(const char *name)
@@ -54,11 +53,11 @@ inline void SetDOPathPermissions(const std::string& path, mode_t mode)
 
 inline void InitializePath(const std::string& path, mode_t mode = 0) try
 {
-    boost::filesystem::path dirPath(path);
-    if (!boost::filesystem::exists(dirPath))
+    fs::path dirPath(path);
+    if (!fs::exists(dirPath))
     {
         DoLogInfo("Creating directories for %s", path.c_str());
-        boost::filesystem::create_directories(dirPath);
+        fs::create_directories(dirPath);
 
         if (mode != 0)
         {

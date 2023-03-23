@@ -150,34 +150,34 @@ class TestHelpers
 public:
     static void CleanTestDir()
     {
-        if (boost::filesystem::exists(g_tmpFileName))
+        if (fs::exists(g_tmpFileName))
         {
-            boost::filesystem::remove(g_tmpFileName);
+            fs::remove(g_tmpFileName);
         }
-        if (boost::filesystem::exists(g_tmpFileName2))
+        if (fs::exists(g_tmpFileName2))
         {
-            boost::filesystem::remove(g_tmpFileName2);
+            fs::remove(g_tmpFileName2);
         }
-        if (boost::filesystem::exists(g_tmpFileName3))
+        if (fs::exists(g_tmpFileName3))
         {
-            boost::filesystem::remove(g_tmpFileName3);
+            fs::remove(g_tmpFileName3);
         }
     }
 
     // DoSvc creates temporary files with a unique name in the same directory as the output file
-    static void DeleteDoSvcTemporaryFiles(const boost::filesystem::path& outputFilePath)
+    static void DeleteDoSvcTemporaryFiles(const fs::path& outputFilePath)
     {
-        const boost::filesystem::path parentDir = outputFilePath.parent_path();
-        for (boost::filesystem::directory_iterator itr(parentDir); itr != boost::filesystem::directory_iterator(); ++itr)
+        const fs::path parentDir = outputFilePath.parent_path();
+        for (fs::directory_iterator itr(parentDir); itr != fs::directory_iterator(); ++itr)
         {
-            const boost::filesystem::directory_entry& dirEntry = *itr;
+            const fs::directory_entry& dirEntry = *itr;
             // Remove all files with names that match DO*.tmp
-            if (boost::filesystem::is_regular_file(dirEntry)
+            if (fs::is_regular_file(dirEntry)
                 && (dirEntry.path().filename().string().find("DO") == 0)
                 && (dirEntry.path().extension() == ".tmp"))
             {
-                boost::system::error_code ec;
-                boost::filesystem::remove(dirEntry, ec);
+                std::error_code ec;
+                fs::remove(dirEntry, ec);
                 if (ec)
                 {
                     std::cout << "Temp file deletion error: " << ec.message() << ", " << dirEntry.path() << '\n';

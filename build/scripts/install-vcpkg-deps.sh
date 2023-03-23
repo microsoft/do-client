@@ -17,9 +17,6 @@ git checkout 2021.05.12
 ./vcpkg integrate install
 
 ./vcpkg install ms-gsl
-./vcpkg install boost-log
-./vcpkg install boost-beast
-./vcpkg install boost-iostreams
 ./vcpkg install boost-uuid
 ./vcpkg install boost-program-options
 ./vcpkg install gtest

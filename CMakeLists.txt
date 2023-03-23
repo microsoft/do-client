@@ -17,10 +17,6 @@ option (DO_INCLUDE_SDK "Build subproject sdk-cpp" OFF)
 option (DO_BUILD_TESTS "Set DO_BUILD_TESTS to OFF to skip building tests." ON)
 option (DO_BUILD_FOR_SNAP "Enable DO Snap build option" OFF)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 # Get verbose output from cmake generation and build steps
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
@@ -62,6 +58,16 @@ else()
     message(FATAL_ERROR "Unknown platform for client")
 endif()
 
+# C++17 is required to use std::filesystem but Edge builds on Windows is not ready to move up yet.
+# Luckily, we do not need std::filesystem on Windows.
+if (DO_INCLUDE_SDK AND DO_PLATFORM_WINDOWS)
+    set(CMAKE_CXX_STANDARD 14)
+else ()
+    set(CMAKE_CXX_STANDARD 17)
+endif ()
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 # PIC (Position Independent Code) ensures .a files can be linked to executables that have PIE enabled
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -85,7 +91,7 @@ if (DO_PLATFORM_LINUX)
     # not relevant for our usage or they are symlinks to /usr/lib and /usr/bin.
     if (NOT CMAKE_PREFIX_PATH)
         set(CMAKE_PREFIX_PATH "/usr")
-    endif () 
+    endif ()
 endif (DO_PLATFORM_LINUX)
 
 if (DO_PLATFORM_WINDOWS AND DO_INCLUDE_SDK)
