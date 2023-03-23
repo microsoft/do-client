@@ -49,8 +49,6 @@ if(DO_PLATFORM_LINUX)
     set(sdk_compile_definitions
         DOSVC_BIN_NAME="${DOSVC_BIN_NAME}"
         DO_PLUGIN_APT_BIN_NAME="${DO_PLUGIN_APT_BIN_NAME}"
-        BOOST_ERROR_CODE_HEADER_ONLY
-        BOOST_SYSTEM_NO_DEPRECATED
     )
 
     set(sdk_private_includes
@@ -74,11 +72,6 @@ elseif(DO_PLATFORM_MAC)
     )
 
     add_library(${DO_SDK_LIB_NAME} SHARED "${sdk_source}")
-
-    set(sdk_compile_definitions
-        BOOST_ERROR_CODE_HEADER_ONLY
-        BOOST_SYSTEM_NO_DEPRECATED
-    )
 
     set(sdk_private_includes
         "src/internal/rest"
@@ -118,6 +111,7 @@ target_compile_definitions(${DO_SDK_LIB_NAME}
     PRIVATE
         ${sdk_compile_definitions}
 )
+add_boost_definitions(${DO_SDK_LIB_NAME} PRIVATE)
 if (DO_DEV_DEBUG)
     target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE DO_DEV_DEBUG)
 endif ()

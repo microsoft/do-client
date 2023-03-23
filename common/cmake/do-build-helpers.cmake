@@ -161,6 +161,14 @@ function (add_platform_interface_definitions target_name)
 
 endfunction ()
 
+function (add_boost_definitions target_name scope)
+    if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
+        # BOOST_ERROR_CODE_HEADER_ONLY and BOOST_SYSTEM_NO_DEPRECATED are required to use header-only components
+        # like boost.asio without linking to the boost.system shared library.
+        target_compile_definitions(${target_name} ${scope} BOOST_ERROR_CODE_HEADER_ONLY BOOST_SYSTEM_NO_DEPRECATED)
+    endif ()
+endfunction ()
+
 function (try_set_filesystem_lib)
 
     # Sets the variable CXX_FILESYSTEM_LIBS if an extra lib is required for c++ filesystem support.

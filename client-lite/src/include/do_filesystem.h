@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-#pragma once
+#ifndef _DELIVERY_OPTIMIZATION_DO_FILESYSTEM_H
+#define _DELIVERY_OPTIMIZATION_DO_FILESYSTEM_H
 
 #if defined(__cpp_lib_filesystem)
 #define INCLUDE_STD_FILESYSTEM_EXPERIMENTAL 0
@@ -25,3 +26,5 @@ namespace fs = std::experimental::filesystem;
 #include <filesystem>
 namespace fs = std::filesystem;
 #endif
+
+#endif // _DELIVERY_OPTIMIZATION_DO_FILESYSTEM_H
