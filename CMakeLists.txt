@@ -120,7 +120,6 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/common/cmake)
 include (do-build-helpers)
-include (do-filesystem)
 include (do-packaging-helpers)
 
 # For contributors, please modify builder name here if changes are made to project source
