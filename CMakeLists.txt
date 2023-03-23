@@ -89,8 +89,13 @@ if (DO_PLATFORM_LINUX)
     # (Enable --trace-expand in cmake and look at lines from boost_headers-config.cmake and its callers.)
     # Workaround: force cmake to look in "/usr" since the /lib and /bin paths are either
     # not relevant for our usage or they are symlinks to /usr/lib and /usr/bin.
-    if (NOT CMAKE_PREFIX_PATH)
-        set(CMAKE_PREFIX_PATH "/usr")
+    if (IS_SYMLINK "/lib" AND NOT EXISTS "/include")
+        if (CMAKE_PREFIX_PATH)
+            message (WARNING "/lib is a symlink and /include does not exist. CMAKE_PREFIX_PATH is already set, not overriding it.")
+        else ()
+            message (WARNING "/lib is a symlink and /include does not exist. Updating CMAKE_PREFIX_PATH to /usr.")
+            set(CMAKE_PREFIX_PATH "/usr")
+        endif ()
     endif ()
 endif (DO_PLATFORM_LINUX)
 
