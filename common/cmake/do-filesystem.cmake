@@ -16,21 +16,26 @@ function (try_set_filesystem_lib)
         return ()
     endif ()
 
+    message ("Compiler identified: ${CMAKE_CXX_COMPILER_ID} - ${CMAKE_CXX_COMPILER_VERSION}")
+    if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 9.0.0)
+        message (STATUS "Using std::experimental filesystem library")
+        set(CXX_FILESYSTEM_LIBS stdc++fs PARENT_SCOPE)
+    endif ()
+
+    if (FALSE)
+
     set(FS_TESTCODE
         "
-        #if defined(CXX17_FILESYSTEM) || defined (CXX17_FILESYSTEM_LIBFS)
+        #if defined(CXX17_FILESYSTEM) || defined(CXX17_FILESYSTEM_LIBFS)
         #include <filesystem>
+        namespace fs = std::filesystem;
         #elif defined(CXX11_EXP_FILESYSTEM) || defined (CXX11_EXP_FILESYSTEM_LIBFS)
         #include <experimental/filesystem>
-        namespace std {
-            namespace filesystem {
-                using experimental::filesystem::is_regular_file;
-            }
-        }
+        namespace fs = std::experimental::filesystem;
         #endif
         int main(void)
         {
-            return std::filesystem::is_regular_file(\"/\") ? 0 : 1;
+            return fs::is_regular_file(\"/\") ? 0 : 1;
         }
         "
     )
@@ -62,5 +67,6 @@ function (try_set_filesystem_lib)
     endif ()
 
     unset(FS_TESTCODE)
+    endif()
 
 endfunction ()
