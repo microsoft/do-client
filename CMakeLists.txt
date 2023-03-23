@@ -90,10 +90,7 @@ if (DO_PLATFORM_LINUX)
     # Workaround: force cmake to look in "/usr" since the /lib and /bin paths are either
     # not relevant for our usage or they are symlinks to /usr/lib and /usr/bin.
     if (NOT CMAKE_PREFIX_PATH)
-        if (EXISTS "/lib" AND NOT EXISTS "/include")
-            message (WARNING "Updating cmake prefix path to /usr")
-            set(CMAKE_PREFIX_PATH "/usr")
-        endif ()
+        set(CMAKE_PREFIX_PATH "/usr")
     endif ()
 endif (DO_PLATFORM_LINUX)
 
