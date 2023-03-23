@@ -22,8 +22,11 @@ do
   change_pct=`echo "scale=2; ($actual_size - $expected_size) / $expected_size * 100" | bc`
   echo Size check, expected = $expected_size, actual = $actual_size, change pct = $change_pct%
   change_pct=$( printf "%.0f" $change_pct )
-  if [ $change_pct -ge 5 ]; then
-      echo "Size check FAIL. Adjust expected_size if this increase is expected."
-      exit 3
+  if [ $change_pct -ge 2 ]; then
+    echo "[FAIL] Size increased beyond threshold. Adjust expected_size if this is expected."
+    exit 3
+  elif [ $change_pct -le -5 ]; then
+    echo "[WARNING] Size reduced beyond threshold. Adjust expected_size if this is expected."
+    exit 4
   fi
 done

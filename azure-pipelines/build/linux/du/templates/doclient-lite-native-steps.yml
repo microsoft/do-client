@@ -24,7 +24,7 @@ steps:
   inputs:
     targetType: 'filePath'
     filePath: 'build/scripts/check_binary_size.sh'
-    arguments: '1251928 /tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}/client-lite/deliveryoptimization-agent'
+    arguments: '363928 /tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}/client-lite/deliveryoptimization-agent'
   displayName: 'Limit binary size increase'
 
 - task: CmdLine@2
