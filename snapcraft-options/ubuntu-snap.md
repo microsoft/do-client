@@ -10,13 +10,19 @@ Run the commands in the root of the repo.
     - `$ ./build/build-snaps.sh agent`
     - `$ ./build/build-snaps.sh sdk-tests`
 
+- **Building on ARM64 architecture**
+    - `$ ./build/build-snaps.sh agent arm64`
+    - `$ ./build/build-snaps.sh sdk-tests arm64`
+
+If the `arm64` argument is not provided then by default snapcraft will build the snap for `amd64` architecture.
+
 - By default snapcraft doesn't allow multiple snaps definition in the same code base, so this build-snaps.sh file was created so that
 we can copy the different snap files into the main snapcraft.yaml file and then build it.
 
 - Subsequent builds of the same component without modifying the corresponding yaml file:
     - `$ snapcraft`
 
-- The build will generate *.snap files in the current working directory. Example: **deliveryoptimization-sdk-tests_0.1_amd64.snap**.
+- The build will generate *.snap files in the current working directory. Example: **deliveryoptimization-sdk-tests_0.1_multi.snap**.
 
 - In the snapcraft.yaml the regular script to build for both the delivery optimization agent and sdk is called (`build.py`), but since
 there are some different behaviors the code should have when inside a snap, for that we use a flag `--build-for-snap` on the build.
@@ -26,8 +32,16 @@ file when you call the `build-snaps.sh` file.
     - `$ python3 ./build/build.py --project sdk --build-for-snap`  
 
 ## Installing
-- `$ sudo snap install --devmode ./deliveryoptimization-sdk-tests_0.1_amd64.snap`
-- `$ sudo snap install --devmode ./deliveryoptimization-client_0.1_amd64.snap`
+- `$ sudo snap install --devmode ./deliveryoptimization-sdk-tests_0.1_multi.snap`
+- `$ sudo snap install --devmode ./deliveryoptimization-client_0.1_multi.snap`
+
+Note that the `--devmode` flag is being used in the install command, this should be used in devmode confinment only. If the snap is in strict confinment then you can remove the flag.
+
+In case of metadata signatures error when running the install command, the `--dangerous` flag should be used. 
+The --dangerous flag in snapcraft bypasses the signature check, allowing you to install an unsigned Snap package.
+
+- `$ sudo snap install --dangerous ./deliveryoptimization-sdk-tests_0.1_multi.snap`
+- `$ sudo snap install --dangerous ./deliveryoptimization-client_0.1_multi.snap`
 
 ## The snap environment
 It is a fruitful exercise to look around in the host file system and see how snap structures the installed snaps. Look at these paths to start with:
