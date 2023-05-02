@@ -22,7 +22,12 @@ then
         cp ./snapcraft-options/snapcraft-sdk.yaml ./snap/snapcraft.yaml
     fi
 
-    snapcraft
+    if [ $2 -a $2  == "arm64" ]
+    then
+        snapcraft --target-arch=arm64 --destructive-mode --enable-experimental-target-arch
+    else
+        snapcraft
+    fi
 
 else
     echo "$1 is not a valid snap option, valid options are 'agent' or 'sdk-tests'"
