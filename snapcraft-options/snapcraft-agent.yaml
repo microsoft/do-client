@@ -1,4 +1,4 @@
-name: microsoft-delivery-optimization
+name: deliveryoptimization-agent
 base: core20 # the base snap is the execution environment for this snap
 version: '1.0.1'
 summary: Ubuntu Core 20.04 DO Agent

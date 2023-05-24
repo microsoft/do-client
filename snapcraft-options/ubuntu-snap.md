@@ -33,7 +33,7 @@ file when you call the `build-snaps.sh` file.
 
 ## Installing
 - `$ sudo snap install --devmode ./deliveryoptimization-sdk-tests_0.1_multi.snap`
-- `$ sudo snap install --devmode ./microsoft-delivery-optimization_0.1_multi.snap`
+- `$ sudo snap install --devmode ./deliveryoptimization-agent_1.0.1_multi.snap`
 
 Note that the `--devmode` flag is being used in the install command, this should be used in devmode confinment only. If the snap is in strict confinment then you can remove the flag.
 
@@ -41,7 +41,7 @@ In case of metadata signatures error when running the install command, the `--da
 The --dangerous flag in snapcraft bypasses the signature check, allowing you to install an unsigned Snap package.
 
 - `$ sudo snap install --dangerous ./deliveryoptimization-sdk-tests_0.1_multi.snap`
-- `$ sudo snap install --dangerous ./microsoft-delivery-optimization_0.1_multi.snap`
+- `$ sudo snap install --dangerous ./deliveryoptimization-agent_1.0.1_multi.snap`
 
 ## The snap environment
 It is a fruitful exercise to look around in the host file system and see how snap structures the installed snaps. Look at these paths to start with:
@@ -60,22 +60,22 @@ and the plug is the consumer snap.
 
 ```shell
 Interface     Plug                                                      Slot                                         Notes
-content       -                                                         microsoft-delivery-optimization:do-configs       -
-content       -                                                         microsoft-delivery-optimization:do-port-numbers  -
-content       microsoft-delivery-optimization:deviceupdate-agent-downloads  -                                            -
-network       microsoft-delivery-optimization:network                       :network                                     -
-network-bind  microsoft-delivery-optimization:network-bind                  :network-bind                                -
+content       -                                                         deliveryoptimization-agent:do-configs       -
+content       -                                                         deliveryoptimization-agent:do-port-numbers  -
+content       deliveryoptimization-agent:deviceupdate-agent-downloads  -                                            -
+network       deliveryoptimization-agent:network                       :network                                     -
+network-bind  deliveryoptimization-agent:network-bind                  :network-bind                                -
 
 ```
 
 ## Running or executing
 - Agent
     - The agent is declared as a daemon/service, so it starts running immediately after successful installation.
-    - Stop service: `$ sudo snap stop microsoft-delivery-optimization.agent`
-    - Start service: `$ sudo snap start microsoft-delivery-optimization.agent`
-    - Read service journal: `$ sudo snap logs microsoft-delivery-optimization.agent`
-    - systemctl can also be used with the correct service unit name: `$ systemctl status snap.microsoft-delivery-optimization.agent.service`
-    - **journalctl** can also be used to follow logs: `$ journalctl -f -u snap.microsoft-delivery-optimization.agent.service`
+    - Stop service: `$ sudo snap stop deliveryoptimization-agent.agent`
+    - Start service: `$ sudo snap start deliveryoptimization-agent.agent`
+    - Read service journal: `$ sudo snap logs deliveryoptimization-agent.agent`
+    - systemctl can also be used with the correct service unit name: `$ systemctl status snap.deliveryoptimization-agent.agent.service`
+    - **journalctl** can also be used to follow logs: `$ journalctl -f -u snap.deliveryoptimization-agent.agent.service`
 
 - SDK tests
     - This snap declares the **deliveryoptimization-sdk-tests** binary as an app.
@@ -88,10 +88,10 @@ network-bind  microsoft-delivery-optimization:network-bind                  :net
 
 ## Uninstalling or cleaning up
 - Uninstall installed snap packages
-    - `$ sudo snap remove microsoft-delivery-optimization`
+    - `$ sudo snap remove deliveryoptimization-agent`
     - `$ sudo snap remove deliveryoptimization-sdk-tests`
 
 - Cleaning up build environment: Building sometimes fails with strange errors from **multipass**. Cleaning up the multipass instance helps.
     - List the available instances: `$ multipass list`
-    - Delete an instance, example: `$ multipass delete snapcraft-microsoft-delivery-optimization`
+    - Delete an instance, example: `$ multipass delete snapcraft-deliveryoptimization-agent`
     - Purge deleted instances: `$ multipass purge`
