@@ -1,6 +1,6 @@
-name: deliveryoptimization-client
+name: deliveryoptimization-agent
 base: core20 # the base snap is the execution environment for this snap
-version: '0.1'
+version: '1.0.1'
 summary: Ubuntu Core 20.04 DO Agent
 description: |
   A proof-of-concept for the Delivery Optimization Client Ubuntu Core snap.
