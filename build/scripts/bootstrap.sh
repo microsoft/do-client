@@ -88,6 +88,15 @@ function installBuildDependencies
             cmake /tmp/gtest
             make
             make install
+        elif [[ $DISTRO == "ubuntu" && $VER == "22.04" ]];
+        then
+            git clone https://github.com/google/googletest.git .
+            git checkout v1.13.0
+            mkdir cmake
+            cd cmake
+            cmake /tmp/gtest
+            make
+            make install
         else
             # libgtest-dev is a source package and requires manual installation
             apt-get -y install libgtest-dev
@@ -164,7 +173,7 @@ function installAll
 
 function isSupportedLinux()
 {
-    if [[ ($DISTRO == "ubuntu" && ($VER == "18.04" || $VER == "20.04"))
+    if [[ ($DISTRO == "ubuntu" && ($VER == "18.04" || $VER == "20.04" || $VER == "22.04"))
         || ($DISTRO == "debian" && ($VER == "10" || $VER == "11")) ]];
     then
         return 0
