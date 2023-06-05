@@ -61,3 +61,14 @@ jobs:
     imageVersion: ${{variables.containerImageVersion}}
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'ubuntu2204_arm64' # azure pipelines does not support '.' in display names
+    imageVersion: ${{variables.containerImageVersion}}
+    stepsTemplate: 'doclient-lite-docker-steps.yml'
+
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'ubuntu2204_x64' # azure pipelines does not support '.' in display names
+    imageVersion: ${{variables.containerImageVersion}}
+    stepsTemplate: 'doclient-lite-docker-steps.yml'
