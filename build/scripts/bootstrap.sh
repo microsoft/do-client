@@ -76,22 +76,15 @@ function installBuildDependencies
         mkdir /tmp/gtest
         pushd /tmp/gtest
 
-        if [[ ($DISTRO == "ubuntu" && $VER == "20.04") || ($DISTRO == "debian" && $VER == "10") ]];
+        if [[ ($DISTRO == "ubuntu" && ($VER == "20.04" || $VER == "22.04")) || ($DISTRO == "debian" && $VER == "10") ]];
         then
+            [[ $VER == "22.04" ]] && release="v1.13.0" || release="release-1.10.0"
+
             # The latest native-version of gtest on ubuntu2004 and debian10 currently has a bug where
             # CMakeLists doesn't declare an install target, causing 'make install' to fail.
             # Clone from source and use release-1.10.0 instead, since gtest is a source package anyways.
             git clone https://github.com/google/googletest.git .
-            git checkout release-1.10.0
-            mkdir cmake
-            cd cmake
-            cmake /tmp/gtest
-            make
-            make install
-        elif [[ $DISTRO == "ubuntu" && $VER == "22.04" ]];
-        then
-            git clone https://github.com/google/googletest.git .
-            git checkout v1.13.0
+            git checkout $release
             mkdir cmake
             cd cmake
             cmake /tmp/gtest
