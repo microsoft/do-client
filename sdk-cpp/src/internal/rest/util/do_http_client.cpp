@@ -8,6 +8,7 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <gsl/gsl_util>
+#include <gsl/gsl_narrow.h>
 
 #include "do_errors.h"
 #include "do_error_helpers.h"

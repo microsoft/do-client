@@ -8,6 +8,7 @@
 #endif
 #include <regex>
 #include <gsl/gsl_util>
+#include <gsl/gsl_narrow.h>
 
 namespace microsoft
 {
