@@ -7,7 +7,7 @@
 #include <fcntl.h>  // open, write
 #include <unistd.h> // getpid
 #include <sstream>
-#include <gsl/gsl_util>
+#include <gsl/gsl>
 #include "do_filesystem.h"
 #include "do_persistence.h"
 #include "error_macros.h"
