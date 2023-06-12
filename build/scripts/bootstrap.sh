@@ -71,7 +71,6 @@ function installBuildDependencies
         apt-get install -y libboost-program-options-dev
         apt-get install -y libproxy-dev libssl-dev uuid-dev libcurl4-openssl-dev
         apt-get install -y cmake libmsgsl-dev
-        apt-get install -y cmake libgsl-dev
 
 
         rm -rf /tmp/gtest
@@ -117,7 +116,7 @@ function installDeveloperTools
     elif [ $OS == "linux" ];
     then
         apt-get install -y python-pip
-        pip install cpplint
+        sudo apt install python3-pip
 
         # Installs to a non-standard location so add to PATH manually
         export PATH=$PATH:~/.local/bin
