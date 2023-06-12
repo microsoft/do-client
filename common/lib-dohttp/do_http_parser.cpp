@@ -7,8 +7,7 @@
 #include <iostream>
 #endif
 #include <regex>
-#include <gsl/gsl_util>
-#include <gsl/gsl_narrow.h>
+#include <gsl/gsl>
 
 namespace microsoft
 {
