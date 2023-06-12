@@ -70,12 +70,9 @@ function installBuildDependencies
         apt-get install -y python3 ninja-build
         apt-get install -y libboost-program-options-dev
         apt-get install -y libproxy-dev libssl-dev uuid-dev libcurl4-openssl-dev
+        apt-get install -y cmake libmsgsl-dev
+        apt-get install -y libgsl-dev
 
-        if [[ $DISTRO == "ubuntu" && $VER == "22.04" ]];
-            then apt-get install -y cmake libmsgsl-dev=4.0.0-2;
-        else
-            apt-get install -y cmake libmsgsl-dev;
-        fi;
 
         rm -rf /tmp/gtest
         mkdir /tmp/gtest
