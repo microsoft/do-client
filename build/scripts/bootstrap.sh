@@ -115,7 +115,7 @@ function installDeveloperTools
         brew install cpplint
     elif [ $OS == "linux" ];
     then
-        sudo apt install python3-pip
+        apt install python3-pip
 
         # Installs to a non-standard location so add to PATH manually
         export PATH=$PATH:~/.local/bin
