@@ -71,7 +71,7 @@ function installBuildDependencies
         apt-get install -y libboost-program-options-dev
         apt-get install -y libproxy-dev libssl-dev uuid-dev libcurl4-openssl-dev
         apt-get install -y cmake libmsgsl-dev
-        apt-get install -y file
+        apt-get install -y file  # Required by CPack for packaging and by default is not installed on Ubuntu 22.04 
 
 
         rm -rf /tmp/gtest
