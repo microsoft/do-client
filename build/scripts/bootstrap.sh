@@ -68,21 +68,25 @@ function installBuildDependencies
 
         apt-get install -y make build-essential g++ gdb gdbserver gcc git wget
         apt-get install -y python3 ninja-build
-        apt-get install -y cmake libmsgsl-dev
         apt-get install -y libboost-program-options-dev
         apt-get install -y libproxy-dev libssl-dev uuid-dev libcurl4-openssl-dev
+        apt-get install -y cmake libmsgsl-dev
+        apt-get install -y file  # Required by CPack for packaging and by default is not installed on Ubuntu 22.04 
+
 
         rm -rf /tmp/gtest
         mkdir /tmp/gtest
         pushd /tmp/gtest
 
-        if [[ ($DISTRO == "ubuntu" && $VER == "20.04") || ($DISTRO == "debian" && $VER == "10") ]];
+        if [[ ($DISTRO == "ubuntu" && ($VER == "20.04" || $VER == "22.04")) || ($DISTRO == "debian" && $VER == "10") ]];
         then
+            if [[ $VER == "22.04" ]]; then release="v1.13.0"; else release="release-1.10.0"; fi;
+
             # The latest native-version of gtest on ubuntu2004 and debian10 currently has a bug where
             # CMakeLists doesn't declare an install target, causing 'make install' to fail.
             # Clone from source and use release-1.10.0 instead, since gtest is a source package anyways.
             git clone https://github.com/google/googletest.git .
-            git checkout release-1.10.0
+            git checkout $release
             mkdir cmake
             cd cmake
             cmake /tmp/gtest
@@ -112,8 +116,7 @@ function installDeveloperTools
         brew install cpplint
     elif [ $OS == "linux" ];
     then
-        apt-get install -y python-pip
-        pip install cpplint
+        apt install python3-pip
 
         # Installs to a non-standard location so add to PATH manually
         export PATH=$PATH:~/.local/bin
@@ -164,7 +167,7 @@ function installAll
 
 function isSupportedLinux()
 {
-    if [[ ($DISTRO == "ubuntu" && ($VER == "18.04" || $VER == "20.04"))
+    if [[ ($DISTRO == "ubuntu" && ($VER == "18.04" || $VER == "20.04" || $VER == "22.04"))
         || ($DISTRO == "debian" && ($VER == "10" || $VER == "11")) ]];
     then
         return 0

@@ -7,7 +7,7 @@
 // Include this header explicitly to get it regardless of which boost version is installed.
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <gsl/gsl_util>
+#include <gsl/gsl>
 
 #include "do_errors.h"
 #include "do_error_helpers.h"
