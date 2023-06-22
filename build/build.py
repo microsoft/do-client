@@ -102,6 +102,12 @@ class LinuxArgParser(ArgParserBase):
             '--search-prefix', dest='search_prefix', type=str,
             help='search prefix to pass to CMake'
         )
+        
+        '''Option to control resource usage when running on a Raspberry Pi'''
+        self.parser.add_argument(
+            '--parallel', dest='parallel', type=int,
+            help='Control the number of parallel build processes or threads'
+        )
 
         '''Agent only'''
         self.parser.add_argument(
@@ -404,7 +410,7 @@ class BuildRunnerBase(object):
         Returns:
             The list of additional build options.
         """
-        return ["--target", self.cmake_target, "--parallel", "1"]
+        return ["--target", self.cmake_target]
 
     def package(self):
         subprocess.call(['/bin/bash', '-c', 'cd {} && cpack .'.format(self.build_path)])
@@ -422,6 +428,7 @@ class LinuxBuildRunner(BuildRunnerBase):
         self.static_analysis = self.script_args.static_analysis
         self.build_for_snap = self.script_args.build_for_snap
         self.search_prefix = self.script_args.search_prefix
+        self.parallel = self.script_args.parallel
 
     @property
     def platform(self):
@@ -461,6 +468,13 @@ class LinuxBuildRunner(BuildRunnerBase):
 
     def package(self):
         subprocess.call(['/bin/bash', '-c', 'cd {} && cpack .'.format(self.build_path)])
+
+    @property
+    def build_options(self):
+        build_options_linux = super().build_options
+        if (self.parallel):
+            build_options_linux += ['--parallel', str(self.parallel)]
+        return build_options_linux
 
 class WindowsBuildRunner(BuildRunnerBase):
     """Windows BuildRunner class."""
