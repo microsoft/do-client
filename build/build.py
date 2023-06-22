@@ -404,7 +404,7 @@ class BuildRunnerBase(object):
         Returns:
             The list of additional build options.
         """
-        return ["--target", self.cmake_target]
+        return ["--target", self.cmake_target, "--parallel", "1"]
 
     def package(self):
         subprocess.call(['/bin/bash', '-c', 'cd {} && cpack .'.format(self.build_path)])
