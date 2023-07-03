@@ -35,15 +35,10 @@ parts:
     plugin: python
     source: .
     override-build: |
-      echo /proc/cpuinfo
-      cat /proc/cpuinfo
-
       if grep -q "Raspberry Pi" /proc/cpuinfo; then
-          echo BUILDING FOR RPI
-          python3 ./build/build.py --project agent --build-for-snap --parallel 1
+        python3 ./build/build.py --project agent --build-for-snap --parallel 1
       else
-          echo NOT BUILDING FOR RPI
-          python3 ./build/build.py --project agent --build-for-snap
+        python3 ./build/build.py --project agent --build-for-snap
       fi
       mkdir -p ../install/bin
       cp /tmp/build-deliveryoptimization-agent/linux-debug/client-lite/deliveryoptimization-agent ../install/bin/deliveryoptimization-agent
