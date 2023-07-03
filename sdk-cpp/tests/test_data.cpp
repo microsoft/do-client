@@ -38,7 +38,7 @@ const std::chrono::seconds g_largeFileWaitTime = 5min;
 #if defined(DO_INTERFACE_REST)
 
 #ifdef DO_BUILD_FOR_SNAP
-const std::string g_docsSvcName = "deliveryoptimization-client.agent";
+const std::string g_docsSvcName = "deliveryoptimization-agent.agent";
 #else
 const std::string g_docsSvcName = "deliveryoptimization-agent.service";
 #endif
