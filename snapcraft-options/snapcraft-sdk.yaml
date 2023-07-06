@@ -8,10 +8,6 @@ description: |
 grade: devel # must be 'stable' to release into candidate/stable channels
 confinement: strict # use 'strict' once you have the right plugs and slots
 
-architectures:
-  - build-on: [amd64, arm64]
-    run-on: [amd64, armhf, arm64]
-
 #####
 #
 # Keywords
@@ -39,7 +35,11 @@ parts:
     plugin: python
     source: .
     override-build: |
-      python3 ./build/build.py --project sdk --build-for-snap
+      if grep -q "Raspberry Pi" /proc/cpuinfo; then
+          python3 ./build/build.py --project sdk --build-for-snap --parallel 1
+      else
+          python3 ./build/build.py --project sdk --build-for-snap
+      fi
       mkdir -p ../install/bin
       mkdir -p ../install/lib
       cp /tmp/build-deliveryoptimization-sdk/linux-debug/sdk-cpp/tests/deliveryoptimization-sdk-tests ../install/bin/deliveryoptimization-sdk-tests
