@@ -80,6 +80,18 @@ stages:
     parameters:
       targetOsArch: 'debian10_x64'
       imageVersion: ${{variables.containerImageVersion}}
+  - template: templates/release-docker-build-steps.yml
+    parameters:
+      targetOsArch: 'debian11_arm32'
+      imageVersion: ${{variables.containerImageVersion}}
+  - template: templates/release-docker-build-steps.yml
+    parameters:
+      targetOsArch: 'debian11_arm64'
+      imageVersion: ${{variables.containerImageVersion}}
+  - template: templates/release-docker-build-steps.yml
+    parameters:
+      targetOsArch: 'debian11_x64'
+      imageVersion: ${{variables.containerImageVersion}}
 
 - stage: release
   condition: succeeded()
