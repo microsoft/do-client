@@ -56,7 +56,3 @@ ENTRYPOINT [ "/bin/bash", "-c" ]
 # In this case we don't have any desired default arguments.
 # However, we have to specify CMD to enable passing of command line parameters to ENTRYPOINT in the first place.
 CMD [  ]
-
-
-# docker push doclientcontainerregistry.azurecr.io/debian11_arm64:0.8.0
-# docker tag doclient:debian11-arm64 doclientcontainerregistry.azurecr.io/debian11_arm64:0.8.0
