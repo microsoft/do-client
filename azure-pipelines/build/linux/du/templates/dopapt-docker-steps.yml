@@ -14,14 +14,14 @@ steps:
   displayName: Login to ACR
   inputs:
     command: login
-    containerRegistry: doclientcontainerregistry-GeGarcia
+    containerRegistry: doclient-dockercontainerregistry-buildpipeline
     repository: $(parameters.targetOsArch)
 
 - task: Docker@2
   displayName: Pull latest build image
   inputs:
     command: pull
-    containerRegistry: doclientcontainerregistry-GeGarcia
+    containerRegistry: doclient-dockercontainerregistry-buildpipeline
     arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}}'
 
 - task: CmdLine@2
