@@ -33,31 +33,31 @@ jobs:
 
 - template: ../templates/do-docker-jobs.yml
   parameters:
-    targetOsArch: 'debian10_arm64'
+    targetOsArch: 'debian10_arm64' # azure pipelines does not support '.' in display names
     imageVersion: ${{variables.containerImageVersion}}
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 
 - template: ../templates/do-docker-jobs.yml
   parameters:
-    targetOsArch: 'debian10_x64'
+    targetOsArch: 'debian10_x64' # azure pipelines does not support '.' in display names
     imageVersion: ${{variables.containerImageVersion}}
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 
 - template: ../templates/do-docker-jobs.yml
   parameters:
-    targetOsArch: 'debian11_arm32'
+    targetOsArch: 'debian11_arm32' # azure pipelines does not support '.' in display names
     imageVersion: ${{variables.containerImageVersion}}
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 
 - template: ../templates/do-docker-jobs.yml
   parameters:
-    targetOsArch: 'debian11_arm64'
+    targetOsArch: 'debian11_arm64' # azure pipelines does not support '.' in display names
     imageVersion: ${{variables.containerImageVersion}}
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 
 - template: ../templates/do-docker-jobs.yml
   parameters:
-    targetOsArch: 'debian11_x64'
+    targetOsArch: 'debian11_x64' # azure pipelines does not support '.' in display names
     imageVersion: ${{variables.containerImageVersion}}
     stepsTemplate: 'doclient-lite-docker-steps.yml'
 

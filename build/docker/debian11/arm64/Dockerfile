@@ -21,20 +21,6 @@ SHELL [ "/bin/bash", "-c"]
 #
 # Then copy the build script to the build directory
 # cp <src root>/build/scripts/bootstrap.sh <src root>/build/docker/debian11/arm64
-#
-# open bootstrap.sh and change the function installQemu to the following:
-#
-# function installQemu
-# {
-#        echo "[INFO] Installing Qemu for cross-arch support"
-#        # Install qemu for cross-arch support
-#        apt-get -y install qemu binfmt-support qemu-user-static
-#
-#        # Register qemu with docker to more easily run cross-arch containers
-#       docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-# }
-# After building the image yoou can return the bootstrap.sh file to the original state
-
 # After running the above, you can build the image by running in the current dockerfile directory
 # sudo docker build -t debian11_arm64 . --no-cache --network=host
 
