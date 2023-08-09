@@ -14,14 +14,14 @@ steps:
   displayName: Login to ACR
   inputs:
     command: login
-    containerRegistry: doclientcontainerregistry
+    containerRegistry: doclient-dockercontainerregistry-buildpipeline   # name of the service connection that connect the pipeline to the ACR
     repository: $(parameters.targetOsArch)
 
 - task: Docker@2
   displayName: Pull latest build image
   inputs:
     command: pull
-    containerRegistry: doclientcontainerregistry
+    containerRegistry: doclient-dockercontainerregistry-buildpipeline   # name of the service connection that connect the pipeline to the ACR
     arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}}'
 
 - task: CmdLine@2
