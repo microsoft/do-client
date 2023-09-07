@@ -1,0 +1,87 @@
+name: deliveryoptimization-sdk-tests
+base: core20 # the base snap is the execution environment for this snap
+version: '0.1'
+summary: Ubuntu Core 20.04 DO SDK Tests
+description: |
+  SDK snap (consumer) to test communication with the DO agent snap (producer).
+
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: strict # use 'strict' once you have the right plugs and slots
+
+#####
+#
+# Keywords
+#
+# after  - Specifies part's dependencies.
+#              See https://snapcraft.io/docs/parts-lifecycle#heading--step-dependencies
+#                  https://snapcraft.io/docs/parts-lifecycle
+# plugin - Specifies a plugin required for building the part.
+#
+# slot   - Specifies a code section to be shared with other snaps using Content Interface. [PROVIDER]
+#              See https://snapcraft.io/docs/content-interface
+# plug   - Specifies a target folder to access the files shared by the provider (or providers). [CONSUMER]
+#              See https://snapcraft.io/docs/content-interface
+#
+####
+
+parts:
+  installdeps:
+    plugin: nil
+    source: .
+    override-build: |
+      ./build/scripts/bootstrap.sh --install build
+
+  sdk:
+    plugin: python
+    source: .
+    override-build: |
+      if grep -q "Raspberry Pi" /proc/cpuinfo; then
+          python3 ./build/build.py --project sdk --build-for-snap --parallel 1
+      else
+          python3 ./build/build.py --project sdk --build-for-snap
+      fi
+      mkdir -p ../install/bin
+      mkdir -p ../install/lib
+      cp /tmp/build-deliveryoptimization-sdk/linux-debug/sdk-cpp/tests/deliveryoptimization-sdk-tests ../install/bin/deliveryoptimization-sdk-tests
+      cp /tmp/build-deliveryoptimization-sdk/linux-debug/sdk-cpp/libdeliveryoptimization* ../install/lib
+
+    after:
+      - installdeps
+
+    stage-packages:
+      - libboost-program-options1.71.0
+
+apps:
+  sdk-tests:
+    command: bin/deliveryoptimization-sdk-tests
+    plugs:
+      - network
+      - network-bind
+
+plugs:
+  do-port-numbers:
+    interface: content
+    content: do-port-numbers
+    target: $SNAP_DATA/do-port-numbers
+
+  do-configs:
+    interface: content
+    content: do-configs
+    target: $SNAP_DATA/do-configs
+
+slots:
+  downloads-folder:
+    interface: content
+    content: downloads-folder
+    write: [ $SNAP_DATA/var/lib/deviceupdate-agent-downloads ]
+
+layout:
+  # For testing production scenario, use the same path DU agent will use.
+  # The path is referred to in sdk-cpp/tests/test_data.cpp.
+  /var/lib/deviceupdate-agent-downloads:
+    symlink: $SNAP_DATA/var/lib/deviceupdate-agent-downloads
+
+  # Not using layout for agent's restport files because /var/run is already a symlink in Ubuntu 20.04,
+  #   and package startup fails if we want another symlink there.
+  # Not using layout for the configs, the /etc directory, just for consistency: snap and non-snap versions use
+  #   different directory paths.

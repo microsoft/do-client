@@ -136,7 +136,7 @@ TEST_F(DownloadManagerTests, FileDownloadFatal404)
     ASSERT_EQ(status.BytesTotal, 0);
     VerifyError(status, HTTP_E_STATUS_NOT_FOUND);
     VerifyDownloadHttpStatus(*DownloadForId(manager, id), 404);
-    ASSERT_TRUE(cppfs::exists(destFile));
+    ASSERT_TRUE(fs::exists(destFile));
     manager.AbortDownload(id);
     VerifyFileNotFound(destFile);
 }

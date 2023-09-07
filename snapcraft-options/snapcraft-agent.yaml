@@ -1,0 +1,106 @@
+name: deliveryoptimization-agent
+base: core20 # the base snap is the execution environment for this snap
+version: '1.1.0'
+summary: Ubuntu Core 20.04 DO Agent
+description: |
+  A proof-of-concept for the Delivery Optimization Client Ubuntu Core snap.
+
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: strict # use 'strict' once you have the right plugs and slots
+
+#####
+#
+# Keywords
+#
+# after  - Specifies part's dependencies.
+#              See https://snapcraft.io/docs/parts-lifecycle#heading--step-dependencies
+#                  https://snapcraft.io/docs/parts-lifecycle
+# plugin - Specifies a plugin required for building the part.
+#
+# slot   - Specifies a code section to be shared with other snaps using Content Interface. [PROVIDER]
+#              See https://snapcraft.io/docs/content-interface
+# plug   - Specifies a target folder to access the files shared by the provider (or providers). [CONSUMER]
+#              See https://snapcraft.io/docs/content-interface
+#
+####
+
+parts:
+  installdeps:
+    plugin: nil
+    source: .
+    override-build: |
+      ./build/scripts/bootstrap.sh --install build
+
+  agent:
+    plugin: python
+    source: .
+    override-build: |
+      if grep -q "Raspberry Pi" /proc/cpuinfo; then
+        python3 ./build/build.py --project agent --build-for-snap --parallel 1
+      else
+        python3 ./build/build.py --project agent --build-for-snap
+      fi
+      mkdir -p ../install/bin
+      cp /tmp/build-deliveryoptimization-agent/linux-debug/client-lite/deliveryoptimization-agent ../install/bin/deliveryoptimization-agent
+
+    after:
+      - installdeps
+
+    stage-packages:
+      - libasn1-8-heimdal
+      - libbrotli1
+      - libcurl4
+      - libgssapi3-heimdal
+      - libhcrypto4-heimdal
+      - libheimbase1-heimdal
+      - libheimntlm0-heimdal
+      - libhx509-5-heimdal
+      - libkrb5-26-heimdal
+      - libldap-2.4-2
+      - libnghttp2-14
+      - libproxy1v5
+      - libpsl5
+      - libroken18-heimdal
+      - librtmp1
+      - libsasl2-2
+      - libssh-4
+      - libwind0-heimdal
+
+apps:
+  agent:
+    command: bin/deliveryoptimization-agent
+    daemon: simple
+    refresh-mode: restart
+    restart-condition: always
+    restart-delay: 10s
+    plugs:
+      - network
+      - network-bind
+
+slots:
+  do-port-numbers:
+    interface: content
+    content: do-port-numbers
+    read: [ $SNAP_DATA/run ]
+
+  do-configs:
+    interface: content
+    content: do-configs
+    write: [ $SNAP_DATA/etc ]
+
+plugs:
+  deviceupdate-agent-downloads:
+    interface: content
+    content: deviceupdate-agent-downloads
+    target: $SNAP_DATA/deviceupdate-agent-downloads
+
+layout:
+  # DU agent will provide the /var/lib path as download location.
+  # Map it to the correct path within this snap.
+  /var/lib/deviceupdate-agent-downloads:
+    symlink: $SNAP_DATA/deviceupdate-agent-downloads
+
+  # Not using layout for /var/run because /var/run is already a symlink in Ubuntu 20.04,
+  #   and package startup fails if we want another symlink there.
+  # Not using /var/log and /etc just for consistency: snap adn non-snap versions do not use
+  #   the same directory paths.

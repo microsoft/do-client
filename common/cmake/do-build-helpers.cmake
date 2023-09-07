@@ -160,3 +160,34 @@ function (add_platform_interface_definitions target_name)
     endif ()
 
 endfunction ()
+
+function (add_boost_definitions target_name scope)
+    if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
+        # BOOST_ERROR_CODE_HEADER_ONLY and BOOST_SYSTEM_NO_DEPRECATED are required to use header-only components
+        # like boost.asio without linking to the boost.system shared library.
+        target_compile_definitions(${target_name} ${scope} BOOST_ERROR_CODE_HEADER_ONLY BOOST_SYSTEM_NO_DEPRECATED)
+    endif ()
+endfunction ()
+
+function (try_set_filesystem_lib)
+
+    # Sets the variable CXX_FILESYSTEM_LIBS if an extra lib is required for c++ filesystem support.
+    # C++17 std::filesystem support is implemented in std::experimental::filesystem prior to GCC 9.
+    # Only the experimental version requires linking to stdc++fs library (so troublesome!).
+    # There is no built-in support in cmake to handle this difference (like a FindFileSystem.cmake module).
+    # See also: Portable linking for C++17 std::filesystem (https://gitlab.kitware.com/cmake/cmake/-/issues/17834)
+
+    if (DO_PLATFORM_WINDOWS)
+        # std::filesystem not required for Windows builds
+        return ()
+    endif ()
+
+    message ("Compiler identified: ${CMAKE_CXX_COMPILER_ID} - ${CMAKE_CXX_COMPILER_VERSION}")
+    if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+        if (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 9.0.0)
+            message (STATUS "Using std::experimental filesystem library")
+            set(CXX_FILESYSTEM_LIBS stdc++fs PARENT_SCOPE)
+        endif ()
+    endif ()
+
+endfunction ()

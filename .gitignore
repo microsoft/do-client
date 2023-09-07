@@ -56,3 +56,7 @@ _deps
 *_CPack_Packages/
 *.deb
 out/
+
+# Ubuntu Snap files
+*.snap
+snap/

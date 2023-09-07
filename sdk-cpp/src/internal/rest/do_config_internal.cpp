@@ -8,14 +8,13 @@
 #include <string>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
-
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include "do_filesystem.h"
 #include "do_persistence.h"
 #include "do_version.h"
 #elif defined(DO_CLIENT_DOSVC)
-#include "do_errors.h" // msdo::errc::e_not_impl
+#include "do_errors.h" // msdo::errc::not_impl
 #endif
 
 namespace msdo = microsoft::deliveryoptimization;
@@ -31,9 +30,9 @@ static int WriteIoTConnectionStringToConfigFile(const char* value) noexcept
     int returnValue = 0;
     // ptree's exceptions do not provide an error code, and SDK has no logging of its own.
     // Return specific errors as a workaround.
-    boost::filesystem::path filePath{microsoft::deliveryoptimization::details::GetConfigFilePath()};
-    boost::system::error_code ec;
-    if (boost::filesystem::exists(filePath.parent_path(), ec))
+    fs::path filePath{microsoft::deliveryoptimization::details::GetConfigFilePath()};
+    std::error_code ec;
+    if (fs::exists(filePath.parent_path(), ec))
     {
         try
         {
@@ -74,10 +73,10 @@ static std::string GetSdkVersion()
     return msdoutil::ComponentVersion(false);
 }
 
-static std::string GetBinaryVersion(const boost::filesystem::path& binaryFilePath)
+static std::string GetBinaryVersion(const fs::path& binaryFilePath)
 {
     std::string version;
-    if (boost::filesystem::exists(binaryFilePath))
+    if (fs::exists(binaryFilePath))
     {
         FILE* fp = nullptr;
         try
@@ -118,7 +117,7 @@ static void AppendBinaryVersion(const char* binFileName, std::stringstream& allV
     // to cover special cases (for example, installed not via our deb/rpm packages).
     // We do not use bp::search_path() in order to avoid executing a malicious program with the
     // same name and which appears earlier in the PATH environment variable.
-    boost::filesystem::path binFilePath("/usr/local/bin");
+    fs::path binFilePath("/usr/local/bin");
     binFilePath /= binFileName;
     std::string version = GetBinaryVersion(binFilePath);
     if (version.empty())
@@ -190,7 +189,7 @@ void internal_free_version_buf(char** ppBuffer)
 
 int internal_set_iot_connection_string(const char* value)
 {
-    return static_cast<int>(msdo::errc::e_not_impl);
+    return msdo::errc::not_impl;
 }
 
 char* internal_get_components_version()

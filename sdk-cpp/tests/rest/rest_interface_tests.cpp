@@ -4,8 +4,6 @@
 #include "tests_common.h"
 
 #include <fstream>
-#include <experimental/filesystem>
-namespace cppfs = std::experimental::filesystem;
 
 #include <boost/asio.hpp>
 using btcp_t = boost::asio::ip::tcp;
@@ -23,9 +21,9 @@ class RestInterfaceTests : public ::testing::Test
 public:
     void SetUp() override
     {
-        if (cppfs::exists(msdod::GetAdminConfigFilePath()))
+        if (fs::exists(msdod::GetAdminConfigFilePath()))
         {
-            cppfs::remove(msdod::GetAdminConfigFilePath());
+            fs::remove(msdod::GetAdminConfigFilePath());
         }
     }
 

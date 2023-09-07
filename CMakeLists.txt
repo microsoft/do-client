@@ -15,10 +15,7 @@ option (DO_INCLUDE_PLUGINS "Build subproject plugins" OFF)
 option (DO_INCLUDE_SDK "Build subproject sdk-cpp" OFF)
 
 option (DO_BUILD_TESTS "Set DO_BUILD_TESTS to OFF to skip building tests." ON)
-
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+option (DO_BUILD_FOR_SNAP "Enable DO Snap build option" OFF)
 
 # Get verbose output from cmake generation and build steps
 set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -61,6 +58,16 @@ else()
     message(FATAL_ERROR "Unknown platform for client")
 endif()
 
+# C++17 is required to use std::filesystem but Edge builds on Windows is not ready to move up yet.
+# Luckily, we do not need std::filesystem on Windows.
+if (DO_INCLUDE_SDK AND DO_PLATFORM_WINDOWS)
+    set(CMAKE_CXX_STANDARD 14)
+else ()
+    set(CMAKE_CXX_STANDARD 17)
+endif ()
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 # PIC (Position Independent Code) ensures .a files can be linked to executables that have PIE enabled
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -82,7 +89,14 @@ if (DO_PLATFORM_LINUX)
     # (Enable --trace-expand in cmake and look at lines from boost_headers-config.cmake and its callers.)
     # Workaround: force cmake to look in "/usr" since the /lib and /bin paths are either
     # not relevant for our usage or they are symlinks to /usr/lib and /usr/bin.
-    set(CMAKE_PREFIX_PATH "/usr")
+    if (IS_SYMLINK "/lib" AND NOT EXISTS "/include")
+        if (CMAKE_PREFIX_PATH)
+            message (WARNING "/lib is a symlink and /include does not exist. CMAKE_PREFIX_PATH is already set, not overriding it.")
+        else ()
+            message (WARNING "/lib is a symlink and /include does not exist. Updating CMAKE_PREFIX_PATH to /usr.")
+            set(CMAKE_PREFIX_PATH "/usr")
+        endif ()
+    endif ()
 endif (DO_PLATFORM_LINUX)
 
 if (DO_PLATFORM_WINDOWS AND DO_INCLUDE_SDK)

@@ -7,8 +7,8 @@
 #include <fcntl.h>  // open, write
 #include <unistd.h> // getpid
 #include <sstream>
-#include <boost/filesystem.hpp>
-#include <gsl/gsl_util>
+#include <gsl/gsl>
+#include "do_filesystem.h"
 #include "do_persistence.h"
 #include "error_macros.h"
 
@@ -60,13 +60,13 @@ private:
     void _DeleteOlderPortFiles() try
     {
         auto& runtimeDirectory = docli::GetRuntimeDirectory();
-        for (boost::filesystem::directory_iterator itr(runtimeDirectory); itr != boost::filesystem::directory_iterator(); ++itr)
+        for (fs::directory_iterator itr(runtimeDirectory); itr != fs::directory_iterator(); ++itr)
         {
             auto& dirEntry = itr->path();
             if (dirEntry.filename().string().find(_restPortFileNamePrefix) != std::string::npos)
             {
-                boost::system::error_code ec;
-                boost::filesystem::remove(dirEntry, ec);
+                std::error_code ec;
+                fs::remove(dirEntry, ec);
                 if (ec)
                 {
                     DoLogWarning("Failed to delete old port file (%d, %s) %s", ec.value(), ec.message().data(), dirEntry.string().data());

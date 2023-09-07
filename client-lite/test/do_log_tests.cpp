@@ -26,12 +26,12 @@ TEST_F(DOLoggerTests, BasicWriteToFile)
     DOLog::Close();
 
     UINT nLogFilesFound = 0;
-    for (cppfs::recursive_directory_iterator itr(g_testTempDir); itr != cppfs::recursive_directory_iterator{}; ++itr)
+    for (fs::recursive_directory_iterator itr(g_testTempDir); itr != fs::recursive_directory_iterator{}; ++itr)
     {
         ++nLogFilesFound;
         const auto filePath = itr->path();
         ASSERT_NE(strstr(filePath.c_str(), "do-agent."), nullptr);
-        ASSERT_GT(cppfs::file_size(filePath), 0);
+        ASSERT_GT(fs::file_size(filePath), 0);
 
         std::ifstream fs;
         fs.open(filePath.string());

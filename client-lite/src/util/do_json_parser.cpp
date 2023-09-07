@@ -4,7 +4,7 @@
 #include "do_common.h"
 #include "do_json_parser.h"
 
-#include <boost/filesystem.hpp>
+#include "do_filesystem.h"
 #include <boost/property_tree/json_parser.hpp>
 
 std::chrono::seconds JsonParser::RefreshInterval = std::chrono::seconds(60);
@@ -13,7 +13,7 @@ std::chrono::seconds JsonParser::RefreshInterval = std::chrono::seconds(60);
 JsonParser::JsonParser(const std::string& jsonFilePath, bool alwaysCreateFile) :
     _jsonFilePath(jsonFilePath)
 {
-    if (alwaysCreateFile && !(boost::filesystem::exists(_jsonFilePath)))
+    if (alwaysCreateFile && !(fs::exists(_jsonFilePath)))
     {
         DoLogInfo("json file not found at %s, creating file", _jsonFilePath.data());
         boost::property_tree::ptree json;
@@ -33,7 +33,7 @@ void JsonParser::_TryRefresh(bool force)
             return;
     }
 
-    if (boost::filesystem::exists(_jsonFilePath))
+    if (fs::exists(_jsonFilePath))
     {
         try
         {

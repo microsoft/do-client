@@ -29,6 +29,15 @@ namespace test
 class download
 {
 public:
+    static std::unique_ptr<download> make(const std::string& uri)
+    {
+        std::unique_ptr<msdo::download> newDownload;
+        std::error_code ec = msdo::download::make(uri, newDownload);
+        msdod::throw_if_fail(ec);
+        auto returnVal = std::make_unique<download>(std::move(newDownload));
+        return returnVal;
+    }
+
     static std::unique_ptr<download> make(const std::string& uri, const std::string& downloadFilePath)
     {
         std::unique_ptr<msdo::download> newDownload;
@@ -75,6 +84,21 @@ public:
         msdod::throw_if_fail(ec);
         return status;
     }
+    void set_status_callback(status_callback_t callback)
+    {
+        std::error_code ec = _downloadImpl->set_status_callback(callback);
+        msdod::throw_if_fail(ec);
+    }
+    void set_output_stream(output_stream_callback_t callback)
+    {
+        std::error_code ec = _downloadImpl->set_output_stream(callback);
+        msdod::throw_if_fail(ec);
+    }
+    void set_ranges(const download_range* ranges, size_t count)
+    {
+        std::error_code ec = _downloadImpl->set_ranges(ranges, count);
+        msdod::throw_if_fail(ec);
+    }
 
     void start_and_wait_until_completion(std::chrono::seconds timeoutSecs = std::chrono::hours(24))
     {
@@ -100,22 +124,17 @@ public:
         msdod::throw_if_fail(ec);
     }
 
-    /*
-    For devices running windows before 20H1, dosvc exposed a now-deprecated com interface for setting certain download properties.
-    After 20H1, these properties were added to newer com interface, which this SDK is using.
-    Attempting to set a download property on a version of windows earlier than 20H1 will not set the property and throw an exception with error code msdo::errc::do_e_unknown_property_id
-    */
-    void set_property(msdo::download_property key, const msdo::download_property_value& value)
+    template <typename T>
+    void set_property(msdo::download_property key, const T& value)
     {
         std::error_code ec = _downloadImpl->set_property(key, value);
         msdod::throw_if_fail(ec);
     }
-    msdo::download_property_value get_property(msdo::download_property key)
+    template <typename T>
+    void get_property(msdo::download_property key, T& value)
     {
-        msdo::download_property_value propValue;
-        std::error_code ec = _downloadImpl->get_property(key, propValue);
+        std::error_code ec = _downloadImpl->get_property(key, value);
         msdod::throw_if_fail(ec);
-        return propValue;
     }
 
 private:
@@ -131,34 +150,34 @@ class TestHelpers
 public:
     static void CleanTestDir()
     {
-        if (boost::filesystem::exists(g_tmpFileName))
+        if (fs::exists(g_tmpFileName))
         {
-            boost::filesystem::remove(g_tmpFileName);
+            fs::remove(g_tmpFileName);
         }
-        if (boost::filesystem::exists(g_tmpFileName2))
+        if (fs::exists(g_tmpFileName2))
         {
-            boost::filesystem::remove(g_tmpFileName2);
+            fs::remove(g_tmpFileName2);
         }
-        if (boost::filesystem::exists(g_tmpFileName3))
+        if (fs::exists(g_tmpFileName3))
         {
-            boost::filesystem::remove(g_tmpFileName3);
+            fs::remove(g_tmpFileName3);
         }
     }
 
     // DoSvc creates temporary files with a unique name in the same directory as the output file
-    static void DeleteDoSvcTemporaryFiles(const boost::filesystem::path& outputFilePath)
+    static void DeleteDoSvcTemporaryFiles(const fs::path& outputFilePath)
     {
-        const boost::filesystem::path parentDir = outputFilePath.parent_path();
-        for (boost::filesystem::directory_iterator itr(parentDir); itr != boost::filesystem::directory_iterator(); ++itr)
+        const fs::path parentDir = outputFilePath.parent_path();
+        for (fs::directory_iterator itr(parentDir); itr != fs::directory_iterator(); ++itr)
         {
-            const boost::filesystem::directory_entry& dirEntry = *itr;
+            const fs::directory_entry& dirEntry = *itr;
             // Remove all files with names that match DO*.tmp
-            if (boost::filesystem::is_regular_file(dirEntry)
+            if (fs::is_regular_file(dirEntry)
                 && (dirEntry.path().filename().string().find("DO") == 0)
                 && (dirEntry.path().extension() == ".tmp"))
             {
-                boost::system::error_code ec;
-                boost::filesystem::remove(dirEntry, ec);
+                std::error_code ec;
+                fs::remove(dirEntry, ec);
                 if (ec)
                 {
                     std::cout << "Temp file deletion error: " << ec.message() << ", " << dirEntry.path() << '\n';
@@ -193,8 +212,6 @@ public:
     }
 
 #ifdef DO_INTERFACE_REST
-    static bool IsActiveProcess(std::string name);
-    static int ShutdownProcess(std::string name);
     static void RestartService(const std::string& name);
     static void StartService(const std::string& name);
     static void StopService(const std::string& name);
@@ -208,11 +225,6 @@ public:
 #endif // DO_INTERFACE_REST
 
 private:
-#ifdef DO_INTERFACE_REST
-    static int _GetPidFromProcName(std::string name);
-    static int _KillProcess(int pid, int signal);
-#endif // DO_INTERFACE_REST
-
     // Disallow creating an instance of this object
     TestHelpers() {}
 

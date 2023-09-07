@@ -3,28 +3,11 @@
 
 #include "download_impl.h"
 
-#include <assert.h>
-#include <wrl.h>
-#include <wrl/client.h>
-#include <wrl/implements.h>
-
-#include "do_download_property.h"
 #include "do_download_property_internal.h"
-#include "do_errors.h"
 #include "do_error_helpers.h"
 
 namespace msdo = microsoft::deliveryoptimization;
 using namespace Microsoft::WRL;
-
-#ifndef FAILED
-#define FAILED(hr) (((int32_t)(hr)) < 0)
-#endif
-
-#ifndef RETURN_IF_FAILED
-#define RETURN_IF_FAILED(hr)  {     \
-    int32_t __hr = (hr);            \
-    if (FAILED(__hr)) return std::error_code(__hr, msdo::details::do_category()); }
-#endif
 
 namespace microsoft
 {
@@ -35,41 +18,17 @@ namespace details
 
 static msdo::download_state ConvertFromComState(DODownloadState platformState)
 {
-    msdo::download_state state;
-    switch (platformState)
+    static const msdo::download_state c_stateMap[] =
     {
-    case DODownloadState_Created:
-    {
-        state = msdo::download_state::created;
-        break;
-    }
-    case DODownloadState_Transferring:
-    {
-        state = msdo::download_state::transferring;
-        break;
-    }
-    case DODownloadState_Transferred:
-    {
-        state = msdo::download_state::transferred;
-        break;
-    }
-    case DODownloadState_Finalized:
-    {
-        state = msdo::download_state::finalized;
-        break;
-    }
-    case DODownloadState_Aborted:
-    {
-        state = msdo::download_state::aborted;
-        break;
-    }
-    case DODownloadState_Paused:
-    {
-        state = msdo::download_state::paused;
-        break;
-    }
-    }
-    return state;
+        msdo::download_state::created,      // DODownloadState_Created
+        msdo::download_state::transferring, // DODownloadState_Transferring
+        msdo::download_state::transferred,  // DODownloadState_Transferred
+        msdo::download_state::finalized,    // DODownloadState_Finalized
+        msdo::download_state::aborted,      // DODownloadState_Aborted
+        msdo::download_state::paused,       // DODownloadState_Paused
+    };
+    auto index = static_cast<size_t>(platformState);
+    return (index < ARRAYSIZE(c_stateMap)) ? c_stateMap[index] : msdo::download_state::paused;
 }
 
 static msdo::download_status ConvertFromComStatus(const DO_DOWNLOAD_STATUS& platformStatus)
@@ -78,127 +37,48 @@ static msdo::download_status ConvertFromComStatus(const DO_DOWNLOAD_STATUS& plat
         platformStatus.ExtendedError, ConvertFromComState(platformStatus.State));
 }
 
-static std::error_code ConvertToComProperty(msdo::download_property key, DODownloadProperty& comProperty)
+static std::error_code ConvertToComProperty(msdo::download_property prop, DODownloadProperty& comProperty)
 {
-    switch (key)
+    static const DODownloadProperty c_propMap[] =
     {
-    case msdo::download_property::blocking_mode:
+        DODownloadProperty_Id,                                  // id
+        DODownloadProperty_Uri,                                 // uri
+        DODownloadProperty_ContentId,                           // catalog_id
+        DODownloadProperty_DisplayName,                         // caller_name
+        DODownloadProperty_LocalPath,                           // download_file_path
+        DODownloadProperty_HttpCustomHeaders,                   // http_custom_headers
+        DODownloadProperty_CostPolicy,                          // cost_policy
+        DODownloadProperty_SecurityFlags,                       // security_flags
+        DODownloadProperty_CallbackFreqPercent,                 // callback_freq_percent
+        DODownloadProperty_CallbackFreqSeconds,                 // callback_freq_seconds
+        DODownloadProperty_NoProgressTimeoutSeconds,            // no_progress_timeout_seconds
+        DODownloadProperty_ForegroundPriority,                  // use_foreground_priority
+        DODownloadProperty_BlockingMode,                        // blocking_mode
+        DODownloadProperty_NetworkToken,                        // network_token
+        DODownloadProperty_CorrelationVector,                   // correlation_vector
+        DODownloadProperty_DecryptionInfo,                      // decryption_info
+        DODownloadProperty_IntegrityCheckInfo,                  // integrity_check_info
+        DODownloadProperty_IntegrityCheckMandatory,             // integrity_check_mandatory
+        DODownloadProperty_TotalSizeBytes,                      // total_size_bytes
+        DODownloadProperty_DisallowOnCellular,                  // disallow_on_cellular
+        DODownloadProperty_HttpCustomAuthHeaders,               // http_custom_auth_headers
+        DODownloadProperty_HttpAllowSecureToNonSecureRedirect,  // allow_http_to_https_redirect
+        DODownloadProperty_NonVolatile,                         // non_volatile
+    };
+    auto index = static_cast<size_t>(prop);
+    if (index >= ARRAYSIZE(c_propMap))
     {
-        comProperty = DODownloadProperty_BlockingMode;
-        return DO_OK;
+        return make_error_code(errc::invalid_arg);
     }
-    case msdo::download_property::callback_interface:
-    {
-        comProperty = DODownloadProperty_CallbackInterface;
-        return DO_OK;
-    }
-    case msdo::download_property::disallow_on_cellular:
-    {
-        comProperty = DODownloadProperty_DisallowOnCellular;
-        return DO_OK;
-    }
-    case msdo::download_property::caller_name:
-    {
-        comProperty = DODownloadProperty_DisplayName;
-        return DO_OK;
-    }
-    case msdo::download_property::catalog_id:
-    {
-        comProperty = DODownloadProperty_ContentId;
-        return DO_OK;
-    }
-    case msdo::download_property::correlation_vector:
-    {
-        comProperty = DODownloadProperty_CorrelationVector;
-        return DO_OK;
-    }
-    case msdo::download_property::cost_policy:
-    {
-        comProperty = DODownloadProperty_CostPolicy;
-        return DO_OK;
-    }
-    case msdo::download_property::decryption_info:
-    {
-        comProperty = DODownloadProperty_DecryptionInfo;
-        return DO_OK;
-    }
-    case msdo::download_property::download_file_path:
-    {
-        comProperty = DODownloadProperty_LocalPath;
-        return DO_OK;
-    }
-    case msdo::download_property::http_custom_auth_headers:
-    {
-        comProperty = DODownloadProperty::DODownloadProperty_HttpCustomAuthHeaders;
-        return DO_OK;
-    }
-    case msdo::download_property::http_custom_headers:
-    {
-        comProperty = DODownloadProperty_HttpCustomHeaders;
-        return DO_OK;
-    }
-    case msdo::download_property::id:
-    {
-        comProperty = DODownloadProperty_Id;
-        return DO_OK;
-    }
-    case msdo::download_property::integrity_check_info:
-    {
-        comProperty = DODownloadProperty_IntegrityCheckInfo;
-        return DO_OK;
-    }
-    case msdo::download_property::integrity_check_mandatory:
-    {
-        comProperty = DODownloadProperty_IntegrityCheckMandatory;
-        return DO_OK;
-    }
-    case msdo::download_property::network_token:
-    {
-        comProperty = DODownloadProperty_NetworkToken;
-        return DO_OK;
-    }
-    case msdo::download_property::no_progress_timeout_seconds:
-    {
-        comProperty = DODownloadProperty_NoProgressTimeoutSeconds;
-        return DO_OK;
-    }
-    case msdo::download_property::stream_interface:
-    {
-        comProperty = DODownloadProperty_StreamInterface;
-        return DO_OK;
-    }
-    case msdo::download_property::security_context:
-    {
-        comProperty = DODownloadProperty_SecurityContext;
-        return DO_OK;
-    }
-    case msdo::download_property::total_size_bytes:
-    {
-        comProperty = DODownloadProperty_TotalSizeBytes;
-        return DO_OK;
-    }
-    case msdo::download_property::uri:
-    {
-        comProperty = DODownloadProperty_Uri;
-        return DO_OK;
-    }
-    case msdo::download_property::use_foreground_priority:
-    {
-        comProperty = DODownloadProperty_ForegroundPriority;
-        return DO_OK;
-    }
-    default:
-    {
-        return make_error_code(E_INVALIDARG);
-    }
-    }
+    comProperty = c_propMap[index];
+    return DO_OK;
 }
 
 class DOStatusCallback :
     public RuntimeClass<RuntimeClassFlags<RuntimeClassType::ClassicCom>, IDODownloadStatusCallback>
 {
 public:
-    HRESULT RuntimeClassInitialize(const msdo::download_property_value::status_callback_t& callback, msdo::download& download)
+    HRESULT RuntimeClassInitialize(const msdo::status_callback_t& callback, msdo::download& download)
     {
         _download = &download;
         _callback = callback;
@@ -213,39 +93,78 @@ public:
     }
 
 private:
-    msdo::download_property_value::status_callback_t _callback;
+    msdo::status_callback_t _callback;
     msdo::download* _download;
+};
+
+class DOStreamCallback :
+    public RuntimeClass<RuntimeClassFlags<RuntimeClassType::ClassicCom>, ChainInterfaces<IStream, ISequentialStream>>
+{
+public:
+    HRESULT RuntimeClassInitialize(const msdo::output_stream_callback_t& callback)
+    {
+        _callback = callback;
+        return S_OK;
+    }
+
+    // ISequentialStream
+    IFACEMETHODIMP Read(void*, ULONG, ULONG*) override { return E_NOTIMPL; }
+    IFACEMETHODIMP Write(const void* pv, ULONG cb, ULONG* /* pcbWritten */) override
+    {
+        return HRESULT_FROM_WIN32(_callback(static_cast<const unsigned char*>(pv), cb).value());
+    }
+    
+    // IStream (ISequentialStream would be sufficient but DO QI's for IStream)
+    IFACEMETHODIMP Seek(LARGE_INTEGER, DWORD, ULARGE_INTEGER*) override { return E_NOTIMPL; }
+    IFACEMETHODIMP SetSize(ULARGE_INTEGER) override { return E_NOTIMPL; }
+    IFACEMETHODIMP CopyTo(IStream*, ULARGE_INTEGER, ULARGE_INTEGER*, ULARGE_INTEGER*) override { return E_NOTIMPL; }
+    IFACEMETHODIMP Commit(DWORD) override { return E_NOTIMPL; }
+    IFACEMETHODIMP Revert() override { return E_NOTIMPL; }
+    IFACEMETHODIMP LockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD) override { return E_NOTIMPL; }
+    IFACEMETHODIMP UnlockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD) override { return E_NOTIMPL; }
+    IFACEMETHODIMP Stat(STATSTG*, DWORD) override { return E_NOTIMPL; }
+    IFACEMETHODIMP Clone(IStream**) override { return E_NOTIMPL; }
+
+private:
+    msdo::output_stream_callback_t _callback;
 };
 
 std::error_code CDownloadImpl::Init(const std::string& uri, const std::string& downloadFilePath) noexcept
 {
-    Microsoft::WRL::ComPtr<IDOManager> manager;
+    ComPtr<IDOManager> manager;
     RETURN_IF_FAILED(CoCreateInstance(__uuidof(DeliveryOptimization), nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&manager)));
-    Microsoft::WRL::ComPtr<IDODownload> spDownload;
+    ComPtr<IDODownload> spDownload;
     RETURN_IF_FAILED(manager->CreateDownload(&spDownload));
 
-    RETURN_IF_FAILED(CoSetProxyBlanket(static_cast<IUnknown*>(spDownload.Get()), RPC_C_AUTHN_DEFAULT,
+    RETURN_IF_FAILED(CoSetProxyBlanket(spDownload.Get(), RPC_C_AUTHN_DEFAULT,
         RPC_C_AUTHZ_NONE, COLE_DEFAULT_PRINCIPAL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE,
         nullptr, EOAC_STATIC_CLOAKING));
 
-    download_property_value propUri;
-    download_property_value propDownloadFilePath;
-    DO_RETURN_IF_FAILED(download_property_value::make(uri, propUri));
-    DO_RETURN_IF_FAILED(download_property_value::make(downloadFilePath, propDownloadFilePath));
-
-    DO_RETURN_IF_FAILED(_SetPropertyHelper(*spDownload.Get(), download_property::uri, propUri));
-    DO_RETURN_IF_FAILED(_SetPropertyHelper(*spDownload.Get(), download_property::download_file_path, propDownloadFilePath));
-
     _spDownload = std::move(spDownload);
-    return DO_OK;;
+
+    // Assume full file until told otherwise
+    _spRanges = std::make_unique<DO_DOWNLOAD_RANGES_INFO>();
+    _spRanges->RangeCount = 0; // empty == full file
+
+    download_property_value propUri;
+    DO_RETURN_IF_FAILED(download_property_value::make(uri, propUri));
+    DO_RETURN_IF_FAILED(SetProperty(download_property::uri, propUri));
+
+    if (!downloadFilePath.empty())
+    {
+        download_property_value propDownloadFilePath;
+        DO_RETURN_IF_FAILED(download_property_value::make(downloadFilePath, propDownloadFilePath));
+        DO_RETURN_IF_FAILED(SetProperty(download_property::download_file_path, propDownloadFilePath));
+    }
+
+    return DO_OK;
 }
 
-// Support only full file downloads for now
 std::error_code CDownloadImpl::Start() noexcept
 {
-    _DO_DOWNLOAD_RANGES_INFO emptyRanges = {};
-    emptyRanges.RangeCount = 0;
-    return make_error_code(_spDownload->Start(&emptyRanges));
+    // Note: ranges are reset on Start. It is correct to pass nullptr for subsequent Start calls (i.e. "Resume").
+    std::unique_ptr<DO_DOWNLOAD_RANGES_INFO> spRanges = std::move(_spRanges);
+    return make_error_code(_spDownload->Start(spRanges.get()));
 }
 
 std::error_code CDownloadImpl::Pause() noexcept
@@ -276,45 +195,186 @@ std::error_code CDownloadImpl::GetStatus(msdo::download_status& status) noexcept
     return DO_OK;
 }
 
-std::error_code CDownloadImpl::GetProperty(msdo::download_property key, msdo::download_property_value& value) noexcept
+std::error_code CDownloadImpl::SetStatusCallback(const msdo::status_callback_t& callback, msdo::download& download) noexcept
 {
-    return _GetPropertyHelper(key, value);
+    ComPtr<DOStatusCallback> spCallback;
+    RETURN_IF_FAILED(MakeAndInitialize<DOStatusCallback>(&spCallback, callback, download));
+
+    unique_variant vtCallback;
+    V_VT(&vtCallback) = VT_UNKNOWN;
+    V_UNKNOWN(&vtCallback) = spCallback.Detach();
+    RETURN_IF_FAILED(_spDownload->SetProperty(DODownloadProperty_CallbackInterface, &vtCallback));
+    return DO_OK;
+}
+std::error_code CDownloadImpl::SetStreamCallback(const msdo::output_stream_callback_t& callback) noexcept
+{
+    ComPtr<DOStreamCallback> spCallback;
+    RETURN_IF_FAILED(MakeAndInitialize<DOStreamCallback>(&spCallback, callback));
+
+    unique_variant vtCallback;
+    V_VT(&vtCallback) = VT_UNKNOWN;
+    V_UNKNOWN(&vtCallback) = spCallback.Detach();
+    RETURN_IF_FAILED(_spDownload->SetProperty(DODownloadProperty_StreamInterface, &vtCallback));
+
+    // Streamed output requires ranges. Convert empty ranges into a full file range.
+    if (_spRanges && (_spRanges->RangeCount == 0))
+    {
+        _spRanges->RangeCount = 1;
+        _spRanges->Ranges[0].Offset = 0; // [0]: Minimum struct size includes 1 array entry. No need to reallocate.
+        _spRanges->Ranges[0].Length = DO_LENGTH_TO_EOF;
+    }
+
+    return DO_OK;
 }
 
 std::error_code CDownloadImpl::SetProperty(msdo::download_property key, const msdo::download_property_value& val) noexcept
 {
-    assert(key != msdo::download_property::callback_interface);
-    return _SetPropertyHelper(*_spDownload.Get(), key, val);
-}
-
-std::error_code CDownloadImpl::SetCallback(const download_property_value::status_callback_t& callback, download& download) noexcept
-{
-    Microsoft::WRL::ComPtr<DOStatusCallback> spCallback;
-    RETURN_IF_FAILED(MakeAndInitialize<DOStatusCallback>(&spCallback, callback, download));
-
-    VARIANT vtCallback;
-    VariantInit(&vtCallback);
-    V_VT(&vtCallback) = VT_UNKNOWN;
-    V_UNKNOWN(&vtCallback) = spCallback.Get();
-    spCallback.Get()->AddRef();
     DODownloadProperty prop;
-    ConvertToComProperty(msdo::download_property::callback_interface, prop);
-    const auto hr = _spDownload->SetProperty(prop, &vtCallback);
-    VariantClear(&vtCallback);
-    return make_error_code(hr);
+    DO_RETURN_IF_FAILED(ConvertToComProperty(key, prop));
+    RETURN_IF_FAILED(_spDownload->SetProperty(prop, &val._val->native_value()));
+    return DO_OK;
 }
 
-std::error_code CDownloadImpl::_SetPropertyHelper(IDODownload& download, msdo::download_property key, const msdo::download_property_value& val) noexcept
+std::error_code CDownloadImpl::GetProperty(msdo::download_property key, msdo::download_property_value& value) noexcept
 {
     DODownloadProperty prop;
     DO_RETURN_IF_FAILED(ConvertToComProperty(key, prop));
 
-    return make_error_code(download.SetProperty(prop, &val._val->native_value()));
+    unique_variant var;
+    RETURN_IF_FAILED(_spDownload->GetProperty(prop, &var));
+
+    switch (V_VT(&var))
+    {
+    case VT_BOOL:
+        DO_RETURN_IF_FAILED(download_property_value::make(var.boolVal != VARIANT_FALSE, value));
+        break;
+
+    case VT_UI4:
+        DO_RETURN_IF_FAILED(download_property_value::make(var.uintVal, value));
+        break;
+
+    case VT_UI8:
+        DO_RETURN_IF_FAILED(download_property_value::make(var.ullVal, value));
+        break;
+
+    case VT_BSTR:
+        DO_RETURN_IF_FAILED(download_property_value::make(var.bstrVal, value));
+        break;
+
+    default:
+        return make_error_code(errc::unexpected);
+    }
+    return DO_OK;
 }
 
-std::error_code CDownloadImpl::_GetPropertyHelper(msdo::download_property key, msdo::download_property_value& value) noexcept
+// msdo::download_range and DO_DOWNLOAD_RANGE are equivalent -- safe to typecast/copy from one to the other
+static_assert(sizeof(download_range) == sizeof(DO_DOWNLOAD_RANGE));
+static_assert(FIELD_OFFSET(download_range, offset) == FIELD_OFFSET(DO_DOWNLOAD_RANGE, Offset));
+static_assert(FIELD_OFFSET(download_range, length) == FIELD_OFFSET(DO_DOWNLOAD_RANGE, Length));
+static_assert(length_to_eof == DO_LENGTH_TO_EOF);
+
+std::error_code CDownloadImpl::SetRanges(const download_range* ranges, size_t count) noexcept
 {
-    return make_error_code(errc::e_not_impl);
+    size_t cbBufferSize = sizeof(DO_DOWNLOAD_RANGES_INFO); // includes 1 DO_DOWNLOAD_RANGE
+    if (count > 1)
+    {
+        cbBufferSize += ((count - 1) * sizeof(DO_DOWNLOAD_RANGE));
+    }
+
+    void *pvBuffer = ::operator new(cbBufferSize, std::nothrow);
+    if (pvBuffer == nullptr)
+    {
+        return make_error_code(E_OUTOFMEMORY);
+    }
+
+    std::unique_ptr<DO_DOWNLOAD_RANGES_INFO> spRanges(new(pvBuffer) DO_DOWNLOAD_RANGES_INFO());
+    spRanges->RangeCount = static_cast<uint32_t>(count);
+    memcpy(&spRanges->Ranges[0], ranges, count * sizeof(ranges[0]));
+
+    _spRanges = std::move(spRanges);
+    return DO_OK;
+}
+
+std::error_code CDownloadImpl::SetClientCert(const unsigned char* data, size_t size) noexcept
+{
+    unique_variant var;
+    V_ARRAY(&var) = SafeArrayCreateVector(VT_UI1, 0, static_cast<uint32_t>(size));
+    if (V_ARRAY(&var) == nullptr)
+    {
+        return make_error_code(E_OUTOFMEMORY);
+    }
+    V_VT(&var) = VT_ARRAY | VT_UI1;
+
+    memcpy(V_ARRAY(&var)->pvData, data, size);
+
+    RETURN_IF_FAILED(_spDownload->SetProperty(DODownloadProperty_SecurityContext, &var));
+    return DO_OK;
+}
+
+std::error_code CDownloadImpl::EnumDownloads(std::vector<std::unique_ptr<IDownload>>& out) noexcept
+{
+    out.clear();
+    return _EnumDownloads(nullptr, out);
+}
+
+std::error_code CDownloadImpl::EnumDownloads(download_property prop, const std::string& value, std::vector<std::unique_ptr<IDownload>>& out) noexcept
+{
+    out.clear();
+    std::wstring wval;
+    DO_RETURN_IF_FAILED(UTF8toWstr(value, wval));
+    return EnumDownloads(prop, wval, out);
+}
+
+std::error_code CDownloadImpl::EnumDownloads(download_property prop, const std::wstring& value, std::vector<std::unique_ptr<IDownload>>& out) noexcept
+{
+    out.clear();
+    DO_DOWNLOAD_ENUM_CATEGORY category;
+    DO_RETURN_IF_FAILED(ConvertToComProperty(prop, category.Property));
+    category.Value = value.c_str();
+    return _EnumDownloads(&category, out);
+}
+
+std::error_code CDownloadImpl::_EnumDownloads(const DO_DOWNLOAD_ENUM_CATEGORY* pCategory, std::vector<std::unique_ptr<IDownload>>& out) noexcept
+{
+    out.clear();
+    ComPtr<IDOManager> manager;
+    RETURN_IF_FAILED(CoCreateInstance(__uuidof(DeliveryOptimization), nullptr, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&manager)));
+    ComPtr<IEnumUnknown> spEnum;
+    RETURN_IF_FAILED(manager->EnumDownloads(pCategory, &spEnum));
+
+    std::vector<std::unique_ptr<IDownload>> results;
+    ULONG cFetched = 0;
+    do
+    {
+        ComPtr<IUnknown> spunk;
+        RETURN_IF_FAILED(spEnum->Next(1, &spunk, &cFetched));
+        if (cFetched == 1)
+        {
+            ComPtr<IDODownload> spDownload;
+            RETURN_IF_FAILED(spunk->QueryInterface(IID_PPV_ARGS(&spDownload)));
+
+            RETURN_IF_FAILED(CoSetProxyBlanket(spDownload.Get(), RPC_C_AUTHN_DEFAULT,
+                RPC_C_AUTHZ_NONE, COLE_DEFAULT_PRINCIPAL, RPC_C_AUTHN_LEVEL_DEFAULT, RPC_C_IMP_LEVEL_IMPERSONATE,
+                nullptr, EOAC_STATIC_CLOAKING));
+
+            auto tmp = std::make_unique<CDownloadImpl>();
+            tmp->_spDownload = std::move(spDownload);
+
+            // Assume full file in created state, else leave ranges null
+            msdo::download_status status;
+            DO_RETURN_IF_FAILED(tmp->GetStatus(status));
+            if (status.state() == msdo::download_state::created)
+            {
+                tmp->_spRanges = std::make_unique<DO_DOWNLOAD_RANGES_INFO>();
+                tmp->_spRanges->RangeCount = 0; // empty == full file
+            }
+
+            results.push_back(std::move(tmp));
+        }
+    } while (cFetched > 0);
+
+    out = std::move(results);
+    return DO_OK;
 }
 
 } // namespace details

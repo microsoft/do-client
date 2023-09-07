@@ -45,6 +45,24 @@ jobs:
 
 - template: ../templates/do-docker-jobs.yml
   parameters:
+    targetOsArch: 'debian11_arm32'
+    imageVersion: ${{variables.containerImageVersion}}
+    stepsTemplate: 'dopapt-docker-steps.yml'
+
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'debian11_arm64'
+    imageVersion: ${{variables.containerImageVersion}}
+    stepsTemplate: 'dopapt-docker-steps.yml'
+
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'debian11_x64'
+    imageVersion: ${{variables.containerImageVersion}}
+    stepsTemplate: 'dopapt-docker-steps.yml'
+
+- template: ../templates/do-docker-jobs.yml
+  parameters:
     targetOsArch: 'ubuntu1804_arm64'
     imageVersion: ${{variables.containerImageVersion}}
     stepsTemplate: 'dopapt-docker-steps.yml'
@@ -61,3 +79,14 @@ jobs:
     imageVersion: ${{variables.containerImageVersion}}
     stepsTemplate: 'dopapt-docker-steps.yml'
 
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'ubuntu2204_arm64'
+    imageVersion: ${{variables.containerImageVersion}}
+    stepsTemplate: 'dopapt-docker-steps.yml'
+
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'ubuntu2204_x64'
+    imageVersion: ${{variables.containerImageVersion}}
+    stepsTemplate: 'dopapt-docker-steps.yml'

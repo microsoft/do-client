@@ -6,8 +6,6 @@
 #include <atomic>
 #include <thread>
 
-#include <boost/filesystem.hpp>
-
 #include "do_download.h"
 #include "do_download_status.h"
 #include "do_errors.h"
@@ -65,7 +63,7 @@ TEST_F(NetworkConnectivityTests, DISABLED_SimpleBlockingDownloadNetworkReconnect
             try
             {
                 msdo::download::download_url_to_path(g_largeFileUrl, g_tmpFileName);
-                ASSERT_EQ(boost::filesystem::file_size(boost::filesystem::path(g_tmpFileName)), g_largeFileSizeBytes);
+                ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName)), g_largeFileSizeBytes);
             }
             catch (const msdod::exception& e)
             {

@@ -7,10 +7,9 @@
 #include <cassert>
 #include <thread>
 
+#include "download_impl.h"
 #include "do_errors.h"
 #include "do_error_helpers.h"
-#include "download_interface.h"
-#include "download_impl.h"
 
 namespace msdod = microsoft::deliveryoptimization::details;
 using namespace std::chrono_literals; // NOLINT(build/namespaces)
@@ -22,19 +21,22 @@ namespace deliveryoptimization
 
 download::download()
 {
-    _download = std::make_shared<msdod::CDownloadImpl>();
+    _download = std::make_unique<msdod::CDownloadImpl>();
 }
 
 download::~download() = default;
 
+std::error_code download::make(const std::string& uri, std::unique_ptr<download>& out) noexcept
+{
+    std::string emptyPath;
+    return make(uri, emptyPath, out);
+}
+
 std::error_code download::make(const std::string& uri, const std::string& downloadFilePath, std::unique_ptr<download>& out) noexcept
 {
     out.reset();
-    // using 'new' to access non-public constructor
     std::unique_ptr<download> tmp(new download());
-    tmp->_download = std::make_shared<msdod::CDownloadImpl>();
-    std::error_code code = tmp->_download->Init(uri, downloadFilePath);
-    DO_RETURN_IF_FAILED(code);
+    DO_RETURN_IF_FAILED(tmp->_download->Init(uri, downloadFilePath));
     out = std::move(tmp);
     return DO_OK;
 }
@@ -67,6 +69,34 @@ std::error_code download::abort() noexcept
 std::error_code download::get_status(download_status& status) noexcept
 {
     return _download->GetStatus(status);
+}
+
+std::error_code download::set_status_callback(status_callback_t callback) noexcept
+{
+    return _download->SetStatusCallback(callback, *this);
+}
+
+std::error_code download::set_output_stream(output_stream_callback_t callback) noexcept
+{
+    return _download->SetStreamCallback(callback);
+}
+
+std::error_code download::set_ranges(const download_range* ranges, size_t count) noexcept
+{
+    if ((ranges == nullptr) || (count == 0))
+    {
+        return details::make_error_code(errc::invalid_arg);
+    }
+    return _download->SetRanges(ranges, count);
+}
+
+std::error_code download::set_client_cert(const unsigned char* data, size_t size) noexcept
+{
+    if ((data == nullptr) || (size == 0))
+    {
+        return details::make_error_code(errc::invalid_arg);
+    }
+    return _download->SetClientCert(data, size);
 }
 
 std::error_code download::start_and_wait_until_completion(std::chrono::seconds timeOut) noexcept
@@ -144,7 +174,7 @@ static std::error_code g_TryOverrideDownlevelOsSetPropertyError(download_propert
 {
     // Temporary backward-compatibility for MSEdge.
     // These properties were not supported in IDODownload interface until build 19041.
-    if ((ec.value() == static_cast<int>(errc::do_e_unknown_property_id)) &&
+    if ((ec.value() == errc::unknown_property_id) &&
         ((prop == download_property::correlation_vector) || (prop == download_property::integrity_check_info)))
     {
         return DO_OK;
@@ -157,23 +187,55 @@ static std::error_code g_TryOverrideDownlevelOsSetPropertyError(download_propert
 
 std::error_code download::set_property(download_property prop, const download_property_value& val) noexcept
 {
-    if (prop == download_property::callback_interface)
-    {
-        download_property_value::status_callback_t userCallback;
-        DO_RETURN_IF_FAILED(val.as(userCallback));
-
-        return _download->SetCallback(userCallback, *this);
-    }
-    else
-    {
-        auto ec = _download->SetProperty(prop, val);
-        return g_TryOverrideDownlevelOsSetPropertyError(prop, ec);
-    }
+    auto ec = _download->SetProperty(prop, val);
+    return g_TryOverrideDownlevelOsSetPropertyError(prop, ec);
 }
 
 std::error_code download::get_property(download_property prop, download_property_value& val) noexcept
 {
     return _download->GetProperty(prop, val);
+}
+
+std::error_code download::get_downloads(std::vector<std::unique_ptr<download>>& out) noexcept
+{
+    out.clear();
+    std::vector<std::unique_ptr<details::IDownload>> results;
+    DO_RETURN_IF_FAILED(msdod::CDownloadImpl::EnumDownloads(results));
+    for (auto& result : results)
+    {
+        std::unique_ptr<download> tmp(new download());
+        tmp->_download = std::move(result);
+        out.push_back(std::move(tmp));
+    }
+    return DO_OK;
+}
+
+std::error_code download::get_downloads(download_property prop, const std::string& value, std::vector<std::unique_ptr<download>>& out) noexcept
+{
+    out.clear();
+    std::vector<std::unique_ptr<details::IDownload>> results;
+    DO_RETURN_IF_FAILED(msdod::CDownloadImpl::EnumDownloads(prop, value, results));
+    for (auto& result : results)
+    {
+        std::unique_ptr<download> tmp(new download());
+        tmp->_download = std::move(result);
+        out.push_back(std::move(tmp));
+    }
+    return DO_OK;
+}
+
+std::error_code download::get_downloads(download_property prop, const std::wstring& value, std::vector<std::unique_ptr<download>>& out) noexcept
+{
+    out.clear();
+    std::vector<std::unique_ptr<details::IDownload>> results;
+    DO_RETURN_IF_FAILED(msdod::CDownloadImpl::EnumDownloads(prop, value, results));
+    for (auto& result : results)
+    {
+        std::unique_ptr<download> tmp(new download());
+        tmp->_download = std::move(result);
+        out.push_back(std::move(tmp));
+    }
+    return DO_OK;
 }
 
 } // namespace deliveryoptimization

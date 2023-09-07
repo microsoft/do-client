@@ -5,7 +5,6 @@
 
 #include <random>
 #include <thread>
-#include <experimental/filesystem>
 #include "do_config.h"
 #include "do_download.h"
 #include "do_download_status.h"
@@ -14,7 +13,6 @@
 #include "test_data.h"
 #include "test_helpers.h"
 
-namespace cppfs = std::experimental::filesystem;
 namespace msdo = microsoft::deliveryoptimization;
 namespace msdod = microsoft::deliveryoptimization::details;
 namespace msdot = microsoft::deliveryoptimization::test;
@@ -25,9 +23,9 @@ public:
     void SetUp() override
     {
         TestHelpers::CleanTestDir();
-        if (cppfs::exists(msdod::GetConfigFilePath()))
+        if (fs::exists(msdod::GetConfigFilePath()))
         {
-            cppfs::remove(msdod::GetConfigFilePath());
+            fs::remove(msdod::GetConfigFilePath());
         }
     }
 

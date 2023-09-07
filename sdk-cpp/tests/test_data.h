@@ -7,12 +7,19 @@
 #include <chrono>
 #include <string>
 
+#ifdef DO_BUILD_FOR_SNAP
+// Using systemctl within snap package results in "Running in chroot, ignoring request".
+// Use the snap command instead.
+#define DO_SERVICE_CONTROLLER  "snap"
+#else
+#define DO_SERVICE_CONTROLLER  "systemctl"
+#endif
+
 extern const uint64_t g_smallFileSizeBytes;
 extern const uint64_t g_largeFileSizeBytes;
 extern const uint64_t g_prodFileSizeBytes;
 
 #if defined(DO_INTERFACE_REST)
-extern const std::string g_docsProcName;
 extern const std::string g_docsSvcName;
 #elif defined(DO_INTERFACE_COM)
 extern const std::string g_smallFilePhfInfoJson;

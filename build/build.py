@@ -94,6 +94,20 @@ class LinuxArgParser(ArgParserBase):
             '--package-for', dest='package_type', type=str,
             help='Supply package type. e.g. deb, or rpm'
         )
+        self.parser.add_argument(
+            '--build-for-snap', dest='build_for_snap', action='store_true',
+            help='Only build components and features those required for the Ubuntu Core snap'
+        )
+        self.parser.add_argument(
+            '--search-prefix', dest='search_prefix', type=str,
+            help='search prefix to pass to CMake'
+        )
+        
+        '''Option to control resource usage when running on a Raspberry Pi'''
+        self.parser.add_argument(
+            '--parallel', dest='parallel', type=int,
+            help='Control the number of parallel build processes or threads'
+        )
 
         '''Agent only'''
         self.parser.add_argument(
@@ -412,6 +426,9 @@ class LinuxBuildRunner(BuildRunnerBase):
             self.package_type = self.script_args.package_type.lower()
 
         self.static_analysis = self.script_args.static_analysis
+        self.build_for_snap = self.script_args.build_for_snap
+        self.search_prefix = self.script_args.search_prefix
+        self.parallel = self.script_args.parallel
 
     @property
     def platform(self):
@@ -436,6 +453,12 @@ class LinuxBuildRunner(BuildRunnerBase):
         if self.static_analysis:
             generate_options.extend(["-DCMAKE_CXX_CPPLINT=cpplint"])
 
+        if self.build_for_snap:
+            generate_options.extend(["-DDO_BUILD_FOR_SNAP=1"])
+
+        if self.search_prefix:
+            generate_options.extend(["-DCMAKE_PREFIX_PATH={}".format(self.search_prefix)])
+
         return generate_options
 
     def run(self):
@@ -445,6 +468,13 @@ class LinuxBuildRunner(BuildRunnerBase):
 
     def package(self):
         subprocess.call(['/bin/bash', '-c', 'cd {} && cpack .'.format(self.build_path)])
+
+    @property
+    def build_options(self):
+        build_options_linux = super().build_options
+        if (self.parallel):
+            build_options_linux += ['--parallel', str(self.parallel)]
+        return build_options_linux
 
 class WindowsBuildRunner(BuildRunnerBase):
     """Windows BuildRunner class."""
@@ -479,7 +509,7 @@ class WindowsBuildRunner(BuildRunnerBase):
     def generator(self):
         # No need to specify architecture here as the default target platform name (architecture) is that of the host and is provided in the CMAKE_VS_PLATFORM_NAME_DEFAULT variable
         # https://cmake.org/cmake/help/latest/generator/Visual%20Studio%2016%202019.html
-        return super().generator or 'Visual Studio 16 2019'
+        return super().generator or 'Visual Studio 17 2022'
 
     @property
     def generate_options(self):

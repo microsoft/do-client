@@ -5,6 +5,7 @@
 #define _DELIVERY_OPTIMIZATION_DO_DOWNLOAD_STATUS_H
 
 #include <cstdint>
+#include <functional>
 #include <system_error>
 
 #include "do_errors.h"
@@ -68,8 +69,21 @@ private:
     int32_t         _errorCode { 0 };
     int32_t         _extendedErrorCode { 0 };
     download_state  _state { download_state::created };
-
 };
+
+class download;
+using status_callback_t = std::function<void(download&, download_status&)>;
+
+// Future: use std::span (requires C++20)
+using output_stream_callback_t = std::function<std::error_code(const unsigned char* data, size_t size)>;
+
+// TODO: create a new header for things that aren't 'status' related, such as output_stream_callback_t and ranges
+struct download_range
+{
+    uint64_t offset;
+    uint64_t length;
+};
+static constexpr uint64_t length_to_eof = static_cast<uint64_t>(-1);
 
 } // namespace deliveryoptimization
 } // namespace microsoft

@@ -28,6 +28,16 @@ std::error_code download_property_value::make(const std::string& val, download_p
     return DO_OK;
 }
 
+std::error_code download_property_value::make(const std::wstring& val, download_property_value& out)
+{
+    download_property_value temp;
+    std::error_code code = temp._val->Init(val);
+    DO_RETURN_IF_FAILED(code);
+
+    out = temp;
+    return DO_OK;
+}
+
 std::error_code download_property_value::make(uint32_t val, download_property_value& out)
 {
     download_property_value temp;
@@ -58,26 +68,6 @@ std::error_code download_property_value::make(bool val, download_property_value&
     return DO_OK;
 }
 
-std::error_code download_property_value::make(std::vector<unsigned char>& val, download_property_value& out)
-{
-    download_property_value temp;
-    std::error_code code = temp._val->Init(val);
-    DO_RETURN_IF_FAILED(code);
-
-    out = temp;
-    return DO_OK;
-}
-
-std::error_code download_property_value::make(const status_callback_t& val, download_property_value& out)
-{
-    download_property_value temp;
-    std::error_code code = temp._val->Init(val);
-    DO_RETURN_IF_FAILED(code);
-
-    out = temp;
-    return DO_OK;
-}
-
 std::error_code download_property_value::as(bool& val) const noexcept
 {
     return _val->As(val);
@@ -98,12 +88,7 @@ std::error_code download_property_value::as(std::string& val) const noexcept
     return _val->As(val);
 }
 
-std::error_code download_property_value::as(std::vector<unsigned char>& val) const noexcept
-{
-    return _val->As(val);
-}
-
-std::error_code download_property_value::as(status_callback_t& val) const noexcept
+std::error_code download_property_value::as(std::wstring& val) const noexcept
 {
     return _val->As(val);
 }

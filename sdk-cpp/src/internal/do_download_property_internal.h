@@ -10,9 +10,7 @@
 #include <boost/variant.hpp>
 #endif
 
-#include <functional>
 #include <string>
-#include <vector>
 
 #include "do_download_property.h"
 #include "do_errors.h"
@@ -24,47 +22,52 @@ namespace deliveryoptimization
 namespace details
 {
 
+#if defined(DO_INTERFACE_COM)
+std::error_code UTF8toWstr(const std::string& str, std::wstring& wstr);
+std::error_code WstrToUTF8(const std::wstring& wstr, std::string& str);
+
+struct unique_variant : VARIANT
+{
+    unique_variant();
+    explicit unique_variant(const VARIANT& other) noexcept; // takes ownership via shallow copy
+    unique_variant(unique_variant&& other) noexcept;
+    unique_variant& operator=(unique_variant&& other) noexcept;
+    ~unique_variant();
+
+    unique_variant(const unique_variant& other) = delete;
+    unique_variant& operator=(const unique_variant&) = delete;
+    unique_variant& operator=(const VARIANT&) = delete;
+};
+#endif
+
 class CDownloadPropertyValueInternal
 {
 public:
 #if defined(DO_INTERFACE_COM)
-    using native_type = VARIANT;
+    using native_type = unique_variant;
 #else
-    using native_type = boost::variant<std::string, uint32_t, uint64_t, bool, std::vector<unsigned char>>;
+    using native_type = boost::variant<std::string, uint32_t, uint64_t, bool>;
 #endif
-    CDownloadPropertyValueInternal();
+
+    CDownloadPropertyValueInternal() = default;
+    ~CDownloadPropertyValueInternal() = default;
 
     std::error_code Init(const std::string& val) noexcept;
+    std::error_code Init(const std::wstring& val) noexcept;
     std::error_code Init(uint32_t val) noexcept;
     std::error_code Init(uint64_t val) noexcept;
     std::error_code Init(bool val) noexcept;
-    std::error_code Init(std::vector<unsigned char>& val) noexcept;
-    std::error_code Init(const download_property_value::status_callback_t& val) noexcept;
-
-    ~CDownloadPropertyValueInternal();
-
-    CDownloadPropertyValueInternal(const CDownloadPropertyValueInternal& rhs);
-    CDownloadPropertyValueInternal& operator=(CDownloadPropertyValueInternal copy);
-    CDownloadPropertyValueInternal(CDownloadPropertyValueInternal&& rhs) noexcept;
-
-    friend void swap(CDownloadPropertyValueInternal& first, CDownloadPropertyValueInternal& second) noexcept
-    {
-        std::swap(first._var, second._var);
-        std::swap(first._callback, second._callback);
-    }
 
     std::error_code As(bool& val) const noexcept;
     std::error_code As(uint32_t& val) const noexcept;
     std::error_code As(uint64_t& val) const noexcept;
     std::error_code As(std::string& val) const noexcept;
-    std::error_code As(download_property_value::status_callback_t& val) const noexcept;
-    std::error_code As(std::vector<unsigned char>& val) const noexcept;
+    std::error_code As(std::wstring& val) const noexcept;
 
-    const native_type& native_value() const noexcept;
+    const native_type& native_value() const noexcept { return _var; }
 
 private:
     native_type _var;
-    download_property_value::status_callback_t _callback;
 };
 
 } // namespace details

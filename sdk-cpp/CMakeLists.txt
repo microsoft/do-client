@@ -1,14 +1,10 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-project (deliveryoptimization_sdk VERSION 1.0.0)
+project (deliveryoptimization_sdk VERSION 1.1.0)
 
 if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
-    message("DO configured to use shared Boost libraries")
-    add_definitions(-DBOOST_ALL_DYN_LINK=1)
-
-    # Include external libraries here
-    find_package(Boost COMPONENTS filesystem REQUIRED)
+    find_package(Boost REQUIRED)
 endif()
 
 if (DO_PLATFORM_LINUX)
@@ -21,6 +17,7 @@ endif()
 
 set(DO_SDK_LIB_NAME "deliveryoptimization")
 add_do_version_lib("${DO_SDK_LIB_NAME}-lib" ${PROJECT_VERSION})
+try_set_filesystem_lib()
 
 ### Region CMake Build ###
 
@@ -65,10 +62,6 @@ if(DO_PLATFORM_LINUX)
         dohttp
     )
 
-    set(sdk_public_linked_libs
-        ${Boost_LIBRARIES}
-    )
-
     strip_symbols(${DO_SDK_LIB_NAME})
 
 elseif(DO_PLATFORM_MAC)
@@ -90,9 +83,6 @@ elseif(DO_PLATFORM_MAC)
         dohttp
     )
 
-    set(sdk_public_linked_libs
-        ${Boost_LIBRARIES}
-    )
 elseif(DO_PLATFORM_WINDOWS)
     file(GLOB sdk_source
         ${sdk_source_common}
@@ -121,8 +111,12 @@ target_compile_definitions(${DO_SDK_LIB_NAME}
     PRIVATE
         ${sdk_compile_definitions}
 )
+add_boost_definitions(${DO_SDK_LIB_NAME} PRIVATE)
 if (DO_DEV_DEBUG)
     target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE DO_DEV_DEBUG)
+endif ()
+if (DO_BUILD_FOR_SNAP)
+    target_compile_definitions(${DO_SDK_LIB_NAME} PRIVATE DO_BUILD_FOR_SNAP)
 endif ()
 if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
     # TODO(shishirb) Remove internal use of exceptions on these platforms
@@ -131,10 +125,9 @@ endif ()
 add_platform_interface_definitions(${DO_SDK_LIB_NAME})
 
 target_link_libraries(${DO_SDK_LIB_NAME}
-    PUBLIC
-        ${sdk_public_linked_libs}
     PRIVATE
         ${sdk_private_linked_libs}
+        ${CXX_FILESYSTEM_LIBS}
 )
 
 ### Endregion CMake Build ###
