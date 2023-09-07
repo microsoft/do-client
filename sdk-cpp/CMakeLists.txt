@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-project (deliveryoptimization_sdk VERSION 1.0.0)
+project (deliveryoptimization_sdk VERSION 1.1.0)
 
 if (DO_PLATFORM_LINUX OR DO_PLATFORM_MAC)
     find_package(Boost REQUIRED)
