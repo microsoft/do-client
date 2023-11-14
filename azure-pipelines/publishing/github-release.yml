@@ -35,9 +35,13 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     pool:
-      name: Azure-Pipelines-1ESPT-ExDShared
-      image: windows-2022
-      os: windows
+      name: 1es_hosted_pool_ubuntu_1804
+      demands: ImageOverride -equals do-adu-build-$(imageVersion)
+    sdl:
+      sourceAnalysisPool:
+        name: 1es_hosted_pool_ubuntu_1804
+        image: 1es-img-sdl-windows2022
+        os: windows
     customBuildTags:
     - ES365AIMigrationTooling
     stages:
