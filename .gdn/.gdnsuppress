@@ -78,6 +78,14 @@
       "expirationDate": null,
       "type": null
     },
+    "4116d792c758e186e24d9ee9663ce685e05b1b3a865218c363f8315185b151b8": {
+      "signature": "4116d792c758e186e24d9ee9663ce685e05b1b3a865218c363f8315185b151b8",
+      "alternativeSignatures": [],
+      "memberOf": [
+        "default"
+      ],
+      "createdDate": "2023-11-15 14:49:03Z"
+    },
     "6c108b2d560436676cc57c078ae24ece9fe1a70317a4bb56708ad5852de41699": {
       "signature": "6c108b2d560436676cc57c078ae24ece9fe1a70317a4bb56708ad5852de41699",
       "alternativeSignatures": [],

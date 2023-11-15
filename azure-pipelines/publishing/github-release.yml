@@ -48,6 +48,8 @@ extends:
         name: Azure-Pipelines-1ESPT-ExDShared
         image: windows-latest
         os: windows
+      suppression:
+        suppressionFile: $(Build.SourcesDirectory)\.gdn\.gdnsuppress
     customBuildTags:
     - ES365AIMigrationTooling
 
@@ -69,54 +71,54 @@ extends:
         parameters:
           targetOsArch: 'ubuntu1804_x64'
           imageVersion: ${{variables.containerImageVersion}}
-      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-        parameters:
-          targetOsArch: 'ubuntu1804_arm64'
-          imageVersion: ${{variables.containerImageVersion}}
+      # - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+      #   parameters:
+      #     targetOsArch: 'ubuntu1804_arm64'
+      #     imageVersion: ${{variables.containerImageVersion}}
 
       - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
         parameters:
           targetOsArch: 'ubuntu2004_x64'
           imageVersion: ${{variables.containerImageVersion}}
-      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-        parameters:
-          targetOsArch: 'ubuntu2004_arm64'
-          imageVersion: ${{variables.containerImageVersion}}
+      # - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+      #   parameters:
+      #     targetOsArch: 'ubuntu2004_arm64'
+      #     imageVersion: ${{variables.containerImageVersion}}
 
       - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
         parameters:
           targetOsArch: 'ubuntu2204_x64'
           imageVersion: ${{variables.containerImageVersion}}
-      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-        parameters:
-          targetOsArch: 'ubuntu2204_arm64'
-          imageVersion: ${{variables.containerImageVersion}}
+      # - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+      #   parameters:
+      #     targetOsArch: 'ubuntu2204_arm64'
+      #     imageVersion: ${{variables.containerImageVersion}}
 
-      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-        parameters:
-          targetOsArch: 'debian10_arm32'
-          imageVersion: ${{variables.containerImageVersion}}
-      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-        parameters:
-          targetOsArch: 'debian10_arm64'
-          imageVersion: ${{variables.containerImageVersion}}
-      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-        parameters:
-          targetOsArch: 'debian10_x64'
-          imageVersion: ${{variables.containerImageVersion}}
+      # - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+      #   parameters:
+      #     targetOsArch: 'debian10_arm32'
+      #     imageVersion: ${{variables.containerImageVersion}}
+      # - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+      #   parameters:
+      #     targetOsArch: 'debian10_arm64'
+      #     imageVersion: ${{variables.containerImageVersion}}
+      # - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+      #   parameters:
+      #     targetOsArch: 'debian10_x64'
+      #     imageVersion: ${{variables.containerImageVersion}}
 
-      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-        parameters:
-          targetOsArch: 'debian11_arm32'
-          imageVersion: ${{variables.containerImageVersion}}
-      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-        parameters:
-          targetOsArch: 'debian11_arm64'
-          imageVersion: ${{variables.containerImageVersion}}
-      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-        parameters:
-          targetOsArch: 'debian11_x64'
-          imageVersion: ${{variables.containerImageVersion}}
+      # - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+      #   parameters:
+      #     targetOsArch: 'debian11_arm32'
+      #     imageVersion: ${{variables.containerImageVersion}}
+      # - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+      #   parameters:
+      #     targetOsArch: 'debian11_arm64'
+      #     imageVersion: ${{variables.containerImageVersion}}
+      # - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+      #   parameters:
+      #     targetOsArch: 'debian11_x64'
+      #     imageVersion: ${{variables.containerImageVersion}}
 
     - stage: release
       condition: succeeded()
