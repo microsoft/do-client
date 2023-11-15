@@ -60,13 +60,14 @@ extends:
               echo "Tag used to generate changelog: $(Release.PreviousVersion)"
     - stage: release_build
       jobs:
-      # - template: /azure-pipelines/publishing/templates/release-native-build-steps.yml@self
-      #   parameters:
-      #     targetOsArch: 'ubuntu1804_x64'
-      # - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-      #   parameters:
-      #     targetOsArch: 'ubuntu1804_arm64'
-      #     imageVersion: ${{variables.containerImageVersion}}
+      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+        parameters:
+          targetOsArch: 'ubuntu1804_x64'
+          imageVersion: ${{variables.containerImageVersion}}
+      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+        parameters:
+          targetOsArch: 'ubuntu1804_arm64'
+          imageVersion: ${{variables.containerImageVersion}}
       - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
         parameters:
           targetOsArch: 'ubuntu2004_x64'
