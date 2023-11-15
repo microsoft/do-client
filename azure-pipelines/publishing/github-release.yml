@@ -19,12 +19,14 @@ parameters:
   values:
   - true
   - false
+  default: true
 - name: PublishAsDraft
   displayName: Publish as draft
   type: boolean
   values:
   - true
   - false
+  default: true
 resources:
   repositories:
   - repository: 1ESPipelineTemplates
@@ -126,7 +128,7 @@ extends:
           inputs:
             targetType: 'inline'
             script: 'sha256sum ./*.tar > ../hashes_sha256.txt'
-            workingDirectory: $(Build.ArtifactStagingDirectory)/github-release-artifacts
+            workingDirectory: $(Build.ArtifactStagingDirectory)/release-assets
           displayName: Compute hashes of archive files
         - task: Bash@3
           inputs:
