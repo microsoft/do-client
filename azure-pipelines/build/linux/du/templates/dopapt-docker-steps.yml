@@ -1,34 +1,39 @@
-# This Yaml Document has been converted by ESAI Yaml Pipeline Conversion Tool.
-# Please make sure to check all the converted content, it is your team's responsibility to make sure that the pipeline is still valid and functions as expected.
-# The Task 'PublishBuildArtifacts@1' has been converted to an output named '' in the templateContext section.
+# Template: Steps to build DO Plugins using docker to target non-native OS and/or architecture.
+# Consume this steps template in one or more jobs by passing in parameter values.
+
 parameters:
-- name: targetOsArch
+- name: targetOsArch    # example: ubuntu2004_arm64
   type: string
 - name: imageVersion
   type: string
-- name: config
+- name: config          # debug/release/minsizerel/relwithdebuginfo
   type: string
+
 steps:
 - task: Docker@2
   displayName: Login to ACR
   inputs:
     command: login
-    containerRegistry: doclient-dockercontainerregistry-buildpipeline
+    containerRegistry: doclient-dockercontainerregistry-buildpipeline   # name of the service connection that connect the pipeline to the ACR
     repository: $(parameters.targetOsArch)
+
 - task: Docker@2
   displayName: Pull latest build image
   inputs:
     command: pull
-    containerRegistry: doclient-dockercontainerregistry-buildpipeline
+    containerRegistry: doclient-dockercontainerregistry-buildpipeline   # name of the service connection that connect the pipeline to the ACR
     arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}}'
+
 - task: CmdLine@2
   inputs:
     script: 'sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes'
   displayName: Enable the build VM to run multiarch docker container
+
 - task: CmdLine@2
   inputs:
     script: 'sudo docker run --rm --entrypoint=/bin/bash -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-plugin-apt doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/docker/docker-build-plugin.sh" "/code" "${{parameters.config}}"'
   displayName: 'Build deliveryoptimization-plugin-apt ${{parameters.targetOsArch}}-${{parameters.config}}'
+
 - task: CopyFiles@2
   inputs:
     SourceFolder: '/tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
@@ -37,6 +42,7 @@ steps:
     TargetFolder: '$(Build.ArtifactStagingDirectory)/plugin-apt-${{parameters.targetOsArch}}-${{parameters.config}}'
     CleanTargetFolder: true
   displayName: 'Populate artifacts staging dir'
+
 - task: CopyFiles@2
   condition: eq('${{parameters.config}}', 'minsizerel')
   inputs:
