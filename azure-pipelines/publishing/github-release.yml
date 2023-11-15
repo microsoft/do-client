@@ -49,7 +49,7 @@ extends:
         image: windows-latest
         os: windows
       suppression:
-        suppressionFile: $(Build.SourcesDirectory)\.gdn\.gdnsuppress
+        suppressionFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnsuppress
     customBuildTags:
     - ES365AIMigrationTooling
 
@@ -64,6 +64,8 @@ extends:
               echo "Release title: $(Release.Title)"
               echo "Release tag: $(Release.Version)"
               echo "Tag used to generate changelog: $(Release.PreviousVersion)"
+              echo "Suppress file:"
+              ls -l $(Build.SourcesDirectory)/guardian/SDL/.gdnsuppress
 
     - stage: build
       jobs:
