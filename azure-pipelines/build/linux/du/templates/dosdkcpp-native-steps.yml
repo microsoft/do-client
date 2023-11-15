@@ -87,3 +87,10 @@ steps:
       sdk-cpp/libdeliveryoptimization*.dbg
     TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
   displayName: 'Populate debug symbols to staging dir'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'deliveryoptimization-sdk'
+    publishLocation: 'Container'
+

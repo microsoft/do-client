@@ -75,3 +75,10 @@ steps:
     TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
     CleanTargetFolder: false
   displayName: 'Populate artifacts staging dir with test binary'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'deliveryoptimization-agent'
+    publishLocation: 'Container'
+
