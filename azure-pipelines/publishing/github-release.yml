@@ -119,28 +119,32 @@ extends:
             itemPattern: '**/*-packages.tar'
             downloadPath: '$(Build.ArtifactStagingDirectory)'
         - task: CmdLine@2
-          displayName: 'List downloaded files'
+          displayName: 'List downloaded files and stage'
           inputs:
             script: |
+              shopt -s globstar
               ls -lR $(Build.ArtifactStagingDirectory)
+              mkdir -p $(Build.ArtifactStagingDirectory)/release-assets-all
+              cp $(Build.ArtifactStagingDirectory)/**/*.tar $(Build.ArtifactStagingDirectory)/release-assets-all
         - task: CmdLine@2
           inputs:
             script: |
-              echo "Directory to be published: $(Build.ArtifactStagingDirectory)"
+              shopt -s globstar
               echo Content to be published:
-              ls -lR $(Build.ArtifactStagingDirectory)/**/*.tar
+              ls -l *.tar
+            workingDirectory: $(Build.ArtifactStagingDirectory)/release-assets-all
           displayName: Release Information
         - task: Bash@3
           inputs:
             targetType: 'inline'
-            script: 'sha256sum ./*.tar > ../hashes_sha256.txt'
-            workingDirectory: $(Build.ArtifactStagingDirectory)
+            script: 'sha256sum ./*.tar > hashes_sha256.txt'
+            workingDirectory: $(Build.ArtifactStagingDirectory)/release-assets-all
           displayName: Compute hashes of archive files
         - task: Bash@3
           inputs:
             targetType: 'inline'
-            script: 'cat ./hashes_sha256.txt'
-            workingDirectory: $(Build.ArtifactStagingDirectory)
+            script: 'cat hashes_sha256.txt'
+            workingDirectory: $(Build.ArtifactStagingDirectory)/release-assets-all
           displayName: Display hashes of archive files
         - task: GitHubRelease@1
           condition: eq(${{parameters.SkipPublishing}}, false)
@@ -149,8 +153,8 @@ extends:
             repositoryName: 'microsoft/do-client'
             action: 'create'
             assets: |
-              $(Build.ArtifactStagingDirectory)/**/*.tar
-              $(Build.ArtifactStagingDirectory)/hashes*.txt
+              $(Build.ArtifactStagingDirectory)/release-assets-all/*.tar
+              $(Build.ArtifactStagingDirectory)/release-assets-all/hashes*.txt
             tagSource: 'userSpecifiedTag'
             tag: '$(Release.Version)'
             title: '$(Release.Title)'
