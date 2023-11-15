@@ -35,12 +35,13 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     pool:
-      name: 1es_hosted_pool_ubuntu_1804
-      demands: ImageOverride -equals do-adu-build-$(imageVersion)
+      name: Azure-Pipelines-1ESPT-ExDShared
+      image: ubuntu-latest
+      os: linux
     sdl:
       sourceAnalysisPool:
-        name: 1es_hosted_pool_ubuntu_1804
-        image: 1es-img-sdl-windows2022
+        name: Azure-Pipelines-1ESPT-ExDShared
+        image: windows-latest
         os: windows
     customBuildTags:
     - ES365AIMigrationTooling
@@ -57,9 +58,9 @@ extends:
               echo "Tag used to generate changelog: $(Release.PreviousVersion)"
     - stage: release_build
       jobs:
-      - template: /azure-pipelines/publishing/templates/release-native-build-steps.yml@self
-        parameters:
-          targetOsArch: 'ubuntu1804_x64'
+      # - template: /azure-pipelines/publishing/templates/release-native-build-steps.yml@self
+      #   parameters:
+      #     targetOsArch: 'ubuntu1804_x64'
       - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
         parameters:
           targetOsArch: 'ubuntu1804_arm64'
