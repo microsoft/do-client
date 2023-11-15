@@ -119,6 +119,11 @@ extends:
             itemPattern: '**/*-packages.tar'
             downloadPath: '$(Build.ArtifactStagingDirectory)'
         - task: CmdLine@2
+          displayName: 'List downloaded files'
+          inputs:
+            script: |
+              ls -lR $(Build.ArtifactStagingDirectory)
+        - task: CmdLine@2
           inputs:
             script: |
               echo "Directory to be published: $(Build.ArtifactStagingDirectory)"
