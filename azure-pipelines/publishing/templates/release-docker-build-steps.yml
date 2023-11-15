@@ -61,11 +61,11 @@ jobs:
       rootFolderOrFile: /tmp/${{parameters.targetOsArch}}
       includeRootFolder: False
       archiveType: tar
-      archiveFile: $(build.ArtifactStagingDirectory)/release-assets/${{parameters.targetOsArch}}-packages.tar
+      archiveFile: $(Build.ArtifactStagingDirectory)/release-assets/${{parameters.targetOsArch}}-packages.tar
     displayName: 'Create .tar file'
   templateContext:
     outputs:
     - output: pipelineArtifact
       displayName: 'Publish artifacts'
       targetPath: '$(Build.ArtifactStagingDirectory)'
-      artifact: 'drop-${{parameters.targetOsArch}}'
+      artifact: 'doclient-drop-${{parameters.targetOsArch}}'

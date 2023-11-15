@@ -63,46 +63,46 @@ extends:
       # - template: /azure-pipelines/publishing/templates/release-native-build-steps.yml@self
       #   parameters:
       #     targetOsArch: 'ubuntu1804_x64'
-      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-        parameters:
-          targetOsArch: 'ubuntu1804_arm64'
-          imageVersion: ${{variables.containerImageVersion}}
+      # - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+      #   parameters:
+      #     targetOsArch: 'ubuntu1804_arm64'
+      #     imageVersion: ${{variables.containerImageVersion}}
       - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
         parameters:
           targetOsArch: 'ubuntu2004_x64'
           imageVersion: ${{variables.containerImageVersion}}
-      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-        parameters:
-          targetOsArch: 'ubuntu2004_arm64'
-          imageVersion: ${{variables.containerImageVersion}}
+      # - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+      #   parameters:
+      #     targetOsArch: 'ubuntu2004_arm64'
+      #     imageVersion: ${{variables.containerImageVersion}}
       - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
         parameters:
           targetOsArch: 'ubuntu2204_x64'
           imageVersion: ${{variables.containerImageVersion}}
-      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-        parameters:
-          targetOsArch: 'ubuntu2204_arm64'
-          imageVersion: ${{variables.containerImageVersion}}
-      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-        parameters:
-          targetOsArch: 'debian10_arm32'
-          imageVersion: ${{variables.containerImageVersion}}
-      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-        parameters:
-          targetOsArch: 'debian10_arm64'
-          imageVersion: ${{variables.containerImageVersion}}
+      # - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+      #   parameters:
+      #     targetOsArch: 'ubuntu2204_arm64'
+      #     imageVersion: ${{variables.containerImageVersion}}
+      # - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+      #   parameters:
+      #     targetOsArch: 'debian10_arm32'
+      #     imageVersion: ${{variables.containerImageVersion}}
+      # - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+      #   parameters:
+      #     targetOsArch: 'debian10_arm64'
+      #     imageVersion: ${{variables.containerImageVersion}}
       - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
         parameters:
           targetOsArch: 'debian10_x64'
           imageVersion: ${{variables.containerImageVersion}}
-      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-        parameters:
-          targetOsArch: 'debian11_arm32'
-          imageVersion: ${{variables.containerImageVersion}}
-      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-        parameters:
-          targetOsArch: 'debian11_arm64'
-          imageVersion: ${{variables.containerImageVersion}}
+      # - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+      #   parameters:
+      #     targetOsArch: 'debian11_arm32'
+      #     imageVersion: ${{variables.containerImageVersion}}
+      # - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+      #   parameters:
+      #     targetOsArch: 'debian11_arm64'
+      #     imageVersion: ${{variables.containerImageVersion}}
       - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
         parameters:
           targetOsArch: 'debian11_x64'
@@ -112,10 +112,11 @@ extends:
       jobs:
       - job: github_release
         steps:
-        - task: DownloadBuildArtifacts@0
+        - task: DownloadBuildArtifacts@1
           inputs:
             buildType: 'current'
             downloadType: 'specific'
+            itemPattern: '**/*-packages.tar'
             downloadPath: '$(Build.ArtifactStagingDirectory)'
         - task: CmdLine@2
           inputs:
@@ -128,7 +129,7 @@ extends:
           inputs:
             targetType: 'inline'
             script: 'sha256sum ./*.tar > ../hashes_sha256.txt'
-            workingDirectory: $(Build.ArtifactStagingDirectory)/release-assets
+            workingDirectory: $(Build.ArtifactStagingDirectory)
           displayName: Compute hashes of archive files
         - task: Bash@3
           inputs:
