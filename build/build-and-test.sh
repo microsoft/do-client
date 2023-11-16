@@ -6,11 +6,12 @@
 set -e
 
 if [ $# -ne 3 ] && [ $# -ne 4 ]; then
-   echo "Usage: $0 <source code path> <build configuration> <component names (comma-separated)>"
-   echo "    <source code path> is the path to the root of the source code"
-   echo "    <build configuration> can be: debug, release, minsizerel, relwithdebinfo"
-   echo "    <component names> can be: all, agent, sdk, plugin-apt"
-   exit 1
+    echo "Usage: $0 <source code path> <build configuration> <component names (comma-separated)> [run_tests]"
+    echo "    <source code path> is the path to the root of the source code"
+    echo "    <build configuration> can be: debug, release, minsizerel, relwithdebinfo"
+    echo "    <component names> can be: all, agent, sdk, plugin-apt"
+    echo "    [run_tests] is an optional argument to run tests after building the components"
+    exit 1
 fi
 
 # ---- variables ----
@@ -33,25 +34,31 @@ if [ $(id -u) -ne 0 ]; then
     SUDO="sudo"
 fi
 
-
 # ---- functions ----
+
+function print_message
+{
+    echo "------------------------------------------------------------"
+    echo "$1"
+    echo "------------------------------------------------------------"
+}
 
 # Build the agent component
 function build_agent
 {
-    echo "Building agent component"
+    print_message "Building agent component"
     python3 $BUILD_SCRIPT_PATH --project agent --config $BUILD_CONFIG --package-for DEB --clean
 
     if [ "$RUN_TESTS" = true ]; then
         install_agent
-        echo "Running agent tests"
+        print_message "Running agent tests"
         $AGENT_BUILD_ROOT/client-lite/test/deliveryoptimization-agent-tests "--gtest_filter=-NetworkMonitorTests*"
     fi
 }
 
 function install_agent
 {
-    echo "Installing agent component"
+    print_message "Installing agent component"
     $SUDO dpkg -i $AGENT_BUILD_ROOT/deliveryoptimization-agent*.deb
 }
 
@@ -64,23 +71,23 @@ function build_sdk
     fi
     install_agent
 
-    echo "Building sdk component"
+    print_message "Building sdk component"
     python3 $BUILD_SCRIPT_PATH --project sdk --cmaketarget deliveryoptimization --config $BUILD_CONFIG --package-for DEB --clean
 
     if [ "$RUN_TESTS" = true ]; then
         install_sdk
 
-        echo "Building sdk tests"
+        print_message "Building sdk tests"
         python3 $BUILD_SCRIPT_PATH --project sdk --cmaketarget deliveryoptimization-sdk-tests --config $BUILD_CONFIG
 
-        echo "Running sdk tests"
+        print_message "Running sdk tests"
         $SUDO $SDK_BUILD_ROOT/sdk-cpp/tests/deliveryoptimization-sdk-tests
     fi
 }
 
 function install_sdk
 {
-    echo "Installing sdk component"
+    print_message "Installing sdk component"
     $SUDO dpkg -i $SDK_BUILD_ROOT/libdeliveryoptimization*.deb
 }
 
@@ -91,9 +98,10 @@ function build_plugin_apt
         echo "SDK component not built yet"
         build_sdk
     fi
+    print_message "Installing sdk component for building plugin-apt"
     $SUDO dpkg --ignore-depends=deliveryoptimization-agent -i $SDK_BUILD_ROOT/libdeliveryoptimization*.deb
 
-    echo "Building plugin-apt component"
+    print_message "Building plugin-apt component"
     python3 $BUILD_SCRIPT_PATH --project plugin-apt --config $BUILD_CONFIG --package-for DEB --clean
 
     install_plugin_apt
@@ -101,13 +109,13 @@ function build_plugin_apt
 
 function install_plugin_apt
 {
-    echo "Installing plugin-apt component"
+    print_message "Installing plugin-apt component"
     $SUDO dpkg -i $PLUGIN_APT_BUILD_ROOT/deliveryoptimization-plugin-apt*.deb
 }
 
 function build_all
 {
-    echo "Building all components"
+    print_message "Building all components"
     build_agent
     build_sdk
     build_plugin_apt
@@ -115,7 +123,7 @@ function build_all
 
 function uninstall_all
 {
-    echo "Uninstalling all components"
+    print_message "Uninstalling all components"
     $SUDO dpkg -r deliveryoptimization-plugin-apt 2>/dev/null
     $SUDO dpkg -r libdeliveryoptimization-dev 2>/dev/null
     $SUDO dpkg -r libdeliveryoptimization 2>/dev/null
