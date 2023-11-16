@@ -1,0 +1,34 @@
+
+pr:
+  branches:
+    include:
+      - develop
+  paths:
+    exclude:
+      - "*.md"
+
+pool:
+  name: 1es_hosted_pool_ubuntu_1804
+  demands: ImageOverride -equals do-adu-build-$(imageVersion)
+
+jobs:
+- job: set_variables
+  displayName: 'Set variables'
+  pool:
+    name: 1es_hosted_pool_ubuntu_1804
+    demands: ImageOverride -equals 1es-img-sdl-windows2022
+  steps:
+  - task: PowerShell@2
+    inputs:
+      targetType: 'inline'
+      script: |
+        Write-Host "Current PowerShell version: $PSVersionTable.PSVersion"
+
+- job: build_and_test
+  displayName: 'Build and test components'
+  steps:
+  - task: Bash@3
+    inputs:
+      targetType: 'inline'
+      script: |
+        printenv
