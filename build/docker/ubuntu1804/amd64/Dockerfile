@@ -7,6 +7,8 @@
 # Example:
 # docker run -ti --rm --entrypoint=/bin/bash -v D:\do-client-lite:/code -v D:\temp\build_client_lite\linux-debug:/build ubuntu1804-x64
 
+# The hash is the SHA256 digest of the image in the docker repository.
+# Login to mcr.microsoft.com and search for 'ubuntu' to see the available tags.
 FROM mcr.microsoft.com/mirror/docker/library/ubuntu:18.04@sha256:152dc042452c496007f07ca9127571cb9c29697f42acbfad72324b2bb2e43c98
 
 SHELL [ "/bin/bash", "-c"]
