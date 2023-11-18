@@ -39,7 +39,7 @@ steps:
     SourceFolder: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
     Contents: |
       libdeliveryoptimization*.deb
-    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/sdk-${{parameters.targetOsArch}}-${{parameters.config}}'
     CleanTargetFolder: true
   displayName: 'Populate artifacts staging dir'
 
@@ -49,11 +49,5 @@ steps:
     SourceFolder: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
     Contents: |
       sdk-cpp/libdeliveryoptimization*.dbg
-    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/sdk-${{parameters.targetOsArch}}-${{parameters.config}}'
   displayName: 'Populate debug symbols to staging dir'
-
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'deliveryoptimization-sdk'
-    publishLocation: 'Container'

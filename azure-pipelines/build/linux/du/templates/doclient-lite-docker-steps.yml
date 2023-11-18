@@ -14,7 +14,7 @@ steps:
   displayName: Login to ACR
   inputs:
     command: login
-    containerRegistry: doclient-dockercontainerregistry-buildpipeline   # name of the service connection that connect the pipeline to the ACR   
+    containerRegistry: doclient-dockercontainerregistry-buildpipeline   # name of the service connection that connect the pipeline to the ACR
     repository: $(parameters.targetOsArch)
 
 - task: Docker@2
@@ -39,7 +39,7 @@ steps:
     SourceFolder: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
     Contents: |
       deliveryoptimization-agent*.deb
-    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/agent-${{parameters.targetOsArch}}-${{parameters.config}}'
     CleanTargetFolder: true
   displayName: 'Populate artifacts staging dir'
 
@@ -49,11 +49,5 @@ steps:
     SourceFolder: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
     Contents: |
       client-lite/deliveryoptimization-agent.dbg
-    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/agent-${{parameters.targetOsArch}}-${{parameters.config}}'
   displayName: 'Populate debug symbols to staging dir'
-
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'deliveryoptimization-agent'
-    publishLocation: 'Container'

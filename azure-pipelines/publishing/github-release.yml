@@ -6,140 +6,183 @@ trigger:
 pr:
 - none
 
-pool:
-  name: 1es_hosted_pool_ubuntu_1804
-  demands: ImageOverride -equals do-adu-build-$(imageVersion)
-
 variables:
-  Release.Version: $(release_version)
-  Release.PreviousVersion: $(previous_release_version) # Select the previous version, used to generate changelog
-  Release.Title: $(title) # title of the release, following <Release.Version> (YYYY-MM-DD) format i.e. v0.6.0 (2021-03-02)
-  imageVersion: '0.8.0'
+  Release.Version: $(release_version) # Example: v1.1.1
+  Release.PreviousVersion: $(previous_release_version) # Used to generate changelog. Example: v1.1.0
+  Release.Title: $(title) # Example: v1.1.1 (2023-11-15)
   containerImageVersion: '0.9.0'
 
 parameters:
-  - name: SkipPublishing
-    displayName: Skip publishing step
-    type: boolean
-    values:
-    - true
-    - false
-  - name: PublishAsDraft
-    displayName: Publish as draft
-    type: boolean
-    values:
-    - true
-    - false
+- name: SkipPublishing
+  displayName: Skip publishing step
+  type: boolean
+  values:
+  - true
+  - false
+  default: true   # Intentionally default to true to prevent accidental publishing. Update via AzDO pipeline 'Run' UX when ready to publish.
 
-stages:
-- stage: pre_build
-  jobs:
-  - job: print_variables
-    steps:
-    - task: CmdLine@2
-      inputs:
-        script: |
-          echo "Release title: $(Release.Title)"
-          echo "Release tag: $(Release.Version)"
-          echo "Tag used to generate changelog: $(Release.PreviousVersion)"
+- name: PublishAsDraft
+  displayName: Publish as draft
+  type: boolean
+  values:
+  - true
+  - false
+  default: true
 
-- stage: release_build
-  jobs:
-  - template: templates/release-native-build-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu1804_x64'
-  - template: templates/release-docker-build-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu1804_arm64'
-      imageVersion: ${{variables.containerImageVersion}}
-  - template: templates/release-docker-build-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu2004_x64'
-      imageVersion: ${{variables.containerImageVersion}}
-  - template: templates/release-docker-build-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu2004_arm64'
-      imageVersion: ${{variables.containerImageVersion}}
-  - template: templates/release-docker-build-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu2204_x64'
-      imageVersion: ${{variables.containerImageVersion}}
-  - template: templates/release-docker-build-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu2204_arm64'
-      imageVersion: ${{variables.containerImageVersion}}
-  - template: templates/release-docker-build-steps.yml
-    parameters:
-      targetOsArch: 'debian10_arm32'
-      imageVersion: ${{variables.containerImageVersion}}
-  - template: templates/release-docker-build-steps.yml
-    parameters:
-      targetOsArch: 'debian10_arm64'
-      imageVersion: ${{variables.containerImageVersion}}
-  - template: templates/release-docker-build-steps.yml
-    parameters:
-      targetOsArch: 'debian10_x64'
-      imageVersion: ${{variables.containerImageVersion}}
-  - template: templates/release-docker-build-steps.yml
-    parameters:
-      targetOsArch: 'debian11_arm32'
-      imageVersion: ${{variables.containerImageVersion}}
-  - template: templates/release-docker-build-steps.yml
-    parameters:
-      targetOsArch: 'debian11_arm64'
-      imageVersion: ${{variables.containerImageVersion}}
-  - template: templates/release-docker-build-steps.yml
-    parameters:
-      targetOsArch: 'debian11_x64'
-      imageVersion: ${{variables.containerImageVersion}}
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
 
-- stage: release
-  condition: succeeded()
-  jobs:
-  - job: github_release
-    steps:
-    - task: DownloadBuildArtifacts@0
-      inputs:
-        buildType: 'current'
-        downloadType: 'specific'
-        downloadPath: '$(Build.ArtifactStagingDirectory)'
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool:
+      name: Azure-Pipelines-1ESPT-ExDShared
+      image: ubuntu-latest
+      os: linux
+    sdl:
+      sourceAnalysisPool:
+        name: Azure-Pipelines-1ESPT-ExDShared
+        image: windows-latest
+        os: windows
+      suppression:
+        suppressionFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnsuppress
+    customBuildTags:
+    - ES365AIMigrationTooling
 
-    - task: CmdLine@2
-      inputs:
-        script: |
-          echo "Directory to be published: $(Build.ArtifactStagingDirectory)"
-          echo Content to be published:
-          ls -lR $(Build.ArtifactStagingDirectory)/**/*.tar
-      displayName: Release Information
+    stages:
+    - stage: pre_build
+      jobs:
+      - job: print_variables
+        steps:
+        - task: CmdLine@2
+          inputs:
+            script: |
+              echo "Release title: $(Release.Title)"
+              echo "Release tag: $(Release.Version)"
+              echo "Tag used to generate changelog: $(Release.PreviousVersion)"
+              echo "Suppress file:"
+              ls -l $(Build.SourcesDirectory)/guardian/SDL/.gdnsuppress
 
-    - task: Bash@3
-      inputs:
-        targetType: 'inline'
-        script: 'sha256sum ./*.tar > ../hashes_sha256.txt'
-        workingDirectory: $(Build.ArtifactStagingDirectory)/github-release-artifacts
-      displayName: Compute hashes of archive files
+    - stage: build
+      jobs:
+      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+        parameters:
+          targetOsArch: 'ubuntu1804_x64'
+          imageVersion: ${{variables.containerImageVersion}}
+      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+        parameters:
+          targetOsArch: 'ubuntu1804_arm64'
+          imageVersion: ${{variables.containerImageVersion}}
 
-    - task: Bash@3
-      inputs:
-        targetType: 'inline'
-        script: 'cat ./hashes_sha256.txt'
-        workingDirectory: $(Build.ArtifactStagingDirectory)
-      displayName: Display hashes of archive files
+      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+        parameters:
+          targetOsArch: 'ubuntu2004_x64'
+          imageVersion: ${{variables.containerImageVersion}}
+      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+        parameters:
+          targetOsArch: 'ubuntu2004_arm64'
+          imageVersion: ${{variables.containerImageVersion}}
 
-    - task: GitHubRelease@1
-      condition: eq(${{parameters.SkipPublishing}}, false)
-      inputs:
-        gitHubConnection: 'github_gauth'
-        repositoryName: 'microsoft/do-client'
-        action: 'create'
-        assets: |
-          $(Build.ArtifactStagingDirectory)/**/*.tar
-          $(Build.ArtifactStagingDirectory)/hashes*.txt
-        tagSource: 'userSpecifiedTag'
-        tag: '$(Release.Version)'
-        title: '$(Release.Title)'
-        isPreRelease: true
-        isDraft: ${{parameters.PublishAsDraft}}
-        changeLogCompareToRelease: 'lastNonDraftReleaseByTag'
-        changeLogCompareToReleaseTag: '$(Release.PreviousVersion)'
-        changeLogType: 'commitBased'
+      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+        parameters:
+          targetOsArch: 'ubuntu2204_x64'
+          imageVersion: ${{variables.containerImageVersion}}
+      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+        parameters:
+          targetOsArch: 'ubuntu2204_arm64'
+          imageVersion: ${{variables.containerImageVersion}}
+
+      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+        parameters:
+          targetOsArch: 'debian10_arm32'
+          imageVersion: ${{variables.containerImageVersion}}
+      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+        parameters:
+          targetOsArch: 'debian10_arm64'
+          imageVersion: ${{variables.containerImageVersion}}
+      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+        parameters:
+          targetOsArch: 'debian10_x64'
+          imageVersion: ${{variables.containerImageVersion}}
+
+      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+        parameters:
+          targetOsArch: 'debian11_arm32'
+          imageVersion: ${{variables.containerImageVersion}}
+      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+        parameters:
+          targetOsArch: 'debian11_arm64'
+          imageVersion: ${{variables.containerImageVersion}}
+      - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
+        parameters:
+          targetOsArch: 'debian11_x64'
+          imageVersion: ${{variables.containerImageVersion}}
+
+    - stage: release
+      condition: succeeded()
+      jobs:
+      - job: github_release
+        steps:
+        - task: DownloadBuildArtifacts@1
+          inputs:
+            buildType: 'current'
+            downloadType: 'specific'
+            itemPattern: '**/*-packages.tar'
+            downloadPath: '$(Build.ArtifactStagingDirectory)'
+
+        - task: CmdLine@2
+          displayName: 'List downloaded files and stage'
+          inputs:
+            script: |
+              shopt -s globstar
+              ls -lR $(Build.ArtifactStagingDirectory)
+              mkdir -p $(Build.ArtifactStagingDirectory)/release-assets-all
+              cp $(Build.ArtifactStagingDirectory)/**/*.tar $(Build.ArtifactStagingDirectory)/release-assets-all
+
+        - task: CmdLine@2
+          displayName: List all tarballs
+          inputs:
+            workingDirectory: $(Build.ArtifactStagingDirectory)/release-assets-all
+            script: |
+              shopt -s globstar
+              echo Content to be hashed:
+              ls -l *.tar
+
+        - task: Bash@3
+          displayName: Compute hashes
+          inputs:
+            targetType: 'inline'
+            workingDirectory: $(Build.ArtifactStagingDirectory)/release-assets-all
+            script: 'sha256sum ./*.tar > hashes_sha256.txt'
+
+        - task: Bash@3
+          displayName: List tarballs and hashes
+          inputs:
+            targetType: 'inline'
+            workingDirectory: $(Build.ArtifactStagingDirectory)/release-assets-all
+            script: |
+              cat hashes_sha256.txt
+              echo Content of current dir:
+              ls -l
+
+        - task: GitHubRelease@1
+          condition: eq(${{parameters.SkipPublishing}}, false)
+          inputs:
+            gitHubConnection: 'github_gauth'
+            repositoryName: 'microsoft/do-client'
+            action: 'create'
+            assets: |
+              $(Build.ArtifactStagingDirectory)/release-assets-all/*.tar
+              $(Build.ArtifactStagingDirectory)/release-assets-all/hashes*.txt
+            tagSource: 'userSpecifiedTag'
+            tag: '$(Release.Version)'
+            title: '$(Release.Title)'
+            isPreRelease: true
+            isDraft: ${{parameters.PublishAsDraft}}
+            changeLogCompareToRelease: 'lastNonDraftReleaseByTag'
+            changeLogCompareToReleaseTag: '$(Release.PreviousVersion)'
+            changeLogType: 'commitBased'

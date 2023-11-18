@@ -39,7 +39,7 @@ steps:
     SourceFolder: '/tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
     Contents: |
       deliveryoptimization-plugin-apt*.deb
-    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/plugin-apt-${{parameters.targetOsArch}}-${{parameters.config}}'
     CleanTargetFolder: true
   displayName: 'Populate artifacts staging dir'
 
@@ -49,11 +49,5 @@ steps:
     SourceFolder: '/tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
     Contents: |
       plugins/linux-apt/deliveryoptimization-plugin-apt.dbg
-    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/plugin-apt-${{parameters.targetOsArch}}-${{parameters.config}}'
   displayName: 'Populate debug symbols to staging dir'
-
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'deliveryoptimization-plugin-apt'
-    publishLocation: 'Container'
