@@ -2,11 +2,10 @@
 # Consume this steps template in one or more jobs by passing in parameter values.
 
 parameters:
-- name: targetOsArch        # example: ubuntu2004_arm64
+- name: targetOsArch    # example: ubuntu2004_arm64
   type: string
 - name: imageVersion
   type: string
-
 
 jobs:
 - job: ${{parameters.targetOsArch}}
@@ -14,68 +13,59 @@ jobs:
   - checkout: self
     path: 's' # Copy to sources directory (templates do not do this automatically)
 
-  - template: ../../build/linux/du/templates/doclient-lite-docker-steps.yml
+  - template: /azure-pipelines/build/linux/du/templates/doclient-lite-docker-steps.yml@self
     parameters:
       targetOsArch: ${{parameters.targetOsArch}}
       imageVersion: ${{parameters.imageVersion}}
       config: minsizerel
-
   - task: CopyFiles@2
     inputs:
       SourceFolder: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-minsizerel'
       Contents: |
-          *.deb
+        *.deb
       TargetFolder: '/tmp/${{parameters.targetOsArch}}'
       CleanTargetFolder: true
     displayName: 'Copy agent .deb file'
 
-  - template: ../../build/linux/du/templates/dosdkcpp-docker-steps.yml
+  - template: /azure-pipelines/build/linux/du/templates/dosdkcpp-docker-steps.yml@self
     parameters:
       targetOsArch: ${{parameters.targetOsArch}}
       imageVersion: ${{parameters.imageVersion}}
       config: minsizerel
-
   - task: CopyFiles@2
     inputs:
       SourceFolder: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-minsizerel'
       Contents: |
-          *.deb
+        *.deb
       TargetFolder: '/tmp/${{parameters.targetOsArch}}'
       CleanTargetFolder: false
     displayName: 'Copy sdk .deb files'
 
-  - template: ../../build/linux/du/templates/dopapt-docker-steps.yml
+  - template: /azure-pipelines/build/linux/du/templates/dopapt-docker-steps.yml@self
     parameters:
       targetOsArch: ${{parameters.targetOsArch}}
       imageVersion: ${{parameters.imageVersion}}
       config: minsizerel
-
   - task: CopyFiles@2
     inputs:
       SourceFolder: '/tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-minsizerel'
       Contents: |
-          *.deb
+        *.deb
       TargetFolder: '/tmp/${{parameters.targetOsArch}}'
       CleanTargetFolder: false
     displayName: 'Copy plugin .deb file'
-
-  - task: DeleteFiles@1
-    inputs:
-      SourceFolder: $(Build.ArtifactStagingDirectory)
-      Contents: |
-        **/*
-    displayName: 'Clean build folder before creating tar file folder'
 
   - task: ArchiveFiles@2
     inputs:
       rootFolderOrFile: /tmp/${{parameters.targetOsArch}}
       includeRootFolder: False
       archiveType: tar
-      archiveFile: $(build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-packages.tar
+      archiveFile: $(Build.ArtifactStagingDirectory)/release-assets/${{parameters.targetOsArch}}-packages.tar
     displayName: 'Create .tar file'
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      ArtifactName: 'github-release-artifacts'
-      publishLocation: 'Container'
+  templateContext:
+    outputs:
+    - output: pipelineArtifact
+      displayName: 'Publish artifacts'
+      targetPath: '$(Build.ArtifactStagingDirectory)'
+      artifact: 'doclient-drop-${{parameters.targetOsArch}}'

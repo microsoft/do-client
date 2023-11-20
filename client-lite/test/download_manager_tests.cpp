@@ -211,11 +211,13 @@ TEST_F(DownloadManagerTests, PauseResumeDownload)
 TEST_F(DownloadManagerTests, DownloadUrlWithRedirects)
 {
     const std::string destFile = g_testTempDir / "redirect.test";
-    const std::string url = "http://raspbian.raspberrypi.org/raspbian/pool/main/b/boost1.62/libboost-random1.62.0_1.62.0+dfsg-4_armhf.deb";
+    // TODO(shishirb): Change this to a URL that we control.
+    // To get the file size for the verification below: curl.exe --head --location "<url>"
+    const std::string url = "http://raspbian.raspberrypi.org/raspbian/pool/main/b/boost1.81/boost1.81_1.81.0-7.debian.tar.xz";
     const auto id = manager.CreateDownload(url, destFile);
     ASSERT_EQ(StartAndWaitUntilNotTransferring(manager, id, std::chrono::seconds(30)), S_OK);
 
-    VerifyDownloadComplete(manager, id, 34836);
+    VerifyDownloadComplete(manager, id, 378188);
     VerifyDownloadHttpStatus(*DownloadForId(manager, id), HTTP_STATUS_OK);
 }
 
