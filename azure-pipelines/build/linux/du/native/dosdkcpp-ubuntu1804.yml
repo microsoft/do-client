@@ -5,55 +5,66 @@
 variables:
 - name: imageVersion
   value: 0.8.0
+- name: containerImageVersion
+  value: 0.9.0
 
 trigger:
-  branches:
-    include:
-      - develop
-  paths:
-    include:
-      - azure-pipelines/build/linux/du/native/dosdkcpp-ubuntu1804.yml
-      - azure-pipelines/build/linux/du/templates/dosdkcpp-native-steps.yml
-      - common/*
-      - sdk-cpp/*
-      - build/build.py
-      - CMakeLists.txt
-    exclude:
-      - azure-pipelines/*
-      - sdk-cpp/build/cleanup-install.sh
+- none
+  # branches:
+  #   include:
+  #     - develop
+  # paths:
+  #   include:
+  #     - azure-pipelines/build/linux/du/native/dosdkcpp-ubuntu1804.yml
+  #     - azure-pipelines/build/linux/du/templates/dosdkcpp-native-steps.yml
+  #     - common/*
+  #     - sdk-cpp/*
+  #     - build/build.py
+  #     - CMakeLists.txt
+  #   exclude:
+  #     - azure-pipelines/*
+  #     - sdk-cpp/build/cleanup-install.sh
 
 pr:
-  branches:
-    include:
-      - develop
-  paths:
-    include:
-      - azure-pipelines/build/linux/du/native/dosdkcpp-ubuntu1804.yml
-      - azure-pipelines/build/linux/du/templates/dosdkcpp-native-steps.yml
-      - common/*
-      - sdk-cpp/*
-      - build/build.py
-      - CMakeLists.txt
-    exclude:
-      - azure-pipelines/*
-      - sdk-cpp/build/cleanup-install.sh
+- none
+  # branches:
+  #   include:
+  #     - develop
+  # paths:
+  #   include:
+  #     - azure-pipelines/build/linux/du/native/dosdkcpp-ubuntu1804.yml
+  #     - azure-pipelines/build/linux/du/templates/dosdkcpp-native-steps.yml
+  #     - common/*
+  #     - sdk-cpp/*
+  #     - build/build.py
+  #     - CMakeLists.txt
+  #   exclude:
+  #     - azure-pipelines/*
+  #     - sdk-cpp/build/cleanup-install.sh
 
 pool:
   name: 1es_hosted_pool_ubuntu_1804
   demands: ImageOverride -equals do-adu-build-$(imageVersion)
 
 jobs:
-- job: Debug
-  steps:
-  - template: ../templates/dosdkcpp-native-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu1804_x64'
-      config: debug
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'ubuntu1804_x64'
+    imageVersion: ${{variables.containerImageVersion}}
+    stepsTemplate: 'dosdkcpp-docker-steps.yml'
 
-- job: Release
-  steps:
-  - template: ../templates/dosdkcpp-native-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu1804_x64'
-      config: minsizerel
-      skipTests: true
+# jobs:
+# - job: Debug
+#   steps:
+#   - template: ../templates/dosdkcpp-native-steps.yml
+#     parameters:
+#       targetOsArch: 'ubuntu1804_x64'
+#       config: debug
+
+# - job: Release
+#   steps:
+#   - template: ../templates/dosdkcpp-native-steps.yml
+#     parameters:
+#       targetOsArch: 'ubuntu1804_x64'
+#       config: minsizerel
+#       skipTests: true
