@@ -42,12 +42,12 @@ extends:
     - ES365AIMigrationTooling
   stages:
   - stage: build
-  jobs:
-  - template: ../templates/do-docker-jobs.yml
-    parameters:
-      targetOsArch: 'ubuntu1804_x64'
-      imageVersion: ${{variables.containerImageVersion}}
-      stepsTemplate: 'doclient-lite-docker-steps.yml'
+    jobs:
+    - template: ../templates/do-docker-jobs.yml
+      parameters:
+        targetOsArch: 'ubuntu1804_x64'
+        imageVersion: ${{variables.containerImageVersion}}
+        stepsTemplate: '/azure-pipelines/build/linux/du/templates/doclient-lite-docker-steps.yml'
 
 # jobs:
 # - job: Debug
