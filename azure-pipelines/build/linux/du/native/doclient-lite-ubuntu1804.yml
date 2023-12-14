@@ -24,20 +24,22 @@ resources:
 #   name: 1es_hosted_pool_ubuntu_1804
 #   demands: ImageOverride -equals do-adu-build-$(imageVersion)
 
-parameters:
-  pool:
-    name: Azure-Pipelines-1ESPT-ExDShared
-    image: ubuntu-latest
-    os: linux
-  sdl:
-    sourceAnalysisPool:
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool:
       name: Azure-Pipelines-1ESPT-ExDShared
-      image: windows-latest
-      os: windows
-    suppression:
-      suppressionFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnsuppress
-  customBuildTags:
-  - ES365AIMigrationTooling
+      image: ubuntu-latest
+      os: linux
+    sdl:
+      sourceAnalysisPool:
+        name: Azure-Pipelines-1ESPT-ExDShared
+        image: windows-latest
+        os: windows
+      suppression:
+        suppressionFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnsuppress
+    customBuildTags:
+    - ES365AIMigrationTooling
 
 jobs:
 - template: ../templates/do-docker-jobs.yml
