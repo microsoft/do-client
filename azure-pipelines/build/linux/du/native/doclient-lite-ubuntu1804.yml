@@ -20,9 +20,9 @@ resources:
     name: 1ESPipelineTemplates/1ESPipelineTemplates
     ref: refs/tags/release
 
-pool:
-  name: 1es_hosted_pool_ubuntu_1804
-  demands: ImageOverride -equals do-adu-build-$(imageVersion)
+# pool:
+#   name: 1es_hosted_pool_ubuntu_1804
+#   demands: ImageOverride -equals do-adu-build-$(imageVersion)
 
 parameters:
   pool:
