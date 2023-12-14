@@ -40,13 +40,14 @@ extends:
         suppressionFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnsuppress
     customBuildTags:
     - ES365AIMigrationTooling
-
-jobs:
-- template: ../templates/do-docker-jobs.yml
-  parameters:
-    targetOsArch: 'ubuntu1804_x64'
-    imageVersion: ${{variables.containerImageVersion}}
-    stepsTemplate: 'doclient-lite-docker-steps.yml'
+  stages:
+  - stage: build
+  jobs:
+  - template: ../templates/do-docker-jobs.yml
+    parameters:
+      targetOsArch: 'ubuntu1804_x64'
+      imageVersion: ${{variables.containerImageVersion}}
+      stepsTemplate: 'doclient-lite-docker-steps.yml'
 
 # jobs:
 # - job: Debug
