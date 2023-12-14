@@ -12,7 +12,7 @@ parameters:
 jobs:
 - job: ${{parameters.targetOsArch}}_debug
   steps:
-  - template: ${{parameters.stepsTemplate}}
+  - template: ${{parameters.stepsTemplate}}@self
     parameters:
       targetOsArch: ${{parameters.targetOsArch}}
       imageVersion: ${{parameters.imageVersion}}
@@ -22,7 +22,7 @@ jobs:
 
 - job: ${{parameters.targetOsArch}}_release
   steps:
-  - template: ${{parameters.stepsTemplate}}
+  - template: ${{parameters.stepsTemplate}}@self
     parameters:
       targetOsArch: ${{parameters.targetOsArch}}
       imageVersion: ${{parameters.imageVersion}}
