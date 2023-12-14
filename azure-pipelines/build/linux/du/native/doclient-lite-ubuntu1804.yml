@@ -44,7 +44,7 @@ extends:
     stages:
     - stage: build
       jobs:
-      - template: ../templates/do-docker-jobs.yml
+      - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml
         parameters:
           targetOsArch: 'ubuntu1804_x64'
           imageVersion: ${{variables.containerImageVersion}}
