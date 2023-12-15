@@ -24,6 +24,7 @@ resources:
 #   name: 1es_hosted_pool_ubuntu_1804
 #   demands: ImageOverride -equals do-adu-build-$(imageVersion)
 
+
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
@@ -44,7 +45,7 @@ extends:
     stages:
     - stage: build
       jobs:
-      - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml
+      - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
         parameters:
           targetOsArch: 'ubuntu1804_x64'
           imageVersion: ${{variables.containerImageVersion}}
