@@ -10,6 +10,11 @@ parameters:
   type: string
 
 jobs:
+- job: ${{parameters.targetOsArch}}
+  steps:
+  - checkout: self
+    path: 's' # Copy to sources directory (templates do not do this automatically)
+
 - job: ${{parameters.targetOsArch}}_debug
   steps:
   - template: ${{parameters.stepsTemplate}}@self
