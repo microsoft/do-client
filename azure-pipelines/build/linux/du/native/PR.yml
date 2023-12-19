@@ -38,16 +38,18 @@ extends:
     - ES365AIMigrationTooling
       
     stages:
-    - stage: build
+    - stage: agent
       jobs:
       # DO Simple Client x86-64 Build
       - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
         parameters:
-          targetOsArch: 'agent_ubuntu1804_x64'
+          targetOsArch: 'ubuntu1804_x64'
           imageVersion: ${{variables.containerImageVersion}}
           stepsTemplate: 'doclient-lite-docker-steps.yml'
-
-      #DO Plugins x86-64 Build
+    
+    #DO Plugins x86-64 Build
+    - stage: plugin
+      jobs:
       - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
         parameters:
           targetOsArch: 'plugin_ubuntu1804_x64'
@@ -55,6 +57,8 @@ extends:
           stepsTemplate: 'dopapt-docker-steps.yml'
 
       # DO CPP-SDK x86-64 Build
+    - stage: sdk
+      jobs:
       - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
         parameters:
           targetOsArch: 'sdk_ubuntu1804_x64'
