@@ -41,23 +41,26 @@ extends:
     - stage: build
       jobs:
       # DO Simple Client x86-64 Build
-      - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
-        parameters:
-          targetOsArch: 'agent_ubuntu1804_x64'
-          imageVersion: ${{variables.containerImageVersion}}
-          stepsTemplate: 'doclient-lite-docker-steps.yml'
+      - job: agent_ubuntu1804_x64
+        - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
+          parameters:
+            targetOsArch: 'ubuntu1804_x64'
+            imageVersion: ${{variables.containerImageVersion}}
+            stepsTemplate: 'doclient-lite-docker-steps.yml'
 
       #DO Plugins x86-64 Build
-      - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
-        parameters:
-          targetOsArch: 'plugin_ubuntu1804_x64'
-          imageVersion: ${{variables.containerImageVersion}}
-          stepsTemplate: 'dopapt-docker-steps.yml'
+      - job: plugin_ubuntu1804_x64
+        - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
+          parameters:
+            targetOsArch: 'plugin_ubuntu1804_x64'
+            imageVersion: ${{variables.containerImageVersion}}
+            stepsTemplate: 'dopapt-docker-steps.yml'
 
       # DO CPP-SDK x86-64 Build
-      - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
-        parameters:
-          targetOsArch: 'sdk_ubuntu1804_x64'
-          imageVersion: ${{variables.containerImageVersion}}
-          stepsTemplate: 'dosdkcpp-docker-steps.yml'
+      - job: sdk_ubuntu1804_x64
+        - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
+          parameters:
+            targetOsArch: 'sdk_ubuntu1804_x64'
+            imageVersion: ${{variables.containerImageVersion}}
+            stepsTemplate: 'dosdkcpp-docker-steps.yml'
       
