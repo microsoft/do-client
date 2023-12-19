@@ -52,7 +52,7 @@ extends:
       jobs:
       - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
         parameters:
-          targetOsArch: 'plugin_ubuntu1804_x64'
+          targetOsArch: 'ubuntu1804_x64'
           imageVersion: ${{variables.containerImageVersion}}
           stepsTemplate: 'dopapt-docker-steps.yml'
 
@@ -61,7 +61,7 @@ extends:
       jobs:
       - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
         parameters:
-          targetOsArch: 'sdk_ubuntu1804_x64'
+          targetOsArch: 'ubuntu1804_x64'
           imageVersion: ${{variables.containerImageVersion}}
           stepsTemplate: 'dosdkcpp-docker-steps.yml'
       
