@@ -4,53 +4,44 @@
 variables:
 - name: imageVersion
   value: 0.8.0
+- name: containerImageVersion
+  value: 0.9.0
 
 trigger:
-  branches:
-    include:
-      - develop
-  paths:
-    include:
-      - azure-pipelines/build/linux/du/native/doclient-lite-ubuntu1804.yml
-      - azure-pipelines/build/linux/du/templates/doclient-lite-native-steps.yml
-      - client-lite/*
-      - common/*
-      - build/build.py
-      - CMakeLists.txt
-    exclude:
-      - azure-pipelines/*
+- none
 
 pr:
-  branches:
-    include:
-      - develop
-  paths:
-    include:
-      - azure-pipelines/build/linux/du/native/doclient-lite-ubuntu1804.yml
-      - azure-pipelines/build/linux/du/templates/doclient-lite-native-steps.yml
-      - client-lite/*
-      - common/*
-      - build/build.py
-      - CMakeLists.txt
-    exclude:
-      - azure-pipelines/*
+- none
 
-pool:
-  name: 1es_hosted_pool_ubuntu_1804
-  demands: ImageOverride -equals do-adu-build-$(imageVersion)
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
 
-jobs:
-- job: Debug
-  steps:
-  - template: ../templates/doclient-lite-native-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu1804_x64'
-      config: debug
-
-- job: Release
-  steps:
-  - template: ../templates/doclient-lite-native-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu1804_x64'
-      config: minsizerel
-      skipTests: true
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool:
+      name: Azure-Pipelines-1ESPT-ExDShared
+      image: ubuntu-latest
+      os: linux
+    sdl:
+      sourceAnalysisPool:
+        name: Azure-Pipelines-1ESPT-ExDShared
+        image: windows-latest
+        os: windows
+      suppression:
+        suppressionFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnsuppress
+    customBuildTags:
+    - ES365AIMigrationTooling
+      
+    stages:
+    - stage: build
+      jobs:
+      - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
+        parameters:
+          targetOsArch: 'ubuntu1804_x64'
+          imageVersion: ${{variables.containerImageVersion}}
+          stepsTemplate: '/azure-pipelines/build/linux/du/templates/doclient-lite-docker-steps.yml'
