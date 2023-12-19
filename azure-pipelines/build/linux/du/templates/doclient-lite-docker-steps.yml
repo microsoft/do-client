@@ -9,57 +9,45 @@ parameters:
 - name: config          # debug/release/minsizerel/relwithdebuginfo
   type: string
 
-jobs:
-- job: ${{parameters.targetOsArch}}
-  steps:
-  - checkout: self
-    path: 's' # Copy to sources directory (templates do not do this automatically)
-      
-  - task: Docker@2
-    displayName: Login to ACR
-    inputs:
-      command: login
-      containerRegistry: doclient-dockercontainerregistry-buildpipeline   # name of the service connection that connect the pipeline to the ACR
-      repository: $(parameters.targetOsArch)
+steps:
+- task: Docker@2
+  displayName: Login to ACR
+  inputs:
+    command: login
+    containerRegistry: doclient-dockercontainerregistry-buildpipeline   # name of the service connection that connect the pipeline to the ACR
+    repository: $(parameters.targetOsArch)
 
-  - task: Docker@2
-    displayName: Pull latest build image
-    inputs:
-      command: pull
-      containerRegistry: doclient-dockercontainerregistry-buildpipeline   # name of the service connection that connect the pipeline to the ACR
-      arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}}'
+- task: Docker@2
+  displayName: Pull latest build image
+  inputs:
+    command: pull
+    containerRegistry: doclient-dockercontainerregistry-buildpipeline   # name of the service connection that connect the pipeline to the ACR
+    arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}}'
 
-  - task: CmdLine@2
-    inputs:
-      script: 'sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes'
-    displayName: Enable the build VM to run multiarch docker container
+- task: CmdLine@2
+  inputs:
+    script: 'sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes'
+  displayName: Enable the build VM to run multiarch docker container
 
-  - task: CmdLine@2
-    inputs:
-      script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "agent"'
-    displayName: 'Build client-lite ${{parameters.targetOsArch}}-${{parameters.config}}'
+- task: CmdLine@2
+  inputs:
+    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "agent"'
+  displayName: 'Build client-lite ${{parameters.targetOsArch}}-${{parameters.config}}'
 
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
-      Contents: |
-        deliveryoptimization-agent*.deb
-      TargetFolder: '$(Build.ArtifactStagingDirectory)/agent-${{parameters.targetOsArch}}-${{parameters.config}}'
-      CleanTargetFolder: true
-    displayName: 'Populate artifacts staging dir'
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
+    Contents: |
+      deliveryoptimization-agent*.deb
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/agent-${{parameters.targetOsArch}}-${{parameters.config}}'
+    CleanTargetFolder: true
+  displayName: 'Populate artifacts staging dir'
 
-  - task: CopyFiles@2
-    condition: eq('${{parameters.config}}', 'minsizerel')
-    inputs:
-      SourceFolder: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
-      Contents: |
-        client-lite/deliveryoptimization-agent.dbg
-      TargetFolder: '$(Build.ArtifactStagingDirectory)/agent-${{parameters.targetOsArch}}-${{parameters.config}}'
-    displayName: 'Populate debug symbols to staging dir'
-
-  templateContext:
-    outputs:
-    - output: pipelineArtifact
-      displayName: 'Publish artifacts'
-      targetPath: '$(Build.ArtifactStagingDirectory)'
-      artifact: 'doclient-drop-${{parameters.targetOsArch}}'
+- task: CopyFiles@2
+  condition: eq('${{parameters.config}}', 'minsizerel')
+  inputs:
+    SourceFolder: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
+    Contents: |
+      client-lite/deliveryoptimization-agent.dbg
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/agent-${{parameters.targetOsArch}}-${{parameters.config}}'
+  displayName: 'Populate debug symbols to staging dir'

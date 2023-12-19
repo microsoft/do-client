@@ -34,3 +34,10 @@ jobs:
       config: minsizerel
   - publish: $(Build.ArtifactStagingDirectory)
     artifact: 'doclient-drop-${{parameters.targetOsArch}}-minsizerel'
+
+  templateContext:
+    outputs:
+    - output: pipelineArtifact
+      displayName: 'Publish artifacts'
+      targetPath: '$(Build.ArtifactStagingDirectory)'
+      artifact: 'doclient-drop-${{parameters.targetOsArch}}'
