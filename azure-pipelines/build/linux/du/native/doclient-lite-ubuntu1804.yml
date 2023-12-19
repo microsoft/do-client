@@ -20,11 +20,6 @@ resources:
     name: 1ESPipelineTemplates/1ESPipelineTemplates
     ref: refs/tags/release
 
-# pool:
-#   name: 1es_hosted_pool_ubuntu_1804
-#   demands: ImageOverride -equals do-adu-build-$(imageVersion)
-
-
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
@@ -50,19 +45,3 @@ extends:
           targetOsArch: 'ubuntu1804_x64'
           imageVersion: ${{variables.containerImageVersion}}
           stepsTemplate: '/azure-pipelines/build/linux/du/templates/doclient-lite-docker-steps.yml'
-
-# jobs:
-# - job: Debug
-#   steps:
-#   - template: ../templates/doclient-lite-native-steps.yml
-#     parameters:
-#       targetOsArch: 'ubuntu1804_x64'
-#       config: debug
-
-# - job: Release
-#   steps:
-#   - template: ../templates/doclient-lite-native-steps.yml
-#     parameters:
-#       targetOsArch: 'ubuntu1804_x64'
-#       config: minsizerel
-#       skipTests: true

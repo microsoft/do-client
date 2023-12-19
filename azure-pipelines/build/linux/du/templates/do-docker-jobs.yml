@@ -22,8 +22,6 @@ jobs:
       targetOsArch: ${{parameters.targetOsArch}}
       imageVersion: ${{parameters.imageVersion}}
       config: debug
-  # - publish: $(Build.ArtifactStagingDirectory)
-  #   artifact: 'doclient-drop-${{parameters.targetOsArch}}-debug'
 
 - job: ${{parameters.targetOsArch}}_release
   steps:
@@ -32,8 +30,6 @@ jobs:
       targetOsArch: ${{parameters.targetOsArch}}
       imageVersion: ${{parameters.imageVersion}}
       config: minsizerel
-  # - publish: $(Build.ArtifactStagingDirectory)
-  #   artifact: 'doclient-drop-${{parameters.targetOsArch}}-minsizerel'
 
   templateContext:
     outputs:

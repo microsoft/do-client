@@ -45,12 +45,6 @@ pool:
   name: 1es_hosted_pool_ubuntu_1804
   demands: ImageOverride -equals do-adu-build-$(imageVersion)
 
-jobs:
-- template: ../templates/do-docker-jobs.yml
-  parameters:
-    targetOsArch: 'ubuntu1804_x64'
-    imageVersion: ${{variables.containerImageVersion}}
-    stepsTemplate: 'dopapt-docker-steps.yml'
 
 # jobs:
 # - job: Debug
