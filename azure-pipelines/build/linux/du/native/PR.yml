@@ -1,0 +1,63 @@
+# Pipeline to build DO Agent targeting x86-64 architecture.
+# Publishes the binaries + packages as artifacts.
+
+variables:
+- name: imageVersion
+  value: 0.8.0
+- name: containerImageVersion
+  value: 0.9.0
+
+trigger:
+- none
+
+pr:
+- none
+
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool:
+      name: Azure-Pipelines-1ESPT-ExDShared
+      image: ubuntu-latest
+      os: linux
+    sdl:
+      sourceAnalysisPool:
+        name: Azure-Pipelines-1ESPT-ExDShared
+        image: windows-latest
+        os: windows
+      suppression:
+        suppressionFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnsuppress
+    customBuildTags:
+    - ES365AIMigrationTooling
+      
+    stages:
+    - stage: build
+      jobs:
+      # DO Simple Client x86-64 Build
+      - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
+        parameters:
+          targetOsArch: 'ubuntu1804_x64'
+          imageVersion: ${{variables.containerImageVersion}}
+          stepsTemplate: '/azure-pipelines/build/linux/du/templates/doclient-lite-docker-steps.yml'
+
+      #DO Plugins x86-64 Build
+      - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
+        parameters:
+          targetOsArch: 'ubuntu1804_x64'
+          imageVersion: ${{variables.containerImageVersion}}
+          stepsTemplate: 'dopapt-docker-steps.yml'
+
+      # DO CPP-SDK x86-64 Build
+      - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
+        parameters:
+          targetOsArch: 'ubuntu1804_x64'
+          imageVersion: ${{variables.containerImageVersion}}
+          stepsTemplate: 'dosdkcpp-docker-steps.yml'
+      
