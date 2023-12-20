@@ -38,4 +38,4 @@ jobs:
     - output: pipelineArtifact
       displayName: 'Publish artifacts'
       targetPath: '$(Build.ArtifactStagingDirectory)'
-      artifact: 'doclient-drop-$${{parameters.type}}-${{parameters.targetOsArch}}'
+      artifact: 'doclient-drop-${{parameters.type}}-${{parameters.targetOsArch}}'
