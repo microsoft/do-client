@@ -43,18 +43,20 @@ extends:
       # DO Simple Client x86-64 Build
       - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
         parameters:
-          targetOsArch: 'ubuntu1804_arm32'
+          targetOsArch: 'ubuntu1804_x64'
           imageVersion: ${{variables.containerImageVersion}}
           stepsTemplate: 'doclient-lite-docker-steps.yml'
+          type: 'doclient'
     
     #DO Plugins x86-64 Build
     - stage: plugin
       jobs:
       - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
         parameters:
-          targetOsArch: 'ubuntu1804_arm64'
+          targetOsArch: 'ubuntu1804_x64'
           imageVersion: ${{variables.containerImageVersion}}
           stepsTemplate: 'dopapt-docker-steps.yml'
+          type: 'dopapt'
 
       # DO CPP-SDK x86-64 Build
     - stage: sdk
@@ -64,4 +66,5 @@ extends:
           targetOsArch: 'ubuntu1804_x64'
           imageVersion: ${{variables.containerImageVersion}}
           stepsTemplate: 'dosdkcpp-docker-steps.yml'
+          type: 'dosdkcpp'
       

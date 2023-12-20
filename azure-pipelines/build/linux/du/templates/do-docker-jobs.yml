@@ -8,6 +8,8 @@ parameters:
   type: string
 - name: stepsTemplate   # example: dopapt-docker-steps.yml
   type: string
+- name: type
+  type: string
 
 jobs:
 - job: ${{parameters.targetOsArch}}
@@ -36,4 +38,4 @@ jobs:
     - output: pipelineArtifact
       displayName: 'Publish artifacts'
       targetPath: '$(Build.ArtifactStagingDirectory)'
-      artifact: 'doclient-drop-${{parameters.targetOsArch}}'
+      artifact: 'doclient-drop-$${{parameters.type}}-${{parameters.targetOsArch}}'
