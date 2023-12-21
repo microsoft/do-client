@@ -48,7 +48,7 @@ extends:
           stepsTemplate: 'doclient-lite-docker-steps.yml'
           type: 'doclient'
     
-    #DO Plugins x86-64 Build
+    # DO Plugins x86-64 Build
     - stage: plugin
       jobs:
       - template: /azure-pipelines/build/linux/du/templates/do-docker-jobs.yml@self
