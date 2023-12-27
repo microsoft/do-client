@@ -17,6 +17,7 @@ jobs:
       targetOsArch: ${{parameters.targetOsArch}}
       imageVersion: ${{parameters.imageVersion}}
       config: debug
+      skipTest: false
   - publish: $(Build.ArtifactStagingDirectory)
     artifact: 'doclient-drop-${{parameters.targetOsArch}}-debug'
 
