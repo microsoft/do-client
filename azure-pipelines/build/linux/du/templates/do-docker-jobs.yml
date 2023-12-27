@@ -17,7 +17,7 @@ jobs:
       targetOsArch: ${{parameters.targetOsArch}}
       imageVersion: ${{parameters.imageVersion}}
       config: debug
-      skipTest: false
+      skipTests: false
   - publish: $(Build.ArtifactStagingDirectory)
     artifact: 'doclient-drop-${{parameters.targetOsArch}}-debug'
 
@@ -28,6 +28,6 @@ jobs:
       targetOsArch: ${{parameters.targetOsArch}}
       imageVersion: ${{parameters.imageVersion}}
       config: minsizerel
-      skipTest: true
+      skipTests: true
   - publish: $(Build.ArtifactStagingDirectory)
     artifact: 'doclient-drop-${{parameters.targetOsArch}}-minsizerel'
