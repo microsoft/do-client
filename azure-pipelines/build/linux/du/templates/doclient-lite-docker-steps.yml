@@ -8,6 +8,8 @@ parameters:
   type: string
 - name: config          # debug/release/minsizerel/relwithdebuginfo
   type: string
+- name: skipTests
+  type: boolean
 
 steps:
 - task: Docker@2
@@ -51,3 +53,20 @@ steps:
       client-lite/deliveryoptimization-agent.dbg
     TargetFolder: '$(Build.ArtifactStagingDirectory)/agent-${{parameters.targetOsArch}}-${{parameters.config}}'
   displayName: 'Populate debug symbols to staging dir'
+
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: './client-lite/test/deliveryoptimization-agent-tests --gtest_filter=-NetworkMonitorTests*'
+    workingDirectory: '/tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}/'
+  displayName: 'Run unit tests'
+
+  - task: CopyFiles@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    SourceFolder: '/tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}'
+    Contents: |
+      client-lite/test/deliveryoptimization-agent-tests
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
+    CleanTargetFolder: false
+  displayName: 'Populate artifacts staging dir with test binary'
