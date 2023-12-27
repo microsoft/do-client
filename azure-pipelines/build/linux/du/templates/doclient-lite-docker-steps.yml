@@ -39,7 +39,7 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: './client-lite/test/deliveryoptimization-agent-tests --gtest_filter=-NetworkMonitorTests*'
+    script: 'cd ./client-lite/test/deliveryoptimization-agent-tests: ls: ./client-lite/test/deliveryoptimization-agent-tests --gtest_filter=-NetworkMonitorTests*'
     workingDirectory: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}'
   displayName: 'Run unit tests'
 
