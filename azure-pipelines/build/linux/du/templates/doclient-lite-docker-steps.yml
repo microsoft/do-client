@@ -61,7 +61,7 @@ steps:
     workingDirectory: '/tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}/'
   displayName: 'Run unit tests'
 
-  - task: CopyFiles@2
+- task: CopyFiles@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
     SourceFolder: '/tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}'
