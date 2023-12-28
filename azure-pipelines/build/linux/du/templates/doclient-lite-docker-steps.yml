@@ -39,10 +39,9 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'ls ./client-lite/test/deliveryoptimization-agent-tests: ./client-lite/test/deliveryoptimization-agent-tests --gtest_filter=-NetworkMonitorTests*'
-    workingDirectory: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}'
+    script: 'ls azure-pipelines/client-lite/test/deliveryoptimization-agent-tests'
   displayName: 'Run unit tests'
-
+# : ./client-lite/test/deliveryoptimization-agent-tests --gtest_filter=-NetworkMonitorTests*'
 - task: CopyFiles@2
   inputs:
     SourceFolder: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
