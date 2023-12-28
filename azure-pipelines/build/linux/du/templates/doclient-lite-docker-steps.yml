@@ -45,7 +45,7 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'pwd: ls .'
+    script: 'cd /azure-pipelines/client-lite: ls'
   displayName: 'Run unit tests'
 # './client-lite/test/deliveryoptimization-agent-tests --gtest_filter=-NetworkMonitorTests*'
 
