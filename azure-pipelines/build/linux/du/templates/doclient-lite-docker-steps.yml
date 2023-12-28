@@ -26,6 +26,13 @@ steps:
     containerRegistry: doclient-dockercontainerregistry-buildpipeline   # name of the service connection that connect the pipeline to the ACR
     arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}}'
 
+task: CmdLine@2
+  inputs:
+    script: 'python3 ./build.py --project agent --config ${{parameters.config}} --package-for DEB --clean'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
+  displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
+
+
 - task: CmdLine@2
   inputs:
     script: 'sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes'
@@ -39,9 +46,9 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'ls azure-pipelines/client-lite/test/deliveryoptimization-agent-tests'
+    script: './client-lite/test/deliveryoptimization-agent-tests --gtest_filter=-NetworkMonitorTests*'
   displayName: 'Run unit tests'
-# : ./client-lite/test/deliveryoptimization-agent-tests --gtest_filter=-NetworkMonitorTests*'
+
 - task: CopyFiles@2
   inputs:
     SourceFolder: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
