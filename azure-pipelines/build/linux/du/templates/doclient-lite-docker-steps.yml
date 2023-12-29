@@ -45,9 +45,10 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'cd tmp/: ls: cd /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}: ls'
+    script: 'cd tmp/'
   displayName: 'Run unit tests'
 # './client-lite/test/deliveryoptimization-agent-tests --gtest_filter=-NetworkMonitorTests*'
+# : ls: cd /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}: ls'
 
 
 - task: CopyFiles@2
