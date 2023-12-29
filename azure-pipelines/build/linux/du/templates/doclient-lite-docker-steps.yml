@@ -26,11 +26,11 @@ steps:
     containerRegistry: doclient-dockercontainerregistry-buildpipeline   # name of the service connection that connect the pipeline to the ACR
     arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}}'
 
-- task: CmdLine@2
-  inputs:
-    script: 'python3 ./build.py --project agent --config ${{parameters.config}} --package-for DEB --clean'
-    workingDirectory: '$(Build.SourcesDirectory)/build'
-  displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
+# - task: CmdLine@2
+#   inputs:
+#     script: 'python3 ./build.py --project agent --config ${{parameters.config}} --package-for DEB --clean'
+#     workingDirectory: '$(Build.SourcesDirectory)/build'
+#   displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: CmdLine@2
   inputs:
