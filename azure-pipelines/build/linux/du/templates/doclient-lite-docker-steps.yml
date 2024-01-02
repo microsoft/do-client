@@ -26,12 +26,6 @@ steps:
     containerRegistry: doclient-dockercontainerregistry-buildpipeline   # name of the service connection that connect the pipeline to the ACR
     arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}}'
 
-# - task: CmdLine@2
-#   inputs:
-#     script: 'python3 ./build.py --project agent --config ${{parameters.config}} --package-for DEB --clean'
-#     workingDirectory: '$(Build.SourcesDirectory)/build'
-#   displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
-
 - task: CmdLine@2
   inputs:
     script: 'sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes'
@@ -46,7 +40,7 @@ steps:
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
     script: 'sudo dpkg -i deliveryoptimization-agent*.deb'
-    workingDirectory: '$(Build.ArtifactStagingDirectory)/agent-${{parameters.targetOsArch}}-${{parameters.config}}'
+    workingDirectory: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Install agent Debian package'
 
 - task: CmdLine@2
