@@ -8,6 +8,8 @@ parameters:
   type: string
 - name: config          # debug/release/minsizerel/relwithdebuginfo
   type: string
+- name: skipTests
+  type: boolean
 
 steps:
 - task: Docker@2

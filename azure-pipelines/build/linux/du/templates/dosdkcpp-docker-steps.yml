@@ -8,6 +8,8 @@ parameters:
   type: string
 - name: config          # debug/release
   type: string
+- name: skipTests
+  type: boolean
 
 steps:
 - task: Docker@2
