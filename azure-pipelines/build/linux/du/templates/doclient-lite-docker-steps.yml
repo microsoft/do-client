@@ -46,7 +46,7 @@ steps:
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
     script: 'sudo dpkg -i deliveryoptimization-agent*.deb'
-    workingDirectory: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
+    workingDirectory: '$(Build.ArtifactStagingDirectory)/agent-${{parameters.targetOsArch}}-${{parameters.config}}'
   displayName: 'Install agent Debian package'
 
 - task: CmdLine@2
