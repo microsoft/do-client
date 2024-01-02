@@ -77,7 +77,7 @@ steps:
 - task: CopyFiles@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    SourceFolder: '/tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}'
+    SourceFolder: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
     Contents: |
       client-lite/test/deliveryoptimization-agent-tests
     TargetFolder: '$(Build.ArtifactStagingDirectory)/${{parameters.targetOsArch}}-${{parameters.config}}'
