@@ -39,6 +39,13 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
+    script: 'sudo dpkg -i deliveryoptimization-agent*.deb'
+    workingDirectory: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
+  displayName: 'Install agent Debian package'
+
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
     script: 'sudo dpkg -i libdeliveryoptimization*.deb'
     workingDirectory: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Install libdeliveryoptimization Debian package'

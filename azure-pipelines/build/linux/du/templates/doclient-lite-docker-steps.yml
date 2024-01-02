@@ -36,6 +36,14 @@ steps:
     script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "agent"'
   displayName: 'Build client-lite ${{parameters.targetOsArch}}-${{parameters.config}}'
 
+# - task: Bash@3
+#   condition: eq('${{parameters.config}}', 'minsizerel')
+#   inputs:
+#     targetType: 'filePath'
+#     filePath: 'build/scripts/check_binary_size.sh'
+#     arguments: '523672 /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}/client-lite/deliveryoptimization-agent'
+#   displayName: 'Limit binary size increase'
+
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
