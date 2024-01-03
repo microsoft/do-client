@@ -40,7 +40,7 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'sudo dpkg -i deliveryoptimization-agent*.deb'
+    script: 'sudo dpkg -i /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}/deliveryoptimization-agent*.deb'
     workingDirectory: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Install agent Debian package'
 
@@ -53,14 +53,14 @@ steps:
   condition: eq('${{parameters.config}}', 'minsizerel')
   inputs:
     targetType: 'filePath'
-    filePath: 'build/scripts/check_binary_size.sh'
+    filePath: '/tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}/sdk-cpp/libdeliveryoptimization.so.*.*.?/build/scripts/check_binary_size.sh'
     arguments: '596080 /tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}/sdk-cpp/libdeliveryoptimization.so.*.*.?'
   displayName: 'Limit binary size increase'
 
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'sudo dpkg -i libdeliveryoptimization*.deb'
+    script: 'sudo dpkg -i /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}/libdeliveryoptimization*.deb'
     workingDirectory: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Install libdeliveryoptimization'
 
@@ -74,7 +74,7 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'sudo ./sdk-cpp/tests/deliveryoptimization-sdk-tests'
+    script: 'sudo /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}/sdk-cpp/tests/deliveryoptimization-sdk-tests'
     workingDirectory: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Run unit tests'
 
