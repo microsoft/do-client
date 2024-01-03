@@ -12,12 +12,6 @@ parameters:
   type: boolean
 
 steps:
-- task: CmdLine@2
-  inputs:
-    script: 'python3 ./build.py --project agent --cmaketarget deliveryoptimization-agent --config ${{parameters.config}} --package-for DEB --clean'
-    workingDirectory: '$(Build.SourcesDirectory)/build'
-  displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
-
 - task: Docker@2
   displayName: Login to ACR
   inputs:
@@ -36,6 +30,11 @@ steps:
   inputs:
     script: 'sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes'
   displayName: Enable the build VM to run multiarch docker container
+
+- task: CmdLine@2
+  inputs:
+    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "agent"'
+  displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
