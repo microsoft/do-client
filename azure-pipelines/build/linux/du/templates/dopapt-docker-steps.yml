@@ -46,10 +46,11 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'ls -lR /tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}'
+    script: 'ls -lR /tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}/plugins'
     workingDirectory: '/tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Run unit tests'
 # ./client-lite/test/deliveryoptimization-plugin-apt-tests --gtest_filter=-NetworkMonitorTests*'
+# /tmp/build-deliveryoptimization-plugin-apt-ubuntu1804_x64/linux-debug/plugins
 - task: CopyFiles@2
   inputs:
     SourceFolder: '/tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}'

@@ -53,10 +53,11 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'ls -lR /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}'
+    script: 'ls -lR /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}/sdk-cpp/tests'
     workingDirectory: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Run unit tests'
 #  sudo ./sdk-cpp/tests/deliveryoptimization-sdk-tests --gtest_filter=-NetworkMonitorTests*'
+# /tmp/build-deliveryoptimization-sdk-ubuntu1804_x64/linux-debug/sdk-cpp/tests
 - task: CopyFiles@2
   inputs:
     SourceFolder: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
