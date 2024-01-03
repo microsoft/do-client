@@ -12,6 +12,12 @@ parameters:
   type: boolean
 
 steps:
+- task: CmdLine@2
+  inputs:
+    script: 'python3 ./build.py --project agent --cmaketarget deliveryoptimization-agent --config ${{parameters.config}} --package-for DEB --clean'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
+  displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
+
 - task: Docker@2
   displayName: Login to ACR
   inputs:
@@ -49,6 +55,13 @@ steps:
     script: 'sudo dpkg -i libdeliveryoptimization*.deb'
     workingDirectory: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Install libdeliveryoptimization Debian package'
+
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization-sdk-tests --config ${{parameters.config}}'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
+  displayName: 'Build sdk-cpp tests ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
