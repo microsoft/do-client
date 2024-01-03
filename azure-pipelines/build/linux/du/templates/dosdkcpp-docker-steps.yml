@@ -73,7 +73,7 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'sudo /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}/sdk-cpp/tests/deliveryoptimization-sdk-tests'
+    script: './sdk-cpp/tests/deliveryoptimization-sdk-tests'
     workingDirectory: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Run unit tests'
 
