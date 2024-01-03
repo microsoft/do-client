@@ -46,7 +46,7 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'ls -lR /tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}/plugins'
+    script: 'ls -l /tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}/plugins'
     workingDirectory: '/tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Run unit tests'
 # ./client-lite/test/deliveryoptimization-plugin-apt-tests --gtest_filter=-NetworkMonitorTests*'
