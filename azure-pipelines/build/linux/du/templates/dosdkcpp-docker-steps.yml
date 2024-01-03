@@ -38,11 +38,6 @@ steps:
   displayName: Enable the build VM to run multiarch docker container
 
 - task: CmdLine@2
-  inputs:
-    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-sdk doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "sdk" "--cmaketarget" "deliveryoptimization"'
-  displayName: 'Build sdk-cpp ${{parameters.targetOsArch}}-${{parameters.config}}'
-
-- task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
     script: 'sudo dpkg -i deliveryoptimization-agent*.deb'
@@ -50,11 +45,24 @@ steps:
   displayName: 'Install agent Debian package'
 
 - task: CmdLine@2
+  inputs:
+    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-sdk doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "sdk" "--cmaketarget" "deliveryoptimization"'
+  displayName: 'Build sdk-cpp ${{parameters.targetOsArch}}-${{parameters.config}}'
+
+- task: Bash@3
+  condition: eq('${{parameters.config}}', 'minsizerel')
+  inputs:
+    targetType: 'filePath'
+    filePath: 'build/scripts/check_binary_size.sh'
+    arguments: '596080 /tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}/sdk-cpp/libdeliveryoptimization.so.*.*.?'
+  displayName: 'Limit binary size increase'
+
+- task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
     script: 'sudo dpkg -i libdeliveryoptimization*.deb'
     workingDirectory: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
-  displayName: 'Install libdeliveryoptimization Debian package'
+  displayName: 'Install libdeliveryoptimization'
 
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
@@ -66,11 +74,10 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'ls -l /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}/sdk-cpp/tests'
+    script: 'sudo ./sdk-cpp/tests/deliveryoptimization-sdk-tests'
     workingDirectory: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Run unit tests'
-#  sudo ./sdk-cpp/tests/deliveryoptimization-sdk-tests --gtest_filter=-NetworkMonitorTests*'
-# /tmp/build-deliveryoptimization-sdk-ubuntu1804_x64/linux-debug/sdk-cpp/tests
+
 - task: CopyFiles@2
   inputs:
     SourceFolder: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
