@@ -54,7 +54,7 @@ steps:
   inputs:
     targetType: 'filePath'
     filePath: 'build/scripts/check_binary_size.sh'
-    arguments: '596080 /tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}/sdk-cpp/libdeliveryoptimization.so.*.*.?'
+    arguments: '596080 /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}/sdk-cpp/libdeliveryoptimization.so.*.*.?'
   displayName: 'Limit binary size increase'
 
 - task: CmdLine@2
