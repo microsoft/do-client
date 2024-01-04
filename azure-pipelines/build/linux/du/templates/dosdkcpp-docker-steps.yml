@@ -53,7 +53,7 @@ steps:
   condition: eq('${{parameters.config}}', 'minsizerel')
   inputs:
     targetType: 'filePath'
-    filePath: '/tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}/sdk-cpp/libdeliveryoptimization.so.*.*.?/build/scripts/check_binary_size.sh'
+    filePath: 'build/scripts/check_binary_size.sh'
     arguments: '596080 /tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}/sdk-cpp/libdeliveryoptimization.so.*.*.?'
   displayName: 'Limit binary size increase'
 
@@ -67,7 +67,7 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: './sdk-cpp/tests/deliveryoptimization-sdk-tests'
+    script: 'sudo ./sdk-cpp/tests/deliveryoptimization-sdk-tests'
     workingDirectory: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Run unit tests'
 
