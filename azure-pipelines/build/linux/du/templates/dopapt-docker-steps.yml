@@ -12,11 +12,11 @@ parameters:
   type: boolean
 
 steps:
-- task: CmdLine@2
-  inputs:
-    script: 'python3 ./build.py --project agent --config ${{parameters.config}} --package-for DEB --clean'
-    workingDirectory: '$(Build.SourcesDirectory)/build'
-  displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
+# - task: CmdLine@2
+#   inputs:
+#     script: 'python3 ./build.py --project agent --config ${{parameters.config}} --package-for DEB --clean'
+#     workingDirectory: '$(Build.SourcesDirectory)/build'
+#   displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: Docker@2
   displayName: Login to ACR
@@ -37,12 +37,25 @@ steps:
     script: 'sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes'
   displayName: Enable the build VM to run multiarch docker container
 
+# - task: CmdLine@2
+#   condition: eq('${{parameters.skipTests}}', false)
+#   inputs:
+#     script: 'sudo dpkg -i /tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}/deliveryoptimization-agent*.deb'
+#     workingDirectory: '/tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
+#   displayName: 'Install agent Debian package'
+
 - task: CmdLine@2
-  condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'sudo dpkg -i /tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}/deliveryoptimization-agent*.deb'
-    workingDirectory: '/tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
-  displayName: 'Install agent Debian package'
+    script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization --config ${{parameters.config}} --package-for DEB --clean'
+    workingDirectory: '$(Build.SourcesDirectory)/build'
+  displayName: 'Build sdk ${{parameters.targetOsArch}}-${{parameters.config}}'
+
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: 'sudo dpkg --ignore-depends=deliveryoptimization-agent -i libdeliveryoptimization*.deb'
+    workingDirectory: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
+  displayName: 'Install libdeliveryoptimization'
 
 - task: CmdLine@2
   inputs:
@@ -53,8 +66,8 @@ steps:
   condition: eq('${{parameters.config}}', 'minsizerel')
   inputs:
     targetType: 'filePath'
-    filePath: '/tmp/build-deliveryoptimization-plugin-apt/linux-${{parameters.config}}/plugins/linux-apt/deliveryoptimization-plugin-apt/build/scripts/check_binary_size.sh'
-    arguments: '150824 /tmp/build-deliveryoptimization-plugin-apt/linux-${{parameters.config}}/plugins/linux-apt/deliveryoptimization-plugin-apt'
+    filePath: 'build/scripts/check_binary_size.sh'
+    arguments: '150824 /tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}/plugins/linux-apt/deliveryoptimization-plugin-apt'
   displayName: 'Limit binary size increase'
 
 - task: CmdLine@2
@@ -63,20 +76,6 @@ steps:
     script: 'sudo dpkg -i /tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}/deliveryoptimization-plugin-apt*.deb'
     workingDirectory: '/tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Install deliveryoptimization-plugin-apt'
-
-- task: CmdLine@2
-  condition: eq('${{parameters.skipTests}}', false)
-  inputs:
-    script: 'python3 ./build.py --project plugin-apt --cmaketarget deliveryoptimization-plugin-apt-tests --config ${{parameters.config}}'
-    workingDirectory: '$(Build.SourcesDirectory)/build'
-  displayName: 'Build plugin-apt tests ${{parameters.targetOsArch}}-${{parameters.config}}'
-
-- task: CmdLine@2
-  condition: eq('${{parameters.skipTests}}', false)
-  inputs:
-    script: 'sudo /tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}/plugins/tests/deliveryoptimization-plugin-apt-tests'
-    workingDirectory: '/tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
-  displayName: 'Run unit tests'
 
 - task: CopyFiles@2
   inputs:
