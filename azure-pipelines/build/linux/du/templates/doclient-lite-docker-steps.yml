@@ -62,7 +62,7 @@ steps:
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
     script: 'sudo dpkg -r deliveryoptimization-agent'
-    workingDirectory: '/tmp/build-deliveryoptimization-agent/linux-${{parameters.config}}'
+    workingDirectory: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Remove Debian package'
 
 - task: CopyFiles@2
