@@ -14,7 +14,7 @@ trigger:
   paths:
     include:
       - azure-pipelines/build/linux/du/native/doclient-lite-ubuntu1804.yml
-      - azure-pipelines/build/linux/du/templates/doclient-lite-native-steps.yml
+      - azure-pipelines/build/linux/du/templates/doclient-lite-docker-steps.yml
       - client-lite/*
       - common/*
       - build/build.py
@@ -29,7 +29,7 @@ pr:
   paths:
     include:
       - azure-pipelines/build/linux/du/native/doclient-lite-ubuntu1804.yml
-      - azure-pipelines/build/linux/du/templates/doclient-lite-native-steps.yml
+      - azure-pipelines/build/linux/du/templates/doclient-lite-docker-steps.yml
       - client-lite/*
       - common/*
       - build/build.py
@@ -47,19 +47,3 @@ jobs:
     targetOsArch: 'ubuntu1804_x64'
     imageVersion: ${{variables.containerImageVersion}}
     stepsTemplate: 'doclient-lite-docker-steps.yml'
-
-# jobs:
-# - job: Debug
-#   steps:
-#   - template: ../templates/doclient-lite-native-steps.yml
-#     parameters:
-#       targetOsArch: 'ubuntu1804_x64'
-#       config: debug
-
-# - job: Release
-#   steps:
-#   - template: ../templates/doclient-lite-native-steps.yml
-#     parameters:
-#       targetOsArch: 'ubuntu1804_x64'
-#       config: minsizerel
-#       skipTests: true

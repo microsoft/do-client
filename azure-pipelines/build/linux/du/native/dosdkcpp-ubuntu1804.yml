@@ -15,7 +15,7 @@ trigger:
   paths:
     include:
       - azure-pipelines/build/linux/du/native/dosdkcpp-ubuntu1804.yml
-      - azure-pipelines/build/linux/du/templates/dosdkcpp-native-steps.yml
+      - azure-pipelines/build/linux/du/templates/dosdkcpp-docker-steps.yml
       - common/*
       - sdk-cpp/*
       - build/build.py
@@ -31,7 +31,7 @@ pr:
   paths:
     include:
       - azure-pipelines/build/linux/du/native/dosdkcpp-ubuntu1804.yml
-      - azure-pipelines/build/linux/du/templates/dosdkcpp-native-steps.yml
+      - azure-pipelines/build/linux/du/templates/dosdkcpp-docker-steps.yml
       - common/*
       - sdk-cpp/*
       - build/build.py
