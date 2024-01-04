@@ -54,7 +54,7 @@ steps:
   inputs:
     targetType: 'inline'
     script: 'sudo dpkg --ignore-depends=deliveryoptimization-agent -i libdeliveryoptimization*.deb'
-    workingDirectory: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
+    workingDirectory: '/tmp/build-deliveryoptimization-sdk/linux-${{parameters.config}}'
   displayName: 'Install libdeliveryoptimization'
 
 - task: CmdLine@2
@@ -73,9 +73,14 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'sudo dpkg -i /tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}/deliveryoptimization-plugin-apt*.deb'
+    script: 'sudo dpkg -i deliveryoptimization-plugin-apt*.deb'
     workingDirectory: '/tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Install deliveryoptimization-plugin-apt'
+
+- task: CmdLine@2
+  inputs:
+    script: 'sudo dpkg -r libdeliveryoptimization-dev deliveryoptimization-plugin-apt libdeliveryoptimization'
+  displayName: 'Remove Packages'
 
 - task: CopyFiles@2
   inputs:
