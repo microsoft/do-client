@@ -32,6 +32,7 @@ steps:
   displayName: Enable the build VM to run multiarch docker container
 
 - task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
   inputs:
     script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "agent"'
   displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
@@ -45,7 +46,7 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-sdk doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "sdk" "--cmaketarget" "deliveryoptimization"'
+    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-sdk doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "sdk"'
   displayName: 'Build sdk-cpp ${{parameters.targetOsArch}}-${{parameters.config}}'
 
 - task: Bash@3
@@ -66,17 +67,10 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'python3 ./build.py --project sdk --cmaketarget deliveryoptimization-sdk-tests --config ${{parameters.config}}'
-    workingDirectory: '$(Build.SourcesDirectory)/build'
-  displayName: 'Build sdk-cpp tests ${{parameters.targetOsArch}}-${{parameters.config}}'
-
-- task: CmdLine@2
-  condition: eq('${{parameters.skipTests}}', false)
-  inputs:
     script: 'ls -lR /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
     workingDirectory: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Run unit tests'
-# ./sdk-cpp/tests/deliveryoptimization-sdk-tests
+
 - task: CopyFiles@2
   inputs:
     SourceFolder: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
