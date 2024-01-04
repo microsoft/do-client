@@ -40,7 +40,7 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'sudo dpkg -i /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}/deliveryoptimization-agent*.deb'
+    script: 'sudo dpkg -i deliveryoptimization-agent*.deb'
     workingDirectory: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Install agent Debian package'
 
@@ -60,10 +60,12 @@ steps:
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'sudo dpkg -i /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}/libdeliveryoptimization*.deb'
+    script: 'sudo dpkg -i libdeliveryoptimization*.deb'
     workingDirectory: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
   displayName: 'Install libdeliveryoptimization'
 
+# Run all tests. These must run as root because docs is running as the 'do' user
+# and thus files created by docs are not owned by us, causing test SetUp/TearDown to fail.
 - task: CmdLine@2
   condition: eq('${{parameters.skipTests}}', false)
   inputs:
