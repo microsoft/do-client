@@ -50,19 +50,3 @@ jobs:
     targetOsArch: 'ubuntu1804_x64'
     imageVersion: ${{variables.containerImageVersion}}
     stepsTemplate: 'dosdkcpp-docker-steps.yml'
-
-# jobs:
-# - job: Debug
-#   steps:
-#   - template: ../templates/dosdkcpp-native-steps.yml
-#     parameters:
-#       targetOsArch: 'ubuntu1804_x64'
-#       config: debug
-
-# - job: Release
-#   steps:
-#   - template: ../templates/dosdkcpp-native-steps.yml
-#     parameters:
-#       targetOsArch: 'ubuntu1804_x64'
-#       config: minsizerel
-#       skipTests: true

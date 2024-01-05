@@ -89,6 +89,6 @@ steps:
     SourceFolder: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
     Contents: |
       client-lite/test/deliveryoptimization-agent-tests
-    TargetFolder: '$(Build.ArtifactStagingDirectory)/agent-                                                                       ${{parameters.targetOsArch}}-${{parameters.config}}'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/agent-${{parameters.targetOsArch}}-${{parameters.config}}'
     CleanTargetFolder: false
   displayName: 'Populate artifacts staging dir with test binary'
