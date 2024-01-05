@@ -8,6 +8,8 @@ parameters:
   type: string
 - name: config          # debug/release
   type: string
+- name: skipTests
+  type: boolean
 
 steps:
 - task: Docker@2
@@ -30,9 +32,52 @@ steps:
   displayName: Enable the build VM to run multiarch docker container
 
 - task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
   inputs:
-    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-sdk doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "sdk" "--cmaketarget" "deliveryoptimization"'
+    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "agent"'
+  displayName: 'Build agent ${{parameters.targetOsArch}}-${{parameters.config}}'
+
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: 'sudo dpkg -i deliveryoptimization-agent*.deb'
+    workingDirectory: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
+  displayName: 'Install agent Debian package'
+
+- task: CmdLine@2
+  inputs:
+    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-sdk doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "sdk"'
   displayName: 'Build sdk-cpp ${{parameters.targetOsArch}}-${{parameters.config}}'
+
+- task: Bash@3
+  condition: eq('${{parameters.config}}', 'minsizerel')
+  inputs:
+    targetType: 'filePath'
+    filePath: 'build/scripts/check_binary_size.sh'
+    arguments: '596080 /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}/sdk-cpp/libdeliveryoptimization.so.*.*.?'
+  displayName: 'Limit binary size increase'
+
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: 'sudo dpkg -i libdeliveryoptimization*.deb'
+    workingDirectory: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
+  displayName: 'Install libdeliveryoptimization'
+
+# Run all tests. These must run as root because docs is running as the 'do' user
+# and thus files created by docs are not owned by us, causing test SetUp/TearDown to fail.
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: 'sudo ./sdk-cpp/tests/deliveryoptimization-sdk-tests'
+    workingDirectory: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
+  displayName: 'Run unit tests'
+
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: 'sudo dpkg -r libdeliveryoptimization-dev libdeliveryoptimization deliveryoptimization-agent'
+  displayName: 'Remove installed packages'
 
 - task: CopyFiles@2
   inputs:

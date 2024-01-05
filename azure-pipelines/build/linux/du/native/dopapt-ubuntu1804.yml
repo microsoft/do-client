@@ -4,6 +4,8 @@
 variables:
 - name: imageVersion
   value: 0.8.0
+- name: containerImageVersion
+  value: 0.9.0
 
 trigger:
   branches:
@@ -12,7 +14,7 @@ trigger:
   paths:
     include:
       - azure-pipelines/build/linux/du/native/dopapt-ubuntu1804.yml
-      - azure-pipelines/build/linux/du/templates/dopapt-native-steps.yml
+      - azure-pipelines/build/linux/du/templates/dopapt-docker-steps.yml
       - common/*
       - plugins/*
       - build/build.py
@@ -28,7 +30,7 @@ pr:
   paths:
     include:
       - azure-pipelines/build/linux/du/native/dopapt-ubuntu1804.yml
-      - azure-pipelines/build/linux/du/templates/dopapt-native-steps.yml
+      - azure-pipelines/build/linux/du/templates/dopapt-docker-steps.yml
       - common/*
       - plugins/*
       - build/build.py
@@ -42,16 +44,8 @@ pool:
   demands: ImageOverride -equals do-adu-build-$(imageVersion)
 
 jobs:
-- job: Debug
-  steps:
-  - template: ../templates/dopapt-native-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu1804_x64'
-      config: debug
-
-- job: Release
-  steps:
-  - template: ../templates/dopapt-native-steps.yml
-    parameters:
-      targetOsArch: 'ubuntu1804_x64'
-      config: minsizerel
+- template: ../templates/do-docker-jobs.yml
+  parameters:
+    targetOsArch: 'ubuntu1804_x64'
+    imageVersion: ${{variables.containerImageVersion}}
+    stepsTemplate: 'dopapt-docker-steps.yml'
