@@ -33,19 +33,6 @@ steps:
 
 - task: CmdLine@2
   inputs:
-    script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-sdk doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "sdk"'
-    workingDirectory: '$(Build.SourcesDirectory)/build'
-  displayName: 'Build sdk ${{parameters.targetOsArch}}-${{parameters.config}}'
-
-- task: Bash@3
-  inputs:
-    targetType: 'inline'
-    script: 'sudo dpkg --ignore-depends=deliveryoptimization-agent -i libdeliveryoptimization*.deb'
-    workingDirectory: '/tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
-  displayName: 'Install libdeliveryoptimization'
-
-- task: CmdLine@2
-  inputs:
     script: 'sudo docker run --rm --entrypoint=/bin/bash -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-plugin-apt doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/docker/docker-build-plugin.sh" "/code" "${{parameters.config}}"'
   displayName: 'Build deliveryoptimization-plugin-apt ${{parameters.targetOsArch}}-${{parameters.config}}'
 
@@ -58,18 +45,6 @@ steps:
     filePath: 'build/scripts/check_binary_size.sh'
     arguments: '150824 /tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}/plugins/linux-apt/deliveryoptimization-plugin-apt'
   displayName: 'Limit binary size increase'
-
-- task: CmdLine@2
-  condition: eq('${{parameters.skipTests}}', false)
-  inputs:
-    script: 'sudo dpkg -i deliveryoptimization-plugin-apt*.deb'
-    workingDirectory: '/tmp/build-deliveryoptimization-plugin-apt-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
-  displayName: 'Install deliveryoptimization-plugin-apt'
-
-- task: CmdLine@2
-  inputs:
-    script: 'sudo dpkg -r libdeliveryoptimization-dev deliveryoptimization-plugin-apt libdeliveryoptimization'
-  displayName: 'Remove Packages'
 
 - task: CopyFiles@2
   inputs:
