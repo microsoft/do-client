@@ -19,7 +19,7 @@ jobs:
       targetOsArch: ${{parameters.targetOsArch}}
       imageVersion: ${{parameters.imageVersion}}
       config: debug
-      skipTests: ${{ contains(parameters.targetOsArch, '_arm') }}
+      skipTests: ${{ not(endswith(parameters.targetOsArch, '_x64')) }}
   - publish: $(Build.ArtifactStagingDirectory)
     artifact: 'doclient-drop-${{parameters.targetOsArch}}-debug'
 
