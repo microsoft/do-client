@@ -51,7 +51,7 @@ steps:
 
 # Testing binary size only on minsizerel+x64 is sufficient.
 - task: Bash@3
-  condition: and(eq('${{parameters.config}}', 'minsizerel'), !contains('${{parameters.targetOsArch}}', '_arm'))
+  condition: ${{ and(eq('${{parameters.config}}', 'minsizerel'), endswith('${{parameters.targetOsArch}}', '_x64')) }}
   inputs:
     targetType: 'filePath'
     filePath: 'build/scripts/check_binary_size.sh'
