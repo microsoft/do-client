@@ -49,7 +49,7 @@ steps:
     script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-sdk-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-sdk doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "sdk"'
   displayName: 'Build sdk-cpp ${{parameters.targetOsArch}}-${{parameters.config}}'
 
-# Testing binary size only on x64+minsizerel is sufficient.
+# Testing binary size only on minsizerel+x64 is sufficient.
 - task: Bash@3
   condition: and(eq('${{parameters.config}}', 'minsizerel'), !contains('${{parameters.targetOsArch}}', '_arm'))
   inputs:

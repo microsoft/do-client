@@ -10,8 +10,8 @@ parameters:
   type: string
 
 jobs:
-# Build agents are running x64 architecture, so we don't run unit tests for ARM builds (built using docker+QEMU).
-# Build agents are currently running Ubuntu 18.04, so the tests are run only for Ubuntu 18.04 builds.
+# Build agents are running Ubuntu 18.04 on x64 architecture, so we don't run unit tests for ARM builds (built using docker+QEMU)
+# and other OS builds (test binary dependencies not installed).
 - job: ${{parameters.targetOsArch}}_debug
   steps:
   - template: ${{parameters.stepsTemplate}}
