@@ -8,7 +8,7 @@ trigger:
       - develop
   paths:
     include:
-      - azure-pipelines/build/linux/du/docker/dopapt-docker.yml
+      - azure-pipelines/build/linux/du/dopapt-docker.yml
       - azure-pipelines/build/linux/du/templates/dopapt-docker-steps.yml
       - common/*
       - plugins/*
@@ -25,7 +25,7 @@ pr:
       - develop
   paths:
     include:
-      - azure-pipelines/build/linux/du/docker/dopapt-docker.yml
+      - azure-pipelines/build/linux/du/dopapt-docker.yml
       - azure-pipelines/build/linux/du/templates/dopapt-docker-steps.yml
       - common/*
       - plugins/*

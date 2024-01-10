@@ -1,4 +1,4 @@
-# Pipeline to build DO C++ SDK using docker to target non-native OS and/or architecture.
+# Pipeline to build DO Agent using docker to target non-native OS and/or architecture.
 # Publishes the binaries + packages as artifacts.
 
 # CI trigger for when code gets merged into develop branch
@@ -8,15 +8,14 @@ trigger:
       - develop
   paths:
     include:
-      - azure-pipelines/build/linux/du/docker/dosdkcpp-docker.yml
-      - azure-pipelines/build/linux/du/templates/dosdkcpp-docker-steps.yml
+      - azure-pipelines/build/linux/du/doclient-lite-docker.yml
+      - azure-pipelines/build/linux/du/templates/doclient-lite-docker-steps.yml
+      - client-lite/*
       - common/*
-      - sdk-cpp/*
       - build/build.py
       - CMakeLists.txt
     exclude:
       - azure-pipelines/*
-      - sdk-cpp/build/cleanup-install.sh
 
 # PR trigger for when a PR is opened against develop branch
 pr:
@@ -25,15 +24,14 @@ pr:
       - develop
   paths:
     include:
-      - azure-pipelines/build/linux/du/docker/dosdkcpp-docker.yml
-      - azure-pipelines/build/linux/du/templates/dosdkcpp-docker-steps.yml
+      - azure-pipelines/build/linux/du/doclient-lite-docker.yml
+      - azure-pipelines/build/linux/du/templates/doclient-lite-docker-steps.yml
+      - client-lite/*
       - common/*
-      - sdk-cpp/*
       - build/build.py
       - CMakeLists.txt
     exclude:
       - azure-pipelines/*
-      - sdk-cpp/build/cleanup-install.sh
 
 parameters:
 - name: buildTargets
@@ -77,7 +75,7 @@ jobs:
     - ${{ each config in parameters.buildConfigurations }}:
       - job: ${{ target }}_${{ config }}
         steps:
-        - template: '../templates/dosdkcpp-docker-steps.yml'
+        - template: '../templates/doclient-lite-docker-steps.yml'
           parameters:
             targetOsArch: ${{ target }}
             imageVersion: ${{ variables.containerImageVersion }}
