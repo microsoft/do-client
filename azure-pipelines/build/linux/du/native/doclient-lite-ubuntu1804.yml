@@ -37,13 +37,27 @@ pr:
     exclude:
       - azure-pipelines/*
 
+parameters:
+- name: buildConfigurations
+  displayName: "Configurations to build"
+  type: object
+  default:
+    - debug
+    - minsizerel
+
 pool:
   name: 1es_hosted_pool_ubuntu_1804
   demands: ImageOverride -equals do-adu-build-$(imageVersion)
 
 jobs:
-- template: ../templates/do-docker-jobs.yml
-  parameters:
-    targetOsArch: 'ubuntu1804_x64'
-    imageVersion: ${{variables.containerImageVersion}}
-    stepsTemplate: 'doclient-lite-docker-steps.yml'
+- ${{ each config in parameters.buildConfigurations }}:
+  - job: ubuntu1804_x64_${{config}}
+    steps:
+    - template: '../templates/doclient-lite-docker-steps.yml'
+      parameters:
+        targetOsArch: 'ubuntu1804_x64'
+        imageVersion: ${{variables.containerImageVersion}}
+        config: ${{config}}
+        skipTests: ${{ ne(${{config}}, 'debug') }}
+    - publish: $(Build.ArtifactStagingDirectory)
+      artifact: 'doclient-drop-ubuntu1804_x64-${{config}}'
