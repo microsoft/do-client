@@ -68,7 +68,7 @@ pool:
 
 # Build agents are running Ubuntu 18.04 on x64 architecture, so we don't run unit tests for ARM builds
 # (built using docker+QEMU) and other OS builds (test binary dependencies not installed).
-# For PR builds, we only build x64 targets to speed up validation.
+# For PR builds, build only x64 targets to speed up validation.
 jobs:
 - ${{ each target in parameters.buildTargets }}:
   - ${{ if or(ne(variables['Build.Reason'], 'PullRequest'), endswith(target, '_x64')) }}:

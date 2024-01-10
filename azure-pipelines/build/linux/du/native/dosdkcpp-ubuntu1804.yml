@@ -8,37 +8,9 @@ variables:
 - name: containerImageVersion
   value: 0.9.0
 
-trigger:
-  branches:
-    include:
-      - develop
-  paths:
-    include:
-      - azure-pipelines/build/linux/du/native/dosdkcpp-ubuntu1804.yml
-      - azure-pipelines/build/linux/du/templates/dosdkcpp-docker-steps.yml
-      - common/*
-      - sdk-cpp/*
-      - build/build.py
-      - CMakeLists.txt
-    exclude:
-      - azure-pipelines/*
-      - sdk-cpp/build/cleanup-install.sh
-
-pr:
-  branches:
-    include:
-      - develop
-  paths:
-    include:
-      - azure-pipelines/build/linux/du/native/dosdkcpp-ubuntu1804.yml
-      - azure-pipelines/build/linux/du/templates/dosdkcpp-docker-steps.yml
-      - common/*
-      - sdk-cpp/*
-      - build/build.py
-      - CMakeLists.txt
-    exclude:
-      - azure-pipelines/*
-      - sdk-cpp/build/cleanup-install.sh
+# TODO: Delete before merging PR, when the other pipeline is working fine.
+trigger: none
+pr: none
 
 parameters:
 - name: buildConfigurations
