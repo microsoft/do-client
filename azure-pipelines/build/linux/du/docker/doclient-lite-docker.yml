@@ -1,24 +1,37 @@
 # Pipeline to build DO Agent using docker to target non-native OS and/or architecture.
 # Publishes the binaries + packages as artifacts.
 
-variables:
-- name: imageVersion # This is used to specify the vmImage & dockerImage to build the current release, this version # will always be the subsequent release in development branches
-  value: 0.8.0
-- name: containerImageVersion
-  value: 0.9.0
-
-# Disable branch and pr triggers - currently run this manually to avoid hogging build machine resources
-# Rely on Ubuntu x64 pipeline for CI/CD
+# CI trigger for when code gets merged into develop branch
 trigger:
-- none
-pr:
-- none
-schedules:
-- cron: "0 0 * * *"
-  displayName: Daily midnight build
   branches:
     include:
-    - develop
+      - develop
+  paths:
+    include:
+      - azure-pipelines/build/linux/du/docker/doclient-lite-docker.yml
+      - azure-pipelines/build/linux/du/templates/doclient-lite-docker-steps.yml
+      - client-lite/*
+      - common/*
+      - build/build.py
+      - CMakeLists.txt
+    exclude:
+      - azure-pipelines/*
+
+# PR trigger for when a PR is opened against develop branch
+pr:
+  branches:
+    include:
+      - develop
+  paths:
+    include:
+      - azure-pipelines/build/linux/du/docker/doclient-lite-docker.yml
+      - azure-pipelines/build/linux/du/templates/doclient-lite-docker-steps.yml
+      - client-lite/*
+      - common/*
+      - build/build.py
+      - CMakeLists.txt
+    exclude:
+      - azure-pipelines/*
 
 parameters:
 - name: buildTargets
@@ -37,12 +50,27 @@ parameters:
     - ubuntu2204_arm64
     - ubuntu2204_x64
 
+# Smaller set of targets to build for fast PR validation
+- name: buildTargetsForPullRequest
+  displayName: "OS and Architectures to build for PR validation"
+  type: object
+  default:
+    - ubuntu1804_x64
+
 - name: buildConfigurations
   displayName: "Configurations to build"
   type: object
   default:
     - debug
     - minsizerel
+
+variables:
+  imageVersion: 0.8.0             # Build agent image version
+  containerImageVersion: 0.9.0    # Docker image version
+  ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+    buildTargetsChosen: ${{ parameters.buildTargetsForPullRequest }}
+  ${{ else }}:
+    buildTargetsChosen: ${{ parameters.buildTargets }}
 
 pool:
   name: 1es_hosted_pool_ubuntu_1804
@@ -51,7 +79,7 @@ pool:
 # Build agents are running Ubuntu 18.04 on x64 architecture, so we don't run unit tests for ARM builds
 # (built using docker+QEMU) and other OS builds (test binary dependencies not installed).
 jobs:
-- ${{ each target in parameters.buildTargets }}:
+- ${{ each target in variables.buildTargetsChosen }}:
   - ${{ each config in parameters.buildConfigurations }}:
     - job: ${{ target }}_${{ config }}
       steps:
@@ -60,6 +88,9 @@ jobs:
           targetOsArch: ${{ target }}
           imageVersion: ${{ variables.containerImageVersion }}
           config: ${{ config }}
-          skipTests: true
+          ${{ if and(eq(config, 'debug'), eq(target, 'ubuntu1804_x64')) }}:
+            skipTests: false
+          ${{ else }}:
+            skipTests: true
       - publish: $(Build.ArtifactStagingDirectory)
         artifact: 'doclient-drop-${{target}}-${{config}}'
