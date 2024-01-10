@@ -110,19 +110,24 @@ extends:
               config: minsizerel
               skipTests: true
 
-          - task: CopyFiles@2
+          - task: CmdLine@2
             displayName: 'Copy .deb files'
             inputs:
-              SourceFolder: '/tmp'
-              Contents: |
-                build-deliveryoptimization-*-${{ target }}/linux-minsizerel/*.deb
-              TargetFolder: '/tmp/${{ target }}'
-              CleanTargetFolder: true
+              script:
+                targetDir="$(Agent.TempDirectory)/doclient-scratch"
+                if [ -d $targetDir ]; then rm -rf $targetDir; fi
+                mkdir $targetDir
+                echo "**** Listing artifac staging dir ****"
+                ls -lR $(Build.ArtifactStagingDirectory)
+                echo "**** Copying .deb files ****"
+                cp $(Build.ArtifactStagingDirectory)/agent-${{ target }}/linux-minsizerel/*.deb $targetDir
+                cp $(Build.ArtifactStagingDirectory)/sdk-${{ target }}/linux-minsizerel/*.deb $targetDir
+                cp $(Build.ArtifactStagingDirectory)/plugin-apt-${{ target }}/linux-minsizerel/*.deb $targetDir
 
           - task: ArchiveFiles@2
             displayName: 'Create .tar file'
             inputs:
-              rootFolderOrFile: /tmp/${{ target }}
+              rootFolderOrFile: $(Agent.TempDirectory)/doclient-scratch
               includeRootFolder: False
               archiveType: tar
               archiveFile: $(Build.ArtifactStagingDirectory)/release-assets/${{ target }}-packages.tar
