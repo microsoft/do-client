@@ -87,54 +87,54 @@ extends:
     - stage: build
       jobs:
       - ${{ each target in parameters.buildTargets }}:
-        job: build_${{ target }}
-        steps:
-        - template: /azure-pipelines/build/linux/du/templates/doclient-lite-docker-steps.yml@self
-          parameters:
-            targetOsArch: ${{ target }}
-            imageVersion: ${{ variables.containerImageVersion }}
-            config: minsizerel
-            skipTests: true
+        - job: build_${{ target }}
+          steps:
+          - template: /azure-pipelines/build/linux/du/templates/doclient-lite-docker-steps.yml@self
+            parameters:
+              targetOsArch: ${{ target }}
+              imageVersion: ${{ variables.containerImageVersion }}
+              config: minsizerel
+              skipTests: true
 
-        - template: /azure-pipelines/build/linux/du/templates/dosdkcpp-docker-steps.yml@self
-          parameters:
-            targetOsArch: ${{ target }}
-            imageVersion: ${{ variables.containerImageVersion }}
-            config: minsizerel
-            skipTests: true
+          - template: /azure-pipelines/build/linux/du/templates/dosdkcpp-docker-steps.yml@self
+            parameters:
+              targetOsArch: ${{ target }}
+              imageVersion: ${{ variables.containerImageVersion }}
+              config: minsizerel
+              skipTests: true
 
-        - template: /azure-pipelines/build/linux/du/templates/dopapt-docker-steps.yml@self
-          parameters:
-            targetOsArch: ${{ target }}
-            imageVersion: ${{ variables.containerImageVersion }}
-            config: minsizerel
-            skipTests: true
+          - template: /azure-pipelines/build/linux/du/templates/dopapt-docker-steps.yml@self
+            parameters:
+              targetOsArch: ${{ target }}
+              imageVersion: ${{ variables.containerImageVersion }}
+              config: minsizerel
+              skipTests: true
 
-        - task: CopyFiles@2
-          displayName: 'Copy .deb files'
-          inputs:
-            SourceFolder: '/tmp'
-            Contents: |
-              build-deliveryoptimization-agent-${{ target }}/linux-minsizerel/*.deb
-              build-deliveryoptimization-sdk-${{ target }}/linux-minsizerel/*.deb
-              build-deliveryoptimization-plugin-apt-${{ target }}/linux-minsizerel/*.deb
-            TargetFolder: '/tmp/${{ target }}'
-            CleanTargetFolder: true
+          - task: CopyFiles@2
+            displayName: 'Copy .deb files'
+            inputs:
+              SourceFolder: '/tmp'
+              Contents: |
+                build-deliveryoptimization-agent-${{ target }}/linux-minsizerel/*.deb
+                build-deliveryoptimization-sdk-${{ target }}/linux-minsizerel/*.deb
+                build-deliveryoptimization-plugin-apt-${{ target }}/linux-minsizerel/*.deb
+              TargetFolder: '/tmp/${{ target }}'
+              CleanTargetFolder: true
 
-        - task: ArchiveFiles@2
-          displayName: 'Create .tar file'
-          inputs:
-            rootFolderOrFile: /tmp/${{ target }}
-            includeRootFolder: False
-            archiveType: tar
-            archiveFile: $(Build.ArtifactStagingDirectory)/release-assets/${{ target }}-packages.tar
+          - task: ArchiveFiles@2
+            displayName: 'Create .tar file'
+            inputs:
+              rootFolderOrFile: /tmp/${{ target }}
+              includeRootFolder: False
+              archiveType: tar
+              archiveFile: $(Build.ArtifactStagingDirectory)/release-assets/${{ target }}-packages.tar
 
-        templateContext:
-          outputs:
-          - output: pipelineArtifact
-            displayName: 'Publish artifacts'
-            targetPath: '$(Build.ArtifactStagingDirectory)'
-            artifact: 'doclient-drop-${{ target }}'
+          templateContext:
+            outputs:
+            - output: pipelineArtifact
+              displayName: 'Publish artifacts'
+              targetPath: '$(Build.ArtifactStagingDirectory)'
+              artifact: 'doclient-drop-${{ target }}'
 
     - stage: release
       condition: succeeded()
