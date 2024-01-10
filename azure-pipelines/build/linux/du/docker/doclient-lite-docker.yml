@@ -69,7 +69,7 @@ variables:
   containerImageVersion: 0.9.0    # Docker image version
   ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
     buildTargetsChosen: ${{ parameters.buildTargetsForPullRequest }}
-  ${{ else }}:
+  ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
     buildTargetsChosen: ${{ parameters.buildTargets }}
 
 pool:
