@@ -113,11 +113,11 @@ extends:
           - task: CmdLine@2
             displayName: 'Copy .deb files'
             inputs:
-              script:
+              script: |
                 targetDir="$(Agent.TempDirectory)/doclient-scratch"
                 if [ -d $targetDir ]; then rm -rf $targetDir; fi
                 mkdir $targetDir
-                echo "**** Listing artifac staging dir ****"
+                echo "**** Listing artifact staging dir ****"
                 ls -lR $(Build.ArtifactStagingDirectory)
                 echo "**** Copying .deb files ****"
                 cp $(Build.ArtifactStagingDirectory)/agent-${{ target }}/linux-minsizerel/*.deb $targetDir
