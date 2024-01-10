@@ -71,7 +71,7 @@ pool:
 # For PR builds, we only build x64 targets to speed up validation.
 jobs:
 - ${{ each target in parameters.buildTargets }}:
-    ${{ if or(ne(variables['Build.Reason'], 'PullRequest'), endswith(target, '_x64')) }}:
+  - ${{ if or(ne(variables['Build.Reason'], 'PullRequest'), endswith(target, '_x64')) }}:
     - ${{ each config in parameters.buildConfigurations }}:
       - job: ${{ target }}_${{ config }}
         steps:
