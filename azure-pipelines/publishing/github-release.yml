@@ -120,9 +120,9 @@ extends:
                 echo "**** Listing artifact staging dir ****"
                 ls -lR $(Build.ArtifactStagingDirectory)
                 echo "**** Copying .deb files ****"
-                cp $(Build.ArtifactStagingDirectory)/agent-${{ target }}/linux-minsizerel/*.deb $targetDir
-                cp $(Build.ArtifactStagingDirectory)/sdk-${{ target }}/linux-minsizerel/*.deb $targetDir
-                cp $(Build.ArtifactStagingDirectory)/plugin-apt-${{ target }}/linux-minsizerel/*.deb $targetDir
+                cp $(Build.ArtifactStagingDirectory)/agent-${{ target }}-minsizerel/*.deb $targetDir
+                cp $(Build.ArtifactStagingDirectory)/sdk-${{ target }}-minsizerel/*.deb $targetDir
+                cp $(Build.ArtifactStagingDirectory)/plugin-apt-${{ target }}-minsizerel/*.deb $targetDir
 
           - task: ArchiveFiles@2
             displayName: 'Create .tar file'
