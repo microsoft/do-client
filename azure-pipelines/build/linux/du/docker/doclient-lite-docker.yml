@@ -45,17 +45,11 @@ parameters:
     - debian11_arm64
     - debian11_x64
     - ubuntu1804_arm64
+    - ubuntu1804_x64
     - ubuntu2004_arm64
     - ubuntu2004_x64
     - ubuntu2204_arm64
     - ubuntu2204_x64
-
-# Smaller set of targets to build for fast PR validation
-- name: buildTargetsForPullRequest
-  displayName: "OS and Architectures to build for PR validation"
-  type: object
-  default:
-    - ubuntu1804_x64
 
 - name: buildConfigurations
   displayName: "Configurations to build"
@@ -67,10 +61,6 @@ parameters:
 variables:
   imageVersion: 0.8.0             # Build agent image version
   containerImageVersion: 0.9.0    # Docker image version
-  ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-    buildTargetsChosen: ${{ parameters.buildTargetsForPullRequest }}
-  ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-    buildTargetsChosen: ${{ parameters.buildTargets }}
 
 pool:
   name: 1es_hosted_pool_ubuntu_1804
@@ -78,19 +68,21 @@ pool:
 
 # Build agents are running Ubuntu 18.04 on x64 architecture, so we don't run unit tests for ARM builds
 # (built using docker+QEMU) and other OS builds (test binary dependencies not installed).
+# For PR builds, we only build x64 targets to speed up validation.
 jobs:
-- ${{ each target in variables.buildTargetsChosen }}:
-  - ${{ each config in parameters.buildConfigurations }}:
-    - job: ${{ target }}_${{ config }}
-      steps:
-      - template: '../templates/doclient-lite-docker-steps.yml'
-        parameters:
-          targetOsArch: ${{ target }}
-          imageVersion: ${{ variables.containerImageVersion }}
-          config: ${{ config }}
-          ${{ if and(eq(config, 'debug'), eq(target, 'ubuntu1804_x64')) }}:
-            skipTests: false
-          ${{ else }}:
-            skipTests: true
-      - publish: $(Build.ArtifactStagingDirectory)
-        artifact: 'doclient-drop-${{target}}-${{config}}'
+- ${{ each target in parameters.buildTargets }}:
+    ${{ if or(ne(variables['Build.Reason'], 'PullRequest'), endswith(target, '_x64')) }}:
+    - ${{ each config in parameters.buildConfigurations }}:
+      - job: ${{ target }}_${{ config }}
+        steps:
+        - template: '../templates/doclient-lite-docker-steps.yml'
+          parameters:
+            targetOsArch: ${{ target }}
+            imageVersion: ${{ variables.containerImageVersion }}
+            config: ${{ config }}
+            ${{ if and(eq(config, 'debug'), eq(target, 'ubuntu1804_x64')) }}:
+              skipTests: false
+            ${{ else }}:
+              skipTests: true
+        - publish: $(Build.ArtifactStagingDirectory)
+          artifact: 'doclient-drop-${{target}}-${{config}}'
