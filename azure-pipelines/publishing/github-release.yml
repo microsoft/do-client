@@ -87,10 +87,59 @@ extends:
     - stage: build
       jobs:
       - ${{ each target in parameters.buildTargets }}:
-        - template: /azure-pipelines/publishing/templates/release-docker-build-steps.yml@self
-          parameters:
-            targetOsArch: ${{ target }}
-            imageVersion: ${{ variables.containerImageVersion }}
+        - job: build_${{ target }}
+          steps:
+          - template: /azure-pipelines/build/linux/du/templates/doclient-lite-docker-steps.yml@self
+            parameters:
+              targetOsArch: ${{ target }}
+              imageVersion: ${{ variables.containerImageVersion }}
+              config: minsizerel
+              skipTests: true
+
+          - template: /azure-pipelines/build/linux/du/templates/dosdkcpp-docker-steps.yml@self
+            parameters:
+              targetOsArch: ${{ target }}
+              imageVersion: ${{ variables.containerImageVersion }}
+              config: minsizerel
+              skipTests: true
+
+          - template: /azure-pipelines/build/linux/du/templates/dopapt-docker-steps.yml@self
+            parameters:
+              targetOsArch: ${{ target }}
+              imageVersion: ${{ variables.containerImageVersion }}
+              config: minsizerel
+              skipTests: true
+
+          - task: CmdLine@2
+            displayName: 'Copy .deb files'
+            inputs:
+              script: |
+                targetDir="$(Agent.TempDirectory)/doclient-scratch"
+                if [ -d $targetDir ]; then rm -rf $targetDir; fi
+                mkdir $targetDir
+                echo "**** Listing artifact staging dir ****"
+                ls -lR $(Build.ArtifactStagingDirectory)
+                echo "**** Copying .deb files ****"
+                cp $(Build.ArtifactStagingDirectory)/agent-${{ target }}-minsizerel/*.deb $targetDir
+                cp $(Build.ArtifactStagingDirectory)/sdk-${{ target }}-minsizerel/*.deb $targetDir
+                cp $(Build.ArtifactStagingDirectory)/plugin-apt-${{ target }}-minsizerel/*.deb $targetDir
+                echo "**** Listing copied .deb files ****"
+                ls -l $targetDir
+
+          - task: ArchiveFiles@2
+            displayName: 'Create .tar file'
+            inputs:
+              rootFolderOrFile: $(Agent.TempDirectory)/doclient-scratch
+              includeRootFolder: False
+              archiveType: tar
+              archiveFile: $(Build.ArtifactStagingDirectory)/release-assets/${{ target }}-packages.tar
+
+          templateContext:
+            outputs:
+            - output: pipelineArtifact
+              displayName: 'Publish artifacts'
+              targetPath: '$(Build.ArtifactStagingDirectory)'
+              artifact: 'doclient-drop-${{ target }}'
 
     - stage: release
       condition: succeeded()
