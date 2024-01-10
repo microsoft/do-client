@@ -115,9 +115,7 @@ extends:
             inputs:
               SourceFolder: '/tmp'
               Contents: |
-                build-deliveryoptimization-agent-${{ target }}/linux-minsizerel/*.deb
-                build-deliveryoptimization-sdk-${{ target }}/linux-minsizerel/*.deb
-                build-deliveryoptimization-plugin-apt-${{ target }}/linux-minsizerel/*.deb
+                build-deliveryoptimization-*-${{ target }}/linux-minsizerel/*.deb
               TargetFolder: '/tmp/${{ target }}'
               CleanTargetFolder: true
 
