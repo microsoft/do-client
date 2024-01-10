@@ -123,6 +123,8 @@ extends:
                 cp $(Build.ArtifactStagingDirectory)/agent-${{ target }}-minsizerel/*.deb $targetDir
                 cp $(Build.ArtifactStagingDirectory)/sdk-${{ target }}-minsizerel/*.deb $targetDir
                 cp $(Build.ArtifactStagingDirectory)/plugin-apt-${{ target }}-minsizerel/*.deb $targetDir
+                echo "**** Listing copied .deb files ****"
+                ls -l $targetDir
 
           - task: ArchiveFiles@2
             displayName: 'Create .tar file'
