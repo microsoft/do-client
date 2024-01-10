@@ -20,73 +20,31 @@ schedules:
     include:
     - develop
 
+parameters:
+- name: buildTargets
+  displayName: "OS and Architectures to build"
+  type: object
+  default:
+    - debian10_arm32
+    - debian10_arm64
+    - debian10_x64
+    - debian11_arm32
+    - debian11_arm64
+    - debian11_x64
+    - ubuntu1804_arm64
+    - ubuntu2004_arm64
+    - ubuntu2004_x64
+    - ubuntu2204_arm64
+    - ubuntu2204_x64
+
 pool:
   name: 1es_hosted_pool_ubuntu_1804
   demands: ImageOverride -equals do-adu-build-$(imageVersion)
 
 jobs:
-- template: ../templates/do-docker-jobs.yml
-  parameters:
-    targetOsArch: 'debian10_arm32'
-    imageVersion: ${{variables.containerImageVersion}}
-    stepsTemplate: 'doclient-lite-docker-steps.yml'
-
-- template: ../templates/do-docker-jobs.yml
-  parameters:
-    targetOsArch: 'debian10_arm64' # azure pipelines does not support '.' in display names
-    imageVersion: ${{variables.containerImageVersion}}
-    stepsTemplate: 'doclient-lite-docker-steps.yml'
-
-- template: ../templates/do-docker-jobs.yml
-  parameters:
-    targetOsArch: 'debian10_x64' # azure pipelines does not support '.' in display names
-    imageVersion: ${{variables.containerImageVersion}}
-    stepsTemplate: 'doclient-lite-docker-steps.yml'
-
-- template: ../templates/do-docker-jobs.yml
-  parameters:
-    targetOsArch: 'debian11_arm32' # azure pipelines does not support '.' in display names
-    imageVersion: ${{variables.containerImageVersion}}
-    stepsTemplate: 'doclient-lite-docker-steps.yml'
-
-- template: ../templates/do-docker-jobs.yml
-  parameters:
-    targetOsArch: 'debian11_arm64' # azure pipelines does not support '.' in display names
-    imageVersion: ${{variables.containerImageVersion}}
-    stepsTemplate: 'doclient-lite-docker-steps.yml'
-
-- template: ../templates/do-docker-jobs.yml
-  parameters:
-    targetOsArch: 'debian11_x64' # azure pipelines does not support '.' in display names
-    imageVersion: ${{variables.containerImageVersion}}
-    stepsTemplate: 'doclient-lite-docker-steps.yml'
-
-- template: ../templates/do-docker-jobs.yml
-  parameters:
-    targetOsArch: 'ubuntu1804_arm64' # azure pipelines does not support '.' in display names
-    imageVersion: ${{variables.containerImageVersion}}
-    stepsTemplate: 'doclient-lite-docker-steps.yml'
-
-- template: ../templates/do-docker-jobs.yml
-  parameters:
-    targetOsArch: 'ubuntu2004_arm64' # azure pipelines does not support '.' in display names
-    imageVersion: ${{variables.containerImageVersion}}
-    stepsTemplate: 'doclient-lite-docker-steps.yml'
-
-- template: ../templates/do-docker-jobs.yml
-  parameters:
-    targetOsArch: 'ubuntu2004_x64' # azure pipelines does not support '.' in display names
-    imageVersion: ${{variables.containerImageVersion}}
-    stepsTemplate: 'doclient-lite-docker-steps.yml'
-
-- template: ../templates/do-docker-jobs.yml
-  parameters:
-    targetOsArch: 'ubuntu2204_arm64' # azure pipelines does not support '.' in display names
-    imageVersion: ${{variables.containerImageVersion}}
-    stepsTemplate: 'doclient-lite-docker-steps.yml'
-
-- template: ../templates/do-docker-jobs.yml
-  parameters:
-    targetOsArch: 'ubuntu2204_x64' # azure pipelines does not support '.' in display names
-    imageVersion: ${{variables.containerImageVersion}}
-    stepsTemplate: 'doclient-lite-docker-steps.yml'
+- ${{ each target in parameters.buildTargets }}:
+  - template: ../templates/do-docker-jobs.yml
+    parameters:
+      targetOsArch: ${{target}}
+      imageVersion: ${{variables.containerImageVersion}}
+      stepsTemplate: 'doclient-lite-docker-steps.yml'
