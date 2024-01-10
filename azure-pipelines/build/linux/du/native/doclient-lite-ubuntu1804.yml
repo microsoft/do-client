@@ -58,6 +58,9 @@ jobs:
         targetOsArch: 'ubuntu1804_x64'
         imageVersion: ${{ variables.containerImageVersion }}
         config: ${{ config }}
-        skipTests: ${{ ne(${{config}}, 'debug') }}
+        ${{ if eq(config, 'debug') }}:
+          skipTests: false
+        ${{ else }}:
+          skipTests: true
     - publish: $(Build.ArtifactStagingDirectory)
       artifact: 'doclient-drop-ubuntu1804_x64-${{config}}'
