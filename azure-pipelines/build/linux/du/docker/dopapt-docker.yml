@@ -37,14 +37,29 @@ parameters:
     - ubuntu2204_arm64
     - ubuntu2204_x64
 
+- name: buildConfigurations
+  displayName: "Configurations to build"
+  type: object
+  default:
+    - debug
+    - minsizerel
+
 pool:
   name: 1es_hosted_pool_ubuntu_1804
   demands: ImageOverride -equals do-adu-build-$(imageVersion)
 
+# Build agents are running Ubuntu 18.04 on x64 architecture, so we don't run unit tests for ARM builds
+# (built using docker+QEMU) and other OS builds (test binary dependencies not installed).
 jobs:
-- ${{ each target in parameters.buildTargets }}:
-  - template: ../templates/do-docker-jobs.yml
-    parameters:
-      targetOsArch: ${{target}}
-      imageVersion: ${{variables.containerImageVersion}}
-      stepsTemplate: 'dopapt-docker-steps.yml'
+  - ${{ each target in parameters.buildTargets }}:
+    - ${{ each config in parameters.buildConfigurations }}:
+      - job: ${{ target }}_${{ config }}
+        steps:
+        - template: '../templates/dopapt-docker-steps.yml'
+          parameters:
+            targetOsArch: ${{ target }}
+            imageVersion: ${{ variables.containerImageVersion }}
+            config: ${{ config }}
+            skipTests: true
+        - publish: $(Build.ArtifactStagingDirectory)
+          artifact: 'doclient-drop-${{target}}-${{config}}'
