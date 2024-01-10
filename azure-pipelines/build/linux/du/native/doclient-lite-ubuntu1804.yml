@@ -51,13 +51,13 @@ pool:
 
 jobs:
 - ${{ each config in parameters.buildConfigurations }}:
-  - job: ubuntu1804_x64_${{config}}
+  - job: ubuntu1804_x64_${{ config }}
     steps:
     - template: '../templates/doclient-lite-docker-steps.yml'
       parameters:
         targetOsArch: 'ubuntu1804_x64'
-        imageVersion: ${{variables.containerImageVersion}}
-        config: ${{config}}
-        skipTests: ${{ ne('${{config}}', 'debug') }}
+        imageVersion: ${{ variables.containerImageVersion }}
+        config: ${{ config }}
+        skipTests: ${{ ne(${{config}}, 'debug') }}
     - publish: $(Build.ArtifactStagingDirectory)
       artifact: 'doclient-drop-ubuntu1804_x64-${{config}}'
