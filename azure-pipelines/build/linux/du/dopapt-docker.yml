@@ -1,24 +1,39 @@
 # Pipeline to build DO Plugins using docker to target non-native OS and/or architecture.
 # Publishes the binaries + packages as artifacts.
 
-variables:
-- name: imageVersion
-  value: 0.8.0
-- name: containerImageVersion
-  value: 0.9.0
-
-# Disable branch and pr triggers - currently run this manually to avoid hogging build machine resources
-# Rely on Ubuntu x64 pipeline for CI/CD
+# CI trigger for when code gets merged into develop branch
 trigger:
-- none
-pr:
-- none
-schedules:
-- cron: "0 0 * * *"
-  displayName: Daily midnight build
   branches:
     include:
-    - develop
+      - develop
+  paths:
+    include:
+      - azure-pipelines/build/linux/du/dopapt-docker.yml
+      - azure-pipelines/build/linux/du/templates/dopapt-docker-steps.yml
+      - common/*
+      - plugins/*
+      - build/build.py
+      - CMakeLists.txt
+    exclude:
+      - 'azure-pipelines/*'
+      - 'plugins/linux-apt/scripts/configure-apt-method.sh'
+
+# PR trigger for when a PR is opened against develop branch
+pr:
+  branches:
+    include:
+      - develop
+  paths:
+    include:
+      - azure-pipelines/build/linux/du/dopapt-docker.yml
+      - azure-pipelines/build/linux/du/templates/dopapt-docker-steps.yml
+      - common/*
+      - plugins/*
+      - build/build.py
+      - CMakeLists.txt
+    exclude:
+      - 'azure-pipelines/*'
+      - 'plugins/linux-apt/scripts/configure-apt-method.sh'
 
 parameters:
 - name: buildTargets
@@ -32,6 +47,7 @@ parameters:
     - debian11_arm64
     - debian11_x64
     - ubuntu1804_arm64
+    - ubuntu1804_x64
     - ubuntu2004_arm64
     - ubuntu2004_x64
     - ubuntu2204_arm64
@@ -44,14 +60,20 @@ parameters:
     - debug
     - minsizerel
 
+variables:
+  imageVersion: 0.8.0             # Build agent image version
+  containerImageVersion: 0.9.0    # Docker image version
+
 pool:
   name: 1es_hosted_pool_ubuntu_1804
   demands: ImageOverride -equals do-adu-build-$(imageVersion)
 
 # Build agents are running Ubuntu 18.04 on x64 architecture, so we don't run unit tests for ARM builds
 # (built using docker+QEMU) and other OS builds (test binary dependencies not installed).
+# For PR builds, build only x64 targets to speed up validation.
 jobs:
-  - ${{ each target in parameters.buildTargets }}:
+- ${{ each target in parameters.buildTargets }}:
+  - ${{ if or(ne(variables['Build.Reason'], 'PullRequest'), endswith(target, '_x64')) }}:
     - ${{ each config in parameters.buildConfigurations }}:
       - job: ${{ target }}_${{ config }}
         steps:
@@ -60,6 +82,9 @@ jobs:
             targetOsArch: ${{ target }}
             imageVersion: ${{ variables.containerImageVersion }}
             config: ${{ config }}
-            skipTests: true
+            ${{ if and(eq(config, 'debug'), eq(target, 'ubuntu1804_x64')) }}:
+              skipTests: false
+            ${{ else }}:
+              skipTests: true
         - publish: $(Build.ArtifactStagingDirectory)
           artifact: 'doclient-drop-${{target}}-${{config}}'

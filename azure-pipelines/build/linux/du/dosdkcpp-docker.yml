@@ -1,0 +1,90 @@
+# Pipeline to build DO C++ SDK using docker to target non-native OS and/or architecture.
+# Publishes the binaries + packages as artifacts.
+
+# CI trigger for when code gets merged into develop branch
+trigger:
+  branches:
+    include:
+      - develop
+  paths:
+    include:
+      - azure-pipelines/build/linux/du/dosdkcpp-docker.yml
+      - azure-pipelines/build/linux/du/templates/dosdkcpp-docker-steps.yml
+      - common/*
+      - sdk-cpp/*
+      - build/build.py
+      - CMakeLists.txt
+    exclude:
+      - azure-pipelines/*
+      - sdk-cpp/build/cleanup-install.sh
+
+# PR trigger for when a PR is opened against develop branch
+pr:
+  branches:
+    include:
+      - develop
+  paths:
+    include:
+      - azure-pipelines/build/linux/du/dosdkcpp-docker.yml
+      - azure-pipelines/build/linux/du/templates/dosdkcpp-docker-steps.yml
+      - common/*
+      - sdk-cpp/*
+      - build/build.py
+      - CMakeLists.txt
+    exclude:
+      - azure-pipelines/*
+      - sdk-cpp/build/cleanup-install.sh
+
+parameters:
+- name: buildTargets
+  displayName: "OS and Architectures to build"
+  type: object
+  default:
+    - debian10_arm32
+    - debian10_arm64
+    - debian10_x64
+    - debian11_arm32
+    - debian11_arm64
+    - debian11_x64
+    - ubuntu1804_arm64
+    - ubuntu1804_x64
+    - ubuntu2004_arm64
+    - ubuntu2004_x64
+    - ubuntu2204_arm64
+    - ubuntu2204_x64
+
+- name: buildConfigurations
+  displayName: "Configurations to build"
+  type: object
+  default:
+    - debug
+    - minsizerel
+
+variables:
+  imageVersion: 0.8.0             # Build agent image version
+  containerImageVersion: 0.9.0    # Docker image version
+
+pool:
+  name: 1es_hosted_pool_ubuntu_1804
+  demands: ImageOverride -equals do-adu-build-$(imageVersion)
+
+# Build agents are running Ubuntu 18.04 on x64 architecture, so we don't run unit tests for ARM builds
+# (built using docker+QEMU) and other OS builds (test binary dependencies not installed).
+# For PR builds, build only x64 targets to speed up validation.
+jobs:
+- ${{ each target in parameters.buildTargets }}:
+  - ${{ if or(ne(variables['Build.Reason'], 'PullRequest'), endswith(target, '_x64')) }}:
+    - ${{ each config in parameters.buildConfigurations }}:
+      - job: ${{ target }}_${{ config }}
+        steps:
+        - template: '../templates/dosdkcpp-docker-steps.yml'
+          parameters:
+            targetOsArch: ${{ target }}
+            imageVersion: ${{ variables.containerImageVersion }}
+            config: ${{ config }}
+            ${{ if and(eq(config, 'debug'), eq(target, 'ubuntu1804_x64')) }}:
+              skipTests: false
+            ${{ else }}:
+              skipTests: true
+        - publish: $(Build.ArtifactStagingDirectory)
+          artifact: 'doclient-drop-${{target}}-${{config}}'
