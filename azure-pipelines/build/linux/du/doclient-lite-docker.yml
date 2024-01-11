@@ -75,7 +75,7 @@ jobs:
     - ${{ each config in parameters.buildConfigurations }}:
       - job: ${{ target }}_${{ config }}
         steps:
-        - template: '../templates/doclient-lite-docker-steps.yml'
+        - template: 'templates/doclient-lite-docker-steps.yml'
           parameters:
             targetOsArch: ${{ target }}
             imageVersion: ${{ variables.containerImageVersion }}
