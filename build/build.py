@@ -5,16 +5,11 @@
 
 import datetime
 import os, sys
-import time
 import timeit
 import subprocess
 import shutil
 import argparse
-import warnings
 import tempfile
-import fnmatch
-from pathlib import Path
-from tempfile import gettempdir
 
 #region Globals
 
@@ -102,7 +97,7 @@ class LinuxArgParser(ArgParserBase):
             '--search-prefix', dest='search_prefix', type=str,
             help='search prefix to pass to CMake'
         )
-        
+
         '''Option to control resource usage when running on a Raspberry Pi'''
         self.parser.add_argument(
             '--parallel', dest='parallel', type=int,
