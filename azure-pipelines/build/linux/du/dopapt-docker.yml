@@ -77,7 +77,7 @@ jobs:
     - ${{ each config in parameters.buildConfigurations }}:
       - job: ${{ target }}_${{ config }}
         steps:
-        - template: '../templates/dopapt-docker-steps.yml'
+        - template: 'templates/dopapt-docker-steps.yml'
           parameters:
             targetOsArch: ${{ target }}
             imageVersion: ${{ variables.containerImageVersion }}

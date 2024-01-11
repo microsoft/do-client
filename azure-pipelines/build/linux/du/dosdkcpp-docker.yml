@@ -77,7 +77,7 @@ jobs:
     - ${{ each config in parameters.buildConfigurations }}:
       - job: ${{ target }}_${{ config }}
         steps:
-        - template: '../templates/dosdkcpp-docker-steps.yml'
+        - template: 'templates/dosdkcpp-docker-steps.yml'
           parameters:
             targetOsArch: ${{ target }}
             imageVersion: ${{ variables.containerImageVersion }}
