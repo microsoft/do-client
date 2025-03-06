@@ -168,7 +168,7 @@ function installAll
 function isSupportedLinux()
 {
     if [[ ($DISTRO == "ubuntu" && ($VER == "18.04" || $VER == "20.04" || $VER == "22.04"))
-        || ($DISTRO == "debian" && ($VER == "10" || $VER == "11")) ]];
+        || ($DISTRO == "debian" && ($VER == "10" || $VER == "11" || $VER == "12")) ]];
     then
         return 0
     else
