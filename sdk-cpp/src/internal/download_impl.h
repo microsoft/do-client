@@ -48,7 +48,7 @@ public:
 
 private:
 #if defined(DO_INTERFACE_COM)
-    static std::error_code CDownloadImpl::_EnumDownloads(const DO_DOWNLOAD_ENUM_CATEGORY* pCategory, std::vector<std::unique_ptr<IDownload>>& out) noexcept;
+    static std::error_code _EnumDownloads(const DO_DOWNLOAD_ENUM_CATEGORY* pCategory, std::vector<std::unique_ptr<IDownload>>& out) noexcept;
 
     Microsoft::WRL::ComPtr<IDODownload> _spDownload;
     std::unique_ptr<DO_DOWNLOAD_RANGES_INFO> _spRanges;
