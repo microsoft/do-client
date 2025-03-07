@@ -1,4 +1,4 @@
-
+#include <cstdlib>
 #include "do_config_internal.h"
 
 #include "do_errors.h"
