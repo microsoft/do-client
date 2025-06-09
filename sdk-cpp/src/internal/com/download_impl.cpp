@@ -3,6 +3,8 @@
 
 #include "download_impl.h"
 
+#include <array>
+
 #include "do_download_property_internal.h"
 #include "do_error_helpers.h"
 
@@ -18,17 +20,16 @@ namespace details
 
 static msdo::download_state ConvertFromComState(DODownloadState platformState)
 {
-    static const msdo::download_state c_stateMap[] =
-    {
+    static constexpr auto c_stateMap = std::to_array<msdo::download_state>({
         msdo::download_state::created,      // DODownloadState_Created
         msdo::download_state::transferring, // DODownloadState_Transferring
         msdo::download_state::transferred,  // DODownloadState_Transferred
         msdo::download_state::finalized,    // DODownloadState_Finalized
         msdo::download_state::aborted,      // DODownloadState_Aborted
         msdo::download_state::paused,       // DODownloadState_Paused
-    };
+    });
     auto index = static_cast<size_t>(platformState);
-    return (index < ARRAYSIZE(c_stateMap)) ? c_stateMap[index] : msdo::download_state::paused;
+    return (index < c_stateMap.size()) ? c_stateMap[index] : msdo::download_state::paused;
 }
 
 static msdo::download_status ConvertFromComStatus(const DO_DOWNLOAD_STATUS& platformStatus)
@@ -39,8 +40,7 @@ static msdo::download_status ConvertFromComStatus(const DO_DOWNLOAD_STATUS& plat
 
 static std::error_code ConvertToComProperty(msdo::download_property prop, DODownloadProperty& comProperty)
 {
-    static const DODownloadProperty c_propMap[] =
-    {
+    static constexpr auto c_propMap = std::to_array<DODownloadProperty>({
         DODownloadProperty_Id,                                  // id
         DODownloadProperty_Uri,                                 // uri
         DODownloadProperty_ContentId,                           // catalog_id
@@ -64,9 +64,9 @@ static std::error_code ConvertToComProperty(msdo::download_property prop, DODown
         DODownloadProperty_HttpCustomAuthHeaders,               // http_custom_auth_headers
         DODownloadProperty_HttpAllowSecureToNonSecureRedirect,  // allow_http_to_https_redirect
         DODownloadProperty_NonVolatile,                         // non_volatile
-    };
+    });
     auto index = static_cast<size_t>(prop);
-    if (index >= ARRAYSIZE(c_propMap))
+    if (index >= c_propMap.size())
     {
         return make_error_code(errc::invalid_arg);
     }
