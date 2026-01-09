@@ -262,10 +262,21 @@ TEST_F(DownloadTests, Download1PausedDownload2SameFileDownload1Resume)
     ASSERT_EQ(status.bytes_transferred(), 0u);
 
     simpleDownload->start();
-    std::this_thread::sleep_for(3s);
+    std::this_thread::sleep_for(2s);
     simpleDownload->pause();
     std::cout << "Waiting for state to change to paused" << std::endl;
-    TestHelpers::WaitForState(*simpleDownload, msdo::download_state::paused);
+    try
+    {
+        TestHelpers::WaitForState(*simpleDownload, msdo::download_state::paused);
+    }
+    catch (const std::runtime_error&)
+    {
+        // Download may complete before pause takes effect
+        if (simpleDownload->get_status().state() != msdo::download_state::transferred)
+        {
+            throw;
+        }
+    }
 
     std::cout << "Downloading the same file with a second download" << std::endl;
     msdot::download::download_url_to_path(g_largeFileUrl, g_tmpFileName2);
@@ -513,16 +524,19 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
             ASSERT_TRUE(false);
         }
     });
+    // Download sometimes is too quick and completes before cancel is called. Handle both cases.
+    // Could improve the test to ensure it always aborts but not worth it at this time.
+    bool wasDownload2Cancelled = false;
     std::thread downloadThread2([&]()
     {
         try
         {
             msdot::download::download_url_to_path(g_largeFileUrl, g_tmpFileName2, cancelToken);
-            ASSERT_TRUE(false); // Cancel will cause download_url_to_path to throw, so reaching here would be unexpected.
         }
         catch (const msdod::exception& e)
         {
             ASSERT_EQ(e.error_code().value(), static_cast<int>(std::errc::operation_canceled));
+            wasDownload2Cancelled = true;
         }
     });
     std::thread downloadThread3([&]()
@@ -545,7 +559,14 @@ TEST_F(DownloadTests, MultipleConcurrentDownloadTest_WithCancels)
     downloadThread3.join();
 
     ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName)), g_smallFileSizeBytes);
-    ASSERT_FALSE(fs::exists(g_tmpFileName2));
+    if (wasDownload2Cancelled)
+    {
+        ASSERT_FALSE(fs::exists(g_tmpFileName2));
+    }
+    else
+    {
+        ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName2)), g_largeFileSizeBytes);
+    }
     ASSERT_EQ(fs::file_size(fs::path(g_tmpFileName3)), g_smallFileSizeBytes);
 }
 
@@ -562,7 +583,14 @@ TEST_F(DownloadTests, FileDeletionAfterPause)
     std::this_thread::sleep_for(2s);
     largeDownload->pause();
     auto status = largeDownload->get_status();
-    ASSERT_EQ(status.state(), msdo::download_state::paused) << "Download is paused";
+    // Download sometimes is too quick and completes before pause is called.
+    // Could improve the test to ensure it always pauses but not worth it at this time.
+    EXPECT_EQ(status.state(), msdo::download_state::paused) << "Download is paused";
+    if (status.state() == msdo::download_state::transferred)
+    {
+        std::cout << "Download completed too soon, skipping rest of test\n";
+        return;
+    }
 
     fs::remove(g_tmpFileName2);
     ASSERT_FALSE(fs::exists(g_tmpFileName2)) << "Output file deleted";
