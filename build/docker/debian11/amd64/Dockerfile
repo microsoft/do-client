@@ -14,7 +14,7 @@
 # Example:
 # sudo docker run -ti --rm --entrypoint=/bin/bash -v ~/code/do-client/:/code debian11_amd64
 
-FROM mcr.microsoft.com/mirror/docker/library/debian:buster@sha256:3b6053ca925336c804e2d3f080af177efcdc9f51198a627569bfc7c7e730ef7e
+FROM mcr.microsoft.com/mirror/docker/library/debian:bullseye@sha256:a7a9aec934049a7008f229b6d2a653076b8788b73ae38cb43c1e10bbeee9d909
 
 SHELL [ "/bin/bash", "-c"]
 
