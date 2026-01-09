@@ -40,7 +40,7 @@ Run the appropriate bootstrapper depending on development machine platform:
 
 ```bash
 cd ./build/scripts
-./bootstrap.sh # Linux
+sudo ./bootstrap.sh --install build # Linux
 ./bootstrap-windows.ps1 # Windows
 ```
 

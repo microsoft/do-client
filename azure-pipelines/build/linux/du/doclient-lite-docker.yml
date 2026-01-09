@@ -50,6 +50,8 @@ parameters:
     - ubuntu2004_x64
     - ubuntu2204_arm64
     - ubuntu2204_x64
+    - ubuntu2404_arm64
+    - ubuntu2404_x64
 
 - name: buildConfigurations
   displayName: "Configurations to build"
