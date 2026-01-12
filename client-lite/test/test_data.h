@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <string>
 
 extern const uint64_t g_prodFileSizeBytes;
