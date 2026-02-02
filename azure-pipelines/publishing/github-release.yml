@@ -23,12 +23,17 @@ parameters:
     - debian11_arm32
     - debian11_arm64
     - debian11_x64
+    - debian12_arm32
+    - debian12_arm64
+    - debian12_x64
     - ubuntu1804_arm64
     - ubuntu1804_x64
     - ubuntu2004_arm64
     - ubuntu2004_x64
     - ubuntu2204_arm64
     - ubuntu2204_x64
+    - ubuntu2404_arm64
+    - ubuntu2404_x64
 
 - name: SkipPublishing
   displayName: Skip publishing step
