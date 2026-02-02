@@ -585,12 +585,13 @@ TEST_F(DownloadTests, FileDeletionAfterPause)
     auto status = largeDownload->get_status();
     // Download sometimes is too quick and completes before pause is called.
     // Could improve the test to ensure it always pauses but not worth it at this time.
-    EXPECT_EQ(status.state(), msdo::download_state::paused) << "Download is paused";
     if (status.state() == msdo::download_state::transferred)
     {
         std::cout << "Download completed too soon, skipping rest of test\n";
         return;
     }
+
+    ASSERT_EQ(status.state(), msdo::download_state::paused) << "Download is paused";
 
     fs::remove(g_tmpFileName2);
     ASSERT_FALSE(fs::exists(g_tmpFileName2)) << "Output file deleted";
