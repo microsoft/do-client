@@ -70,18 +70,22 @@ HRESULT HttpAgent::SendRequest(PCSTR szUrl, PCSTR szProxyUrl, PCSTR szRange, UIN
 {
     RETURN_IF_FAILED(_CreateClient(szUrl, szProxyUrl, connectTimeoutSecs));
     DO_ASSERT(_requestContext.curlHandle);
+
+    // Always clear previous headers to avoid accumulation during retries.
+    // Also note, the slist must remain valid until this request is complete, so it is stored
+    // in the RequestContext and freed either in its destructor or when SendRequest is called again.
+    curl_slist_free_all(_requestContext.requestHeaders);
+    _requestContext.requestHeaders = nullptr;
     if (szRange == nullptr)
     {
-        curl_slist_free_all(_requestContext.requestHeaders);
         curl_easy_setopt(_requestContext.curlHandle, CURLOPT_HTTPHEADER, nullptr);
     }
     else
     {
         std::string rangeHeader("Range: bytes=");
         rangeHeader += szRange;
-        auto tempList = curl_slist_append(_requestContext.requestHeaders, rangeHeader.c_str());
-        RETURN_HR_IF(E_OUTOFMEMORY, tempList == nullptr);
-        _requestContext.requestHeaders = tempList;
+        _requestContext.requestHeaders = curl_slist_append(nullptr, rangeHeader.c_str());
+        RETURN_HR_IF(E_OUTOFMEMORY, _requestContext.requestHeaders == nullptr);
         curl_easy_setopt(_requestContext.curlHandle, CURLOPT_HTTPHEADER, _requestContext.requestHeaders);
     }
 

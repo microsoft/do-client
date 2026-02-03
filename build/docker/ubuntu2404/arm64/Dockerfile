@@ -1,14 +1,16 @@
-# Dockerfile for building DO client components for Debian 11 arm32
+# Dockerfile for building DO client components for Ubuntu 24.04 arm64
 # First, install the docker extension for VSCode. Then you can right-click on this file
 # and choose Build Image. Give it a name and it will build the image.
 #
 # Open interactive terminal into the image in a container:
 # docker run -ti --rm --entrypoint=/bin/bash -v <project root dir>:/code -v <build root dir>:/build <image_name>
 # Example:
-# docker run -ti --rm --entrypoint=/bin/bash -v D:\do-client-lite:/code -v D:\temp\build_client_lite\arm-linux-debug:/build custom-debian11-arm32
+# docker run -ti --rm --entrypoint=/bin/bash -v D:\do-client-lite:/code -v D:\temp\build_client_lite\arm-linux-debug:/build custom-ubuntu2404-arm64
 
-FROM mcr.microsoft.com/mirror/docker/library/debian:bullseye@sha256:21d08549db62d8db06accccf9908305e979616e374e57b1777e5e5068fed8a18
+# Find the sha256 digest using: 
+# sudo docker manifest inspect mcr.microsoft.com/mirror/docker/library/ubuntu:24.04
 
+FROM mcr.microsoft.com/mirror/docker/library/ubuntu:24.04@sha256:955364933d0d91afa6e10fb045948c16d2b191114aa54bed3ab5430d8bbc58cc
 SHELL [ "/bin/bash", "-c"]
 
 # QEMU is a Linux emulator which enables cross-arch support in docker
@@ -17,15 +19,18 @@ SHELL [ "/bin/bash", "-c"]
 # sudo apt-get install qemu-user
 # update-binfmts --display
 # sudo apt install qemu binfmt-support qemu-user-static
-# cp /usr/bin/qemu-arm-static <src root>/build/docker/debian11/arm32
+# cp /usr/bin/qemu-aarch64-static <src root>/build/docker/ubuntu2404/arm64
 #
 # Then copy the build script to the build directory
-# cp <src root>/build/scripts/bootstrap.sh <src root>/build/docker/debian11/arm32
+# cp <src root>/build/bootstrap.sh <src root>build/docker/ubuntu2404/arm64
 #
 # After running the above, you can build the image by running in the current dockerfile directory
 # sudo docker build -t <your image name> . --no-cache --network=host
 
-COPY qemu-arm-static /usr/bin/qemu-arm-static
+# Ubuntu 24.04 requires user prompt for apt-get update command, docker has issues handling this input
+ENV DEBIAN_FRONTEND=noninteractive
+
+COPY qemu-aarch64-static /usr/bin/qemu-aarch64-static
 COPY bootstrap.sh /tmp/bootstrap.sh
 
 WORKDIR /tmp/
@@ -35,7 +40,7 @@ RUN ./bootstrap.sh --install build
 VOLUME /code
 WORKDIR /code
 
-ENTRYPOINT [ "/bin/bash", "-c" ]
+ENTRYPOINT [ "/bin/bash", "-c"]
 
 # We specify an empty command so that we can pass options to the ENTRYPOINT command.
 # This is a bit of a Dockerfile quirk where if the ENTRYPOINT value is defined,

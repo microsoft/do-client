@@ -1,20 +1,23 @@
-# Dockerfile for building DO client components for Debian 11 amd64
+# Dockerfile for building DO client components for Debian 12 amd64
 # First, install the docker extension for VSCode. Then you can right-click on this file
 # and choose Build Image. Give it a name and it will build the image.
 #
 # Alternatively, use the command line:
 # Copy the build script to the build directory:
-# cp <src root>/build/scripts/bootstrap.sh <src root>/build/docker/debian11/amd64
+# cp <src root>/build/scripts/bootstrap.sh <src root>/build/docker/debian12/amd64
 #
 # After running the above, you can build the image by running in the current dockerfile directory:
-# sudo docker build -t debian11_amd64 . --no-cache --network=host
+# sudo docker build -t debian12_amd64 . --no-cache --network=host
 #
 # Open interactive terminal into the image in a container:
 # docker run -ti --rm --entrypoint=/bin/bash -v <project root dir>:/code -v <build root dir>:/build <image_name>
 # Example:
-# sudo docker run -ti --rm --entrypoint=/bin/bash -v ~/code/do-client/:/code debian11_amd64
+# sudo docker run -ti --rm --entrypoint=/bin/bash -v ~/code/do-client/:/code debian12_amd64
 
-FROM mcr.microsoft.com/mirror/docker/library/debian:bullseye@sha256:a7a9aec934049a7008f229b6d2a653076b8788b73ae38cb43c1e10bbeee9d909
+# Find the sha256 digest using:
+# sudo docker manifest inspect mcr.microsoft.com/mirror/docker/library/debian:bookworm
+
+FROM mcr.microsoft.com/mirror/docker/library/debian:bookworm@sha256:9d8be01b7374ef07c68468882782c1226c532f39145f46ad969b6fbd414ab730
 
 SHELL [ "/bin/bash", "-c"]
 

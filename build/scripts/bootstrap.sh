@@ -78,9 +78,10 @@ function installBuildDependencies
         mkdir /tmp/gtest
         pushd /tmp/gtest
 
-        if [[ ($DISTRO == "ubuntu" && ($VER == "20.04" || $VER == "22.04")) || ($DISTRO == "debian" && ($VER == "10" || $VER == "11")) ]];
+        if [[ ($DISTRO == "ubuntu" && ($VER == "20.04" || $VER == "22.04" || $VER == "24.04"))
+            || ($DISTRO == "debian" && ($VER == "10" || $VER == "11" || $VER == "12")) ]];
         then
-            if [[ $VER == "22.04" ]]; then release="v1.13.0"; else release="release-1.10.0"; fi;
+            if [[ $VER == "22.04" || $VER == "24.04" || $VER == "12" ]]; then release="v1.13.0"; else release="release-1.10.0"; fi;
 
             # The latest native-version of gtest on the latest versions of ubuntu and debian currently has a bug where
             # CMakeLists doesn't declare an install target, causing 'make install' to fail.
@@ -167,8 +168,8 @@ function installAll
 
 function isSupportedLinux()
 {
-    if [[ ($DISTRO == "ubuntu" && ($VER == "18.04" || $VER == "20.04" || $VER == "22.04"))
-        || ($DISTRO == "debian" && ($VER == "10" || $VER == "11")) ]];
+    if [[ ($DISTRO == "ubuntu" && ($VER == "18.04" || $VER == "20.04" || $VER == "22.04" || $VER == "24.04"))
+        || ($DISTRO == "debian" && ($VER == "10" || $VER == "11" || $VER == "12")) ]];
     then
         return 0
     else

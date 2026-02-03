@@ -8,20 +8,22 @@ parameters:
   type: string
 - name: config          # debug/release/minsizerel/relwithdebuginfo
   type: string
+- name: skipTests
+  type: boolean
 
 steps:
 - task: Docker@2
   displayName: Login to ACR
   inputs:
     command: login
-    containerRegistry: doclient-dockercontainerregistry-buildpipeline   # name of the service connection that connect the pipeline to the ACR
+    containerRegistry: doclient-dockercontainerregistry-buildpipeline-03   # name of the service connection that connect the pipeline to the ACR
     repository: $(parameters.targetOsArch)
 
 - task: Docker@2
   displayName: Pull latest build image
   inputs:
     command: pull
-    containerRegistry: doclient-dockercontainerregistry-buildpipeline   # name of the service connection that connect the pipeline to the ACR
+    containerRegistry: doclient-dockercontainerregistry-buildpipeline-03   # name of the service connection that connect the pipeline to the ACR
     arguments: 'doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}}'
 
 - task: CmdLine@2
@@ -33,6 +35,37 @@ steps:
   inputs:
     script: 'sudo docker run --rm --entrypoint=python3 -v $(Build.SourcesDirectory):/code -v /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}:/tmp/build-deliveryoptimization-agent doclientcontainerregistry.azurecr.io/${{parameters.targetOsArch}}:${{parameters.imageVersion}} "/code/build/build.py" "--clean" "--package-for" "DEB" "--config" "${{parameters.config}}" "--project" "agent"'
   displayName: 'Build client-lite ${{parameters.targetOsArch}}-${{parameters.config}}'
+
+# Binary size varies based on the target OS, architecture and build config.
+# Testing only on one variation is sufficient for now.
+- task: Bash@3
+  condition: and(eq('${{parameters.config}}', 'minsizerel'), eq('${{parameters.targetOsArch}}', 'ubuntu1804_x64'))
+  inputs:
+    targetType: 'filePath'
+    filePath: 'build/scripts/check_binary_size.sh'
+    arguments: '523672 /tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}/client-lite/deliveryoptimization-agent'
+  displayName: 'Limit binary size increase'
+
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: 'sudo dpkg -i deliveryoptimization-agent*.deb'
+    workingDirectory: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
+  displayName: 'Install agent Debian package'
+
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: './client-lite/test/deliveryoptimization-agent-tests --gtest_filter=-NetworkMonitorTests*'
+    workingDirectory: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
+  displayName: 'Run unit tests'
+
+- task: CmdLine@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    script: 'sudo dpkg -r deliveryoptimization-agent'
+    workingDirectory: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
+  displayName: 'Remove Debian package'
 
 - task: CopyFiles@2
   inputs:
@@ -51,3 +84,13 @@ steps:
       client-lite/deliveryoptimization-agent.dbg
     TargetFolder: '$(Build.ArtifactStagingDirectory)/agent-${{parameters.targetOsArch}}-${{parameters.config}}'
   displayName: 'Populate debug symbols to staging dir'
+
+- task: CopyFiles@2
+  condition: eq('${{parameters.skipTests}}', false)
+  inputs:
+    SourceFolder: '/tmp/build-deliveryoptimization-agent-${{parameters.targetOsArch}}/linux-${{parameters.config}}'
+    Contents: |
+      client-lite/test/deliveryoptimization-agent-tests
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/agent-${{parameters.targetOsArch}}-${{parameters.config}}'
+    CleanTargetFolder: false
+  displayName: 'Populate artifacts staging dir with test binary'
