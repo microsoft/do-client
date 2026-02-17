@@ -158,8 +158,8 @@ extends:
         - task: 1ES.DownloadPipelineArtifact@1
           inputs:
             buildType: 'current'
-            artifactName: 'doclient-drop-${{ target }}'
-            itemPattern: '**/*-packages.tar'
+            # artifactName: 'doclient-drop-${{ target }}'
+            patterns: '**/*-packages.tar'
             targetPath: '$(System.ArtifactsDirectory)'
 
         # - task: DownloadBuildArtifacts@1
