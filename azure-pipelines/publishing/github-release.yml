@@ -163,8 +163,9 @@ extends:
 
         # Use of github release task was removed because of a requirement to mark this as releaseJob
         # and using 1ES.DownloadPipelineArtifact which doesn't seem to support downloading multiple
-        # pipeline artifacts (artifact name is mandatory). Not worth figuring this out right now since
-        # github releases are very infrequent so we can do it manually.
+        # pipeline artifacts (artifact name is mandatory). DownloadBuildArtifacts will also be disallowed
+        # in release pipelines soon. Not worth figuring this out right now since github releases are
+        # very infrequent so we can do it manually.
         # Release can be created manually by downloading the release-assets artifact and using the Github UI
         # to create a new release and upload the tar files and the hash file as assets, and writing up
         # the release notes with changelog information (git log <previous_release_version>..<release_version>).
