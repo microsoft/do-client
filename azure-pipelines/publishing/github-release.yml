@@ -1,4 +1,4 @@
-# Pipeline to perform automated github release of our components
+# Pipeline to create assets for a github release.
 
 # Disable branch and pr triggers - run this manually when ready to publish a new release
 trigger:
@@ -7,9 +7,6 @@ pr:
 - none
 
 variables:
-  Release.Version: $(release_version) # Example: v1.1.1
-  Release.PreviousVersion: $(previous_release_version) # Used to generate changelog. Example: v1.1.0
-  Release.Title: $(title) # Example: v1.1.1 (2023-11-15)
   containerImageVersion: '0.9.0'
 
 parameters:
@@ -34,22 +31,6 @@ parameters:
     - ubuntu2204_x64
     - ubuntu2404_arm64
     - ubuntu2404_x64
-
-- name: SkipPublishing
-  displayName: Skip publishing step
-  type: boolean
-  values:
-  - true
-  - false
-  default: true   # Intentionally default to true to prevent accidental publishing. Update via AzDO pipeline 'Run' UX when ready to publish.
-
-- name: PublishAsDraft
-  displayName: Publish as draft
-  type: boolean
-  values:
-  - true
-  - false
-  default: true
 
 resources:
   repositories:
@@ -76,19 +57,6 @@ extends:
     - ES365AIMigrationTooling
 
     stages:
-    - stage: pre_build
-      jobs:
-      - job: print_variables
-        steps:
-        - task: CmdLine@2
-          inputs:
-            script: |
-              echo "Release title: $(Release.Title)"
-              echo "Release tag: $(Release.Version)"
-              echo "Tag used to generate changelog: $(Release.PreviousVersion)"
-              echo "Suppress file:"
-              ls -l $(Build.SourcesDirectory)/guardian/SDL/.gdnsuppress
-
     - stage: build
       jobs:
       - ${{ each target in parameters.buildTargets }}:
@@ -193,20 +161,18 @@ extends:
               echo Content of current dir:
               ls -l
 
-        - task: GitHubRelease@1
-          condition: eq(${{parameters.SkipPublishing}}, false)
-          inputs:
-            gitHubConnection: 'github_gauth'
-            repositoryName: 'microsoft/do-client'
-            action: 'create'
-            assets: |
-              $(Build.ArtifactStagingDirectory)/release-assets-all/*.tar
-              $(Build.ArtifactStagingDirectory)/release-assets-all/hashes*.txt
-            tagSource: 'userSpecifiedTag'
-            tag: '$(Release.Version)'
-            title: '$(Release.Title)'
-            isPreRelease: true
-            isDraft: ${{parameters.PublishAsDraft}}
-            changeLogCompareToRelease: 'lastNonDraftReleaseByTag'
-            changeLogCompareToReleaseTag: '$(Release.PreviousVersion)'
-            changeLogType: 'commitBased'
+        # Use of github release task was removed because of a requirement to mark this as releaseJob
+        # and using 1ES.DownloadPipelineArtifact which doesn't seem to support downloading multiple
+        # pipeline artifacts (artifact name is mandatory). DownloadBuildArtifacts will also be disallowed
+        # in release pipelines soon. Not worth figuring this out right now since github releases are
+        # very infrequent so we can do it manually.
+        # Release can be created manually by downloading the release-assets artifact and using the Github UI
+        # to create a new release and upload the tar files and the hash file as assets, and writing up
+        # the release notes with changelog information (git log <previous_release_version>..<release_version>).
+
+        templateContext:
+          outputs:
+          - output: pipelineArtifact
+            displayName: 'Publish release assets'
+            targetPath: '$(Build.ArtifactStagingDirectory)/release-assets-all'
+            artifact: 'release-assets'
