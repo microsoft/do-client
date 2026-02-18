@@ -150,38 +150,27 @@ extends:
       condition: succeeded()
       jobs:
       - job: github_release
-        templateContext:
-          type: releaseJob
-          isProduction: true
-
         steps:
-        - task: 1ES.DownloadPipelineArtifact@1
+        - task: DownloadBuildArtifacts@1
           inputs:
             buildType: 'current'
-            # artifactName: 'doclient-drop-${{ target }}'
-            patterns: '**/*-packages.tar'
-            targetPath: '$(System.ArtifactsDirectory)'
-
-        # - task: DownloadBuildArtifacts@1
-        #   inputs:
-        #     buildType: 'current'
-        #     downloadType: 'specific'
-        #     itemPattern: '**/*-packages.tar'
-        #     downloadPath: '$(System.ArtifactsDirectory)'
+            downloadType: 'specific'
+            itemPattern: '**/*-packages.tar'
+            downloadPath: '$(Build.ArtifactStagingDirectory)'
 
         - task: CmdLine@2
           displayName: 'List downloaded files and stage'
           inputs:
             script: |
               shopt -s globstar
-              ls -lR $(System.ArtifactsDirectory)
-              mkdir -p $(System.ArtifactsDirectory)/release-assets-all
-              cp $(System.ArtifactsDirectory)/**/*.tar $(System.ArtifactsDirectory)/release-assets-all
+              ls -lR $(Build.ArtifactStagingDirectory)
+              mkdir -p $(Build.ArtifactStagingDirectory)/release-assets-all
+              cp $(Build.ArtifactStagingDirectory)/**/*.tar $(Build.ArtifactStagingDirectory)/release-assets-all
 
         - task: CmdLine@2
           displayName: List all tarballs
           inputs:
-            workingDirectory: $(System.ArtifactsDirectory)/release-assets-all
+            workingDirectory: $(Build.ArtifactStagingDirectory)/release-assets-all
             script: |
               shopt -s globstar
               echo Content to be hashed:
@@ -191,14 +180,14 @@ extends:
           displayName: Compute hashes
           inputs:
             targetType: 'inline'
-            workingDirectory: $(System.ArtifactsDirectory)/release-assets-all
+            workingDirectory: $(Build.ArtifactStagingDirectory)/release-assets-all
             script: 'sha256sum ./*.tar > hashes_sha256.txt'
 
         - task: Bash@3
           displayName: List tarballs and hashes
           inputs:
             targetType: 'inline'
-            workingDirectory: $(System.ArtifactsDirectory)/release-assets-all
+            workingDirectory: $(Build.ArtifactStagingDirectory)/release-assets-all
             script: |
               cat hashes_sha256.txt
               echo Content of current dir:
@@ -211,8 +200,8 @@ extends:
             repositoryName: 'microsoft/do-client'
             action: 'create'
             assets: |
-              $(System.ArtifactsDirectory)/release-assets-all/*.tar
-              $(System.ArtifactsDirectory)/release-assets-all/hashes*.txt
+              $(Build.ArtifactStagingDirectory)/release-assets-all/*.tar
+              $(Build.ArtifactStagingDirectory)/release-assets-all/hashes*.txt
             tagSource: 'userSpecifiedTag'
             tag: '$(Release.Version)'
             title: '$(Release.Title)'
