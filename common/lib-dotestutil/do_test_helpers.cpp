@@ -40,32 +40,36 @@ BoostAsioWorker::~BoostAsioWorker()
 }
 
 // Returns nullptr if no address was found for the DNS query
-std::unique_ptr<btcp_t::endpoint> BoostAsioWorker::ResolveDnsQuery(const btcp_t::resolver::query& resolverQuery,
+std::unique_ptr<btcp_t::endpoint> BoostAsioWorker::ResolveDnsQuery(const std::string& host, const std::string& port,
     const boost::asio::ip::tcp::resolver::protocol_type* prot)
 {
     std::promise<std::unique_ptr<btcp_t::endpoint>> epPromise;
     auto fut = epPromise.get_future();
-    auto fnResolveHandler = [&epPromise, prot](const boost::system::error_code& ec, btcp_t::resolver::iterator endpoints) -> void
+    auto fnResolveHandler = [&epPromise, prot](const boost::system::error_code& ec, btcp_t::resolver::results_type endpoints) -> void
     {
         std::unique_ptr<btcp_t::endpoint> spFoundEp;
         if (ec)
         {
             std::cout << FormatString("Error resolving address: %d, %s\n", ec.value(), ec.message().c_str());
         }
-        else if (endpoints == btcp_t::resolver::iterator())
+        else if (endpoints.empty())
         {
             std::cout << "Failed to resolve address to any endpoints\n";
         }
         else
         {
             std::cout << "Resolved endpoints:\n";
-            while (endpoints != btcp_t::resolver::iterator())
+
+            for (const auto& ep : endpoints)
             {
-                const auto& ep = *endpoints++;
-                std::cout << FormatString("Host: %s, IP: %s\n", ep.host_name().data(), ep.endpoint().address().to_string().c_str());
+                std::cout << FormatString(
+                    "Host: %s, IP: %s\n",
+                    ep.host_name().data(),
+                    ep.endpoint().address().to_string().c_str());
+
                 if ((prot == nullptr) || (ep.endpoint().protocol() == *prot))
                 {
-                    spFoundEp = std::make_unique<btcp_t::endpoint>(ep);
+                    spFoundEp = std::make_unique<btcp_t::endpoint>(ep.endpoint());
                 }
             }
         }
@@ -77,8 +81,8 @@ std::unique_ptr<btcp_t::endpoint> BoostAsioWorker::ResolveDnsQuery(const btcp_t:
     };
 
     btcp_t::resolver queryResolver(_io);
-    std::cout << "Issuing query: " << resolverQuery.host_name() << ":" << resolverQuery.service_name() << '\n';
-    queryResolver.async_resolve(resolverQuery, fnResolveHandler);
+    std::cout << "Issuing query: " << host << ":" << port << '\n';
+    queryResolver.async_resolve(host, port, fnResolveHandler);
     std::cout << "Waiting...\n";
     if (fut.wait_for(std::chrono::seconds(30)) == std::future_status::timeout)
     {

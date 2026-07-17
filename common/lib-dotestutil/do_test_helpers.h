@@ -35,14 +35,14 @@ class BoostAsioWorker
 public:
     ~BoostAsioWorker();
 
-    std::unique_ptr<boost::asio::ip::tcp::endpoint> ResolveDnsQuery(const boost::asio::ip::tcp::resolver::query& resolverQuery,
+    std::unique_ptr<boost::asio::ip::tcp::endpoint> ResolveDnsQuery(const std::string& host, const std::string& port,
         const boost::asio::ip::tcp::resolver::protocol_type* prot = nullptr);
 
-    boost::asio::io_service& Service() { return _io; }
+    boost::asio::io_context& Context() { return _io; }
 
 private:
-    boost::asio::io_service _io;
-    boost::asio::io_service::work _work { _io };
+    boost::asio::io_context _io;
+    boost::asio::executor_work_guard<decltype(_io.get_executor())> _work{_io.get_executor()};
     std::thread _myThread { [this](){ _io.run(); } };
 };
 #endif // DO_PLATFORM_LINUX

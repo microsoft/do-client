@@ -10,9 +10,9 @@
 using boost_tcp_t = boost::asio::ip::tcp;
 namespace msdod = microsoft::deliveryoptimization::details;
 
-HttpListenerConnection::HttpListenerConnection(boost::asio::io_service& ioService, std::shared_ptr<boost::asio::ip::tcp::socket> socket) :
+HttpListenerConnection::HttpListenerConnection(boost::asio::io_context& ioContext, std::shared_ptr<boost::asio::ip::tcp::socket> socket) :
     _socket(std::move(socket)),
-    _io(ioService)
+    _io(ioContext)
 {
     _recvBuf.resize(2048);
 }
@@ -29,10 +29,10 @@ HttpListenerConnection::~HttpListenerConnection()
     }
 }
 
-std::shared_ptr<HttpListenerConnection> HttpListenerConnection::Make(boost::asio::io_service& ioService,
+std::shared_ptr<HttpListenerConnection> HttpListenerConnection::Make(boost::asio::io_context& ioContext,
     std::shared_ptr<boost::asio::ip::tcp::socket> socket)
 {
-    return std::make_shared<HttpListenerConnection>(ioService, std::move(socket));
+    return std::make_shared<HttpListenerConnection>(ioContext, std::move(socket));
 }
 
 void HttpListenerConnection::Receive(http_listener_callback_t& callback)
@@ -130,7 +130,7 @@ void HttpListenerConnection::_OnData(const boost::system::error_code& ec, size_t
 
     if (_httpParser.Done())
     {
-        _io.post([this, lifetime = shared_from_this(), parsedData = _httpParser.ParsedData(), &callback]()
+        boost::asio::post(_io, [this, lifetime = shared_from_this(), parsedData = _httpParser.ParsedData(), &callback]()
             {
                 callback(parsedData, *this);
             });

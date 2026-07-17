@@ -254,8 +254,7 @@ TEST_F(MCCManagerTests, BoostResolverGoodQuery)
 {
     dotest::util::BoostAsioWorker asioService;
 
-    btcp_t::resolver::query goodQuery("dl.delivery.mp.microsoft.com", "80");
-    const auto spEndpoint = asioService.ResolveDnsQuery(goodQuery);
+    const auto spEndpoint = asioService.ResolveDnsQuery("dl.delivery.mp.microsoft.com", "80");
     ASSERT_TRUE(spEndpoint) << "Found at least one address";
 }
 
@@ -264,13 +263,11 @@ TEST_F(MCCManagerTests, BoostResolverQuery)
     dotest::util::BoostAsioWorker asioService;
 
     std::cout << "Issuing the bad query\n";
-    btcp_t::resolver::query badQuery("ahdkhkasdhaksd", "80");
-    auto spEndpoint = asioService.ResolveDnsQuery(badQuery);
+    auto spEndpoint = asioService.ResolveDnsQuery("ahdkhkasdhaksd", "80");
     ASSERT_FALSE(spEndpoint) << "Found no addresses for the bad query";
 
     std::cout << "\nIssuing the good query in 5 seconds\n";
     std::this_thread::sleep_for(std::chrono::seconds(5));
-    btcp_t::resolver::query goodQuery("dl.delivery.mp.microsoft.com", "80");
-    spEndpoint = asioService.ResolveDnsQuery(goodQuery);
+    spEndpoint = asioService.ResolveDnsQuery("dl.delivery.mp.microsoft.com", "80");
     ASSERT_TRUE(spEndpoint) << "Found at least one address for the good query";
 }

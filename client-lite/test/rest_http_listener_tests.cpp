@@ -23,7 +23,7 @@ TEST(RestListenerTests, ManyPortsInUse)
     {
         try
         {
-            bsock_t sock(asioWorker.Service());
+            bsock_t sock(asioWorker.Context());
             sock.open(btcp_t::v4());
             sock.bind(btcp_t::endpoint(btcp_t::v4(), port));
             sockets.push_back(std::move(sock));
@@ -60,7 +60,7 @@ TEST(RestListenerTests, ManyPortsInUse)
 
     RestHttpListener listener;
     const auto before = std::chrono::steady_clock::now();
-    listener.Start(asioWorker.Service(), http_listener_callback_t{});
+    listener.Start(asioWorker.Context(), http_listener_callback_t{});
     const auto after = std::chrono::steady_clock::now();
     std::cout << "Listener started at: " << listener.Endpoint() << "\n";
     const auto elapsedMsecs = std::chrono::duration_cast<std::chrono::milliseconds>(after - before).count();
