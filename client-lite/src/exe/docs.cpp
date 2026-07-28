@@ -112,14 +112,14 @@ public:
         _workerThread.join();
     }
 
-    boost::asio::io_service& IoService()
+    boost::asio::io_context& IoContext()
     {
         return _io;
     }
 
 private:
-    boost::asio::io_service _io;
-    boost::asio::io_service::work _work { _io };
+    boost::asio::io_context _io;
+    boost::asio::executor_work_guard<decltype(_io.get_executor())> _work{_io.get_executor()};
     std::thread _workerThread;
 };
 
@@ -134,7 +134,7 @@ HRESULT Run() try
     auto downloadManager = std::make_shared<DownloadManager>(clientConfigs);
     RestHttpController controller(clientConfigs, downloadManager);
 
-    controller.Start(asioService.IoService());
+    controller.Start(asioService.IoContext());
     DoLogInfo("HTTP controller listening at: %s", controller.ServerEndpoint().data());
 
     RestPortAdvertiser portAdvertiser(controller.Port());

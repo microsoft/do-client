@@ -14,10 +14,10 @@ using http_listener_callback_t = std::function<void(const std::shared_ptr<micros
 class HttpListenerConnection : public std::enable_shared_from_this<HttpListenerConnection>
 {
 public:
-    HttpListenerConnection(boost::asio::io_service& ioService, std::shared_ptr<boost::asio::ip::tcp::socket> socket);
+    HttpListenerConnection(boost::asio::io_context& ioContext, std::shared_ptr<boost::asio::ip::tcp::socket> socket);
     ~HttpListenerConnection();
 
-    static std::shared_ptr<HttpListenerConnection> Make(boost::asio::io_service& ioService,
+    static std::shared_ptr<HttpListenerConnection> Make(boost::asio::io_context& ioContext,
         std::shared_ptr<boost::asio::ip::tcp::socket> socket);
 
     void Receive(http_listener_callback_t& callback);
@@ -30,7 +30,7 @@ private:
     void _OnData(const boost::system::error_code& ec, size_t cbRead, http_listener_callback_t& callback);
 
     std::shared_ptr<boost::asio::ip::tcp::socket> _socket;
-    boost::asio::io_service& _io;
+    boost::asio::io_context& _io;
 
     std::vector<char> _recvBuf;
     microsoft::deliveryoptimization::details::HttpParser _httpParser;

@@ -41,12 +41,12 @@ void VerifyRestInterfaceWithLocalEndpoint(const btcp_t::endpoint& localEndpoint,
 {
     std::cout << "Will bind to local address: " << localEndpoint << std::endl;
 
-    auto sock = btcp_t::socket(asioService.Service(), btcp_t::v4());
+    auto sock = btcp_t::socket(asioService.Context(), btcp_t::v4());
     boost::system::error_code ec;
     sock.bind(localEndpoint, ec);
     ASSERT_FALSE(ec) << "Expect no bind failure but got: " << ec.message();
 
-    auto addr = boost::asio::ip::address::from_string("127.0.0.1");
+    auto addr = boost::asio::ip::make_address_v4("127.0.0.1");
 
     const auto restPortStr = microsoft::deliveryoptimization::details::CPortFinder::GetDOPort();
     ASSERT_TRUE(!restPortStr.empty());
@@ -79,10 +79,9 @@ TEST_F(RestInterfaceTests, RestInterfaceUseLocalHostForLocalSocket)
 {
     dotest::util::BoostAsioWorker asioService;
 
-    const auto localHostname = boost::asio::ip::host_name();
-    btcp_t::resolver::query query(localHostname, "");
+    const std::string localHostname = boost::asio::ip::host_name();
     auto prot = btcp_t::v4();
-    auto spLocalEp = asioService.ResolveDnsQuery(query, &prot);
+    auto spLocalEp = asioService.ResolveDnsQuery(localHostname, "", &prot);
     ASSERT_TRUE(spLocalEp) << "Found at least one address for the local hostname query";
 
     // Hostname can resolve to either a loopback address or private address depending on machine/network config
@@ -95,7 +94,7 @@ TEST_F(RestInterfaceTests, RestInterfaceUseLoopbackForLocalSocket)
 {
     dotest::util::BoostAsioWorker asioService;
 
-    auto loopbackIpAddr = boost::asio::ip::address::from_string("127.0.1.5");
+    auto loopbackIpAddr = boost::asio::ip::make_address_v4("127.0.1.5");
     auto loopbackEp = btcp_t::endpoint(loopbackIpAddr, 0);
     VerifyRestInterfaceWithLocalEndpoint(loopbackEp, "200 OK", asioService);
 }
@@ -105,7 +104,7 @@ TEST_F(RestInterfaceTests, RestInterfaceUsePrivateIPForLocalSocket)
 {
     dotest::util::BoostAsioWorker asioService;
 
-    auto privateIpAddr = boost::asio::ip::address::from_string(TestHelpers::GetLocalIPv4Address());
+    auto privateIpAddr = boost::asio::ip::make_address_v4(TestHelpers::GetLocalIPv4Address());
     ASSERT_TRUE(!privateIpAddr.is_loopback());
     auto privateEp = btcp_t::endpoint(privateIpAddr, 0);
     VerifyRestInterfaceWithLocalEndpoint(privateEp, "400 BadRequest", asioService);

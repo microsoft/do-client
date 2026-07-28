@@ -19,7 +19,7 @@ public:
     RestHttpController(ConfigManager& config, std::shared_ptr<DownloadManager> downloadManager);
     ~RestHttpController();
 
-    void Start(boost::asio::io_service& ioService);
+    void Start(boost::asio::io_context& ioContext);
     std::string ServerEndpoint() const;
     uint16_t Port() const;
 

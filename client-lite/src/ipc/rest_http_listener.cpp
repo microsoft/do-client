@@ -6,9 +6,9 @@
 
 using boost_tcp_t = boost::asio::ip::tcp;
 
-void RestHttpListener::Start(boost::asio::io_service& ioService, const http_listener_callback_t& requestHandler)
+void RestHttpListener::Start(boost::asio::io_context& ioContext, const http_listener_callback_t& requestHandler)
 {
-    _io = &ioService;
+    _io = &ioContext;
     _requestHandler = requestHandler;
 
     // IANA suggests ephemeral ports can be in range [49125, 65535].
@@ -16,9 +16,9 @@ void RestHttpListener::Start(boost::asio::io_service& ioService, const http_list
     // We just choose a range that lies within all three implementations.
     uint16_t restPort = 50000;
     constexpr uint16_t restPortLimit = 60999;
-    const auto addr = boost::asio::ip::address_v4::from_string("127.0.0.1");
+    const auto addr = boost::asio::ip::make_address_v4("127.0.0.1");
     boost_tcp_t::endpoint endpoint(addr, restPort);
-    boost_tcp_t::acceptor tmpListener{ioService, endpoint.protocol()};
+    boost_tcp_t::acceptor tmpListener{ioContext, endpoint.protocol()};
     while (true)
     {
         endpoint.port(restPort);

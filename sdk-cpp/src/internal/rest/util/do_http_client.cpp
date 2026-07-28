@@ -2,10 +2,7 @@
 
 #include <thread>
 #include <boost/asio/connect.hpp>
-// Debian10 uses 1.67 while Ubuntu18.04 has 1.65.1.
-// Starting in 1.66, boost::asio::io_service changed to io_context and retained io_service as a typedef.
-// Include this header explicitly to get it regardless of which boost version is installed.
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <gsl/gsl>
 
@@ -40,7 +37,7 @@ public:
     boost::system::error_code Connect(ushort port)
     {
         tcp::resolver resolver{_ioc};
-        const auto endpoints = resolver.resolve({ "127.0.0.1", std::to_string(port) });
+        const auto endpoints = resolver.resolve("127.0.0.1", std::to_string(port));
         boost::system::error_code ec;
         boost::asio::connect(_socket, endpoints, ec);
         return ec;
@@ -58,7 +55,7 @@ public:
     }
 
 private:
-    net::io_service _ioc;
+    net::io_context _ioc;
     net::ip::tcp::socket _socket{_ioc};
 };
 

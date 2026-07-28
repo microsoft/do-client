@@ -28,9 +28,9 @@ RestHttpController::~RestHttpController()
     (void)_callTracker.Wait();
 }
 
-void RestHttpController::Start(boost::asio::io_service& ioService)
+void RestHttpController::Start(boost::asio::io_context& ioContext)
 {
-    _listener.Start(ioService, std::bind(&RestHttpController::_HttpListenerCallback, this, std::placeholders::_1, std::placeholders::_2));
+    _listener.Start(ioContext, std::bind(&RestHttpController::_HttpListenerCallback, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 std::string RestHttpController::ServerEndpoint() const
