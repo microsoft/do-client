@@ -5,6 +5,7 @@
 #define _DELIVERY_OPTIMIZATION_DO_ERROR_HELPERS_H
 
 #include <cstdint>
+#include <string>
 #include <system_error>
 
 #ifdef DO_ENABLE_EXCEPTIONS
